@@ -1,6 +1,6 @@
 {
   "name": "server.app-builder",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "http server abstraction",
   "main": "lib/index.js",
   "scripts": {
@@ -14,11 +14,11 @@
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
   "devDependencies": {
-    "babel": "^5.0.12",
+    "babel": "^5.1.10",
     "chai": "^2.2.0",
     "mocha": "^2.2.4"
   },
   "dependencies": {
-    "bluebird": "^2.9.24"
+    "app-builder": "^1.2.1"
   }
 }

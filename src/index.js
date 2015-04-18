@@ -1,6 +1,5 @@
 import http from 'http'
 import AppBuilder from 'app-builder'
-import Promise from 'bluebird'
 import Environment from './environment'
 
 export default class Server extends AppBuilder {
@@ -14,7 +13,6 @@ export default class Server extends AppBuilder {
     })
     return new Promise(res => this.httpServer.listen(...args, res))
   }
-
 }
 
 export { Environment }
