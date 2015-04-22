@@ -19,6 +19,6 @@
     "mocha": "^2.2.4"
   },
   "dependencies": {
-    "app-builder": "^1.2.1"
+    "app-builder": "^2.0.0"
   }
 }

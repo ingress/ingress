@@ -1,11 +1,11 @@
-export default class Environment {
+export class Environment {
 
-  static create (req, res) {
-    return new Environment(req, res);
-  }
-
-  constructor (request, response) {
+  constructor ({request, response}) {
     this.request = request
     this.response = response
   }
+}
+
+export default function (...args) {
+  return new Environment(...args)
 }
