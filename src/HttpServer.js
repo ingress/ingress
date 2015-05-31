@@ -1,34 +1,18 @@
-import http from 'http';
+import { Server } from 'http'
+import { WebServer } from './AbstractWebServer.js'
 
-function getUsageError (method) {
-  return new Error(`Method "${method}" must be implemented`)
-}
-
-class WebServer {
-  onRequest () {
-    throw getUsageError('onRequest')
-  }
-  listen () {
-    throw getUsageError('listen')
-  }
-  close () {
-    throw getUsageError('close')
-  }
-}
-
-class HttpServer extends WebServer {
-
-  constructor() {
+export class HttpServer extends WebServer {
+  constructor () {
     super()
-    this.server = http.createServer()
+    this.server = new Server;
     this.isListening = false
   }
 
-  onRequest(fn) {
+  onRequest (fn) {
     this.server.on('request', fn)
   }
 
-  listen(...args) {
+  listen (...args) {
     if (this.isListening) {
       return Promise.reject(new Error('.listen can only be called once'))
     }
@@ -36,12 +20,7 @@ class HttpServer extends WebServer {
     return new Promise(res => this.server.listen(...args, res))
   }
 
-  close() {
+  close () {
     return new Promise(res => this.server.close(res))
   }
-}
-
-export {
-  HttpServer,
-  WebServer
 }
