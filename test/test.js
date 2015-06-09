@@ -8,7 +8,7 @@ describe('Server', () => {
 
   let server
   beforeEach(() => {
-    server = new Server(new HttpServer)
+    server = new Server
     server.use(env => env.next())
   })
 
@@ -35,7 +35,7 @@ describe('Server', () => {
     it('sets argument to an Environment instance', async () => {
       server.use(env => {
         expect(env).to.be.an.instanceOf(Environment)
-        env.response.end()
+        env.res.end()
       })
       return server.listen(8080)
         .then(() => new Promise(res => http.get('http://localhost:8080', res)))
@@ -46,7 +46,7 @@ describe('Server', () => {
     it('calls close on underlying webserver implementation', () => {
       let called = false
       server.webserver.close = function (){ called = true }
-      server.close();
+      server.close()
       expect(called).to.be.true
     })
   })

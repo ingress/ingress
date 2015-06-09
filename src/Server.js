@@ -1,24 +1,25 @@
 import { AppBuilder } from 'app-builder'
-import { Environment } from './Environment'
+import createEnvironment, { Environment } from './Environment'
 import { HttpServer} from './HttpServer.js'
 
 export class Server extends AppBuilder {
 
-  constructor (webserver) {
+  constructor (webserver = new HttpServer, environmentFactory = x => new Environment(x)) {
     super()
-    this.webserver = webserver;
+    this.createEnvironment = environmentFactory
+    this.webserver = webserver
   }
 
   listen (...args) {
     const appFn = this.build()
-    this.webserver.onRequest((request, response) => {
-      appFn.call(this, new Environment({request,response}))
+    this.webserver.onRequest((req, res) => {
+      appFn.call(this, this.createEnvironment({req, res}))
     })
     return this.webserver.listen(...args)
   }
 
   close () {
-    return this.webserver.close();
+    return this.webserver.close()
   }
 }
 
@@ -28,5 +29,5 @@ export {
 }
 
 export default function () {
-  return new Server(new HttpServer)
+  return new Server
 }
