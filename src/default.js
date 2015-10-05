@@ -25,8 +25,10 @@ function cannotRespond (res) {
   return res.finished || res.headersSent || res.socket && !res.socket.writable
 }
 
-export function defaultHandler({ res, body }, next) {
+export function defaultHandler(ctx, next) {
   next().then(() => {
+    let body = ctx.body
+    const res = ctx.res
     if (cannotRespond(res)) {
       return
     }
@@ -39,7 +41,7 @@ export function defaultHandler({ res, body }, next) {
       return statusResponse(res.statusCode, res.statusMessage, res)
     }
     if (typeof body === 'string') {
-      res.setHeader('Content-Type', 'text/' + looksLikeHtmlRE.test(body) ? 'html' : 'plain')
+      res.setHeader('Content-Type', 'text/' + (looksLikeHtmlRE.test(body) ? 'html' : 'plain'))
       res.setHeader('Content-Length', Buffer.byteLength(body))
       return res.end(body)
     }
@@ -58,6 +60,7 @@ export function defaultHandler({ res, body }, next) {
     res.setHeader('Content-Length', Buffer.byteLength(body))
     res.end(body)
   }, (error) => {
+    const res = ctx.res
     if (cannotRespond(res)) {
       return
     }
