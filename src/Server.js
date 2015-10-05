@@ -1,21 +1,26 @@
 import { AppBuilder } from 'app-builder'
 import createEnvironment, { Environment } from './Environment'
-import { HttpServer} from './HttpServer.js'
+import { HttpServer} from './HttpServer'
+import { defaultHandler } from './default'
 
 export class Server extends AppBuilder {
 
-  constructor (webserver = new HttpServer, environmentFactory = x => new Environment(x)) {
+  constructor (webserver = new HttpServer, contextFactory = x => new Environment(x)) {
     super()
-    this.createEnvironment = environmentFactory
+    this.createContext = contextFactory
     this.webserver = webserver
   }
 
   listen (...args) {
     const appFn = this.build()
     this.webserver.onRequest((req, res) => {
-      appFn.call(this, this.createEnvironment({req, res}))
+      appFn(this.createContext({req, res}))
     })
     return this.webserver.listen(...args)
+  }
+
+  useDefault() {
+    return this.use(defaultHandler)
   }
 
   close () {

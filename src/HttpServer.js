@@ -1,9 +1,7 @@
 import { Server } from 'http'
-import { WebServer } from './AbstractWebServer.js'
 
-export class HttpServer extends WebServer {
+export class HttpServer {
   constructor () {
-    super()
     this.server = new Server;
     this.isListening = false
   }

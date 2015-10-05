@@ -9,7 +9,7 @@ describe('Server', () => {
   let server
   beforeEach(() => {
     server = new Server
-    server.use(env => env.next())
+    server.use((ctx, next) => next())
   })
 
   afterEach(() => {
@@ -18,7 +18,7 @@ describe('Server', () => {
 
   describe('listen', () => {
     it('returns a promise, creates a server', async () => {
-      server.listen(port)
+      await server.listen(port)
       expect(server.webserver).to.be.an.instanceOf(HttpServer)
     })
 
@@ -38,7 +38,7 @@ describe('Server', () => {
         env.res.end()
       })
       return server.listen(8080)
-        .then(() => new Promise(res => http.get('http://localhost:8080', res)))
+        .then(() => new Promise((res,rej) => http.get('http://localhost:8080', res).on('error', rej)))
     })
   })
 
