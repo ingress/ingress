@@ -1,4 +1,4 @@
-import {expect} from 'chai'
+import { expect } from 'chai'
 import { Server, Environment, HttpServer }  from '../src/Server'
 import http from 'http'
 

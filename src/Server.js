@@ -1,7 +1,7 @@
 import { AppBuilder } from 'app-builder'
 import createEnvironment, { Environment } from './Environment'
 import { HttpServer} from './HttpServer'
-import { defaultHandler } from './default'
+import { defaultHandler, defaultError } from './default'
 
 export class Server extends AppBuilder {
 
@@ -12,15 +12,21 @@ export class Server extends AppBuilder {
   }
 
   listen (...args) {
-    const appFn = this.build()
+    const appFn = this.build(),
+      useDefaultHandler = this.defaultEnabled
     this.webserver.onRequest((req, res) => {
-      appFn(this.createContext({req, res}))
+      const context = this.createContext({req, res}),
+        contextPromise = appFn(context)
+      if (useDefaultHandler) {
+        contextPromise.then(defaultHandler, error => defaultError(context, error))
+      }
     })
     return this.webserver.listen(...args)
   }
 
-  useDefault() {
-    return this.use(defaultHandler)
+  useDefault () {
+    this.defaultEnabled = true
+    return this
   }
 
   close () {
