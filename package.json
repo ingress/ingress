@@ -1,14 +1,14 @@
 {
   "name": "server.app-builder",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "http server abstraction",
   "main": "lib/Server.js",
   "scripts": {
     "prepublish": "babel src --out-dir lib",
     "test": "mocha --compilers js:babel/register"
   },
-  "engines" : {
-    "node" : ">=4.0.0"
+  "engines": {
+    "node": ">=4.0.0"
   },
   "keywords": [
     "http",
@@ -22,6 +22,7 @@
     "mocha": "^2.2.4"
   },
   "dependencies": {
-    "app-builder": "^4.1.0"
+    "app-builder": "^4.1.0",
+    "statuses": "^1.2.1"
   }
 }

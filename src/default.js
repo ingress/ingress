@@ -1,4 +1,5 @@
 import Stream from 'stream'
+import statuses from 'statuses'
 
 const emptyStatuses = {
     204: true,
@@ -15,7 +16,8 @@ const emptyStatuses = {
 
 function statusResponse (status, message, res) {
   res._headers = {}
-  res.statusCode = status
+  res.statusCode = status || 404
+  message = message || statuses(res.statusCode)
   res.setHeader('Content-Type', 'text/plain')
   res.setHeader('Content-Length', Buffer.byteLength(message))
   res.end(message)
@@ -27,19 +29,12 @@ function cannotRespond (res) {
 
 export function defaultError (ctx, error) {
   const res = ctx.res
+
   if (cannotRespond(res)) {
     return
   }
-  if (!isError(error)) {
-    throw new TypeError('Non-error thrown: ', error)
-  }
-  if ('number' !== typeof error.status) {
-    res.statusCode = 500
-  }
-  if ('ENOENT' === error.code) {
-    res.statusCode = 404
-  }
-  statusResponse(res.statusCode, res.statusMessage, res)
+
+  statusResponse(res.statusCode || 500, res.statusMessage, res)
 }
 
 
