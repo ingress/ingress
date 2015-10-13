@@ -17,23 +17,23 @@ export class Server extends AppBuilder {
 
   listen (...args) {
     const appFn = this.build(),
-      useDefaultHandler = this.defaultEnabled
+      errorHandler = this.onError
+
     this.webserver.onRequest((req, res) => {
       const context = this.createContext({req, res}),
         contextPromise = appFn(context)
-      if (useDefaultHandler) {
+      if (errorHandler) {
         contextPromise.then(defaultHandler, error => {
-          this.onError(context, error)
-          defaultError(context, error)
+          errorHandler(context, error)
+          defaultError(context)
         })
       }
     })
     return this.webserver.listen(...args)
   }
 
-  useDefault (onError) {
+  useDefault (onError = () => {}) {
     this.onError = onError
-    this.defaultEnabled = true
     return this
   }
 

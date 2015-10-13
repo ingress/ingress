@@ -27,7 +27,7 @@ function cannotRespond (res) {
   return res.finished || res.headersSent || res.socket && !res.socket.writable
 }
 
-export function defaultError (ctx, error) {
+export function defaultError (ctx) {
   const res = ctx.res
 
   if (cannotRespond(res)) {
