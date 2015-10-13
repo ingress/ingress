@@ -17,7 +17,7 @@ const emptyStatuses = {
 function statusResponse (status, message, res) {
   res._headers = {}
   res.statusCode = status || 404
-  message = message || statuses(res.statusCode)
+  message = message || statuses[res.statusCode] || ''
   res.setHeader('Content-Type', 'text/plain')
   res.setHeader('Content-Length', Buffer.byteLength(message))
   res.end(message)
