@@ -1,8 +1,8 @@
 export default function (x) {
-  return new Environment(x)
+  return new Context(x)
 }
 
-export class Environment {
+export class Context {
   constructor ({req, res}) {
     this.req = req
     this.res = res

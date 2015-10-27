@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { Server, Environment, HttpServer }  from '../src/Server'
+import { Server, Context, HttpServer }  from '../src/server'
 import http from 'http'
 
 const port = 8888;
@@ -34,7 +34,7 @@ describe('Server', () => {
 
     it('sets argument to an Environment instance', async () => {
       server.use(env => {
-        expect(env).to.be.an.instanceOf(Environment)
+        expect(env).to.be.an.instanceOf(Context)
         env.res.end()
       })
       return server.listen(8080)

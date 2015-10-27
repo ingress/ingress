@@ -1,25 +1,34 @@
 import { AppBuilder } from 'app-builder'
-import createEnvironment, { Environment } from './Environment'
-import { HttpServer} from './HttpServer'
+import createEnvironment, { Context } from './context'
+import { HttpServer} from './http-server'
 import { defaultHandler, defaultError } from './default'
 
 export default function () {
   return new Server
 }
 
-export class Server extends AppBuilder {
+export class Server {
 
-  constructor (webserver = new HttpServer, contextFactory = x => new Environment(x)) {
-    super()
+  constructor (webserver = new HttpServer, contextFactory = x => new Context(x)) {
+    this.builder = new AppBuilder
     this.createContext = contextFactory
     this.webserver = webserver
   }
 
-  listen (...args) {
-    const appFn = this.build(),
-      errorHandler = this.onError
+  use (mw) {
+    this.builder.use(mw)
+    return this
+  }
 
-    this.webserver.onRequest((req, res) => {
+  useDefault (onError = () => {}) {
+    this.onError = onError
+    return this
+  }
+
+  build () {
+    const appFn = this.builder.build(),
+      errorHandler = this.onError
+    return (req, res) => {
       const context = this.createContext({req, res}),
         contextPromise = appFn(context)
       if (errorHandler) {
@@ -28,13 +37,12 @@ export class Server extends AppBuilder {
           defaultError(context)
         })
       }
-    })
-    return this.webserver.listen(...args)
+    }
   }
 
-  useDefault (onError = () => {}) {
-    this.onError = onError
-    return this
+  listen (...args) {
+    this.webserver.onRequest(this.build())
+    return this.webserver.listen(...args)
   }
 
   close () {
@@ -43,6 +51,6 @@ export class Server extends AppBuilder {
 }
 
 export {
-  Environment,
+  Context,
   HttpServer
 }
