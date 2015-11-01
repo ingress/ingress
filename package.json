@@ -22,7 +22,7 @@
     "mocha": "^2.2.4"
   },
   "dependencies": {
-    "app-builder": "^4.1.0",
+    "app-builder": "^4.1.2",
     "statuses": "^1.2.1"
   }
 }
