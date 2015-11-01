@@ -2,7 +2,7 @@
   "name": "server.app-builder",
   "version": "3.0.0",
   "description": "http server abstraction",
-  "main": "lib/Server.js",
+  "main": "lib/server.js",
   "scripts": {
     "prepublish": "babel src --out-dir lib",
     "test": "mocha --compilers js:babel/register"
