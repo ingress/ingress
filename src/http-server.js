@@ -1,13 +1,13 @@
 import { Server } from 'http'
 
-export class HttpServer {
+export class HttpServer extends Server {
   constructor () {
-    this.server = new Server;
+    super()
     this.isListening = false
   }
 
   onRequest (fn) {
-    this.server.on('request', fn)
+    this.on('request', fn)
   }
 
   listen (...args) {
@@ -15,10 +15,10 @@ export class HttpServer {
       return Promise.reject(new Error('.listen can only be called once'))
     }
     this.isListening = true
-    return new Promise(res => this.server.listen(...args, res))
+    return new Promise(res => super.listen(...args, res))
   }
 
   close () {
-    return new Promise(res => this.server.close(res))
+    return new Promise(res => super.close(res))
   }
 }
