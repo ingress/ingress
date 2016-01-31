@@ -1,6 +1,6 @@
 {
   "name": "server.app-builder",
-  "version": "3.1.0",
+  "version": "3.2.1",
   "description": "http server abstraction",
   "main": "lib/server.js",
   "files": [
@@ -25,7 +25,7 @@
     "mocha": "^2.2.4"
   },
   "dependencies": {
-    "app-builder": "^4.1.2",
+    "app-builder": "^5.0.1",
     "statuses": "^1.2.1"
   }
 }

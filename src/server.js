@@ -30,9 +30,9 @@ export class Server {
       errorHandler = this.onError
     return (req, res) => {
       const context = this.createContext({req, res}),
-        contextPromise = appFn(context)
+        waiter = appFn(context)
       if (errorHandler) {
-        contextPromise.then(defaultHandler, error => {
+        waiter.then(() => defaultHandler(context), error => {
           errorHandler(context, error)
           defaultError(context)
         })
