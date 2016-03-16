@@ -22,23 +22,15 @@ describe('Server', () => {
       expect(server.webserver).to.be.an.instanceOf(HttpServer)
     })
 
-    it('throws if called twice', async () => {
-      await server.listen(port)
-      try {
-        await server.listen(port)
-        throw 'not an error'
-      } catch (e){
-        expect(e).to.be.an.instanceOf(Error)
-      }
-    })
-
-    it('sets argument to an Environment instance', async () => {
+    it('sets argument to a Context instance', async () => {
+      let hasBeenCalled = false
       server.use(env => {
         expect(env).to.be.an.instanceOf(Context)
+        hasBeenCalled = true
         env.res.end()
       })
-      return server.listen(8080)
-        .then(() => new Promise((res,rej) => http.get('http://localhost:8080', res).on('error', rej)))
+      await server.listen(8080).then(() => new Promise((res,rej) => http.get('http://localhost:8080', res).on('error', rej)))
+      expect(hasBeenCalled).to.be.true
     })
   })
 

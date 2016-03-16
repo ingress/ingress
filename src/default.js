@@ -1,74 +1,72 @@
-import Stream from 'stream'
+import { isBuffer, byteLength } from 'buffer'
 import statuses from 'statuses'
 
-const emptyStatuses = {
-    204: true,
-    205: true,
-    304: true
-  },
-  objToString = ({}).toString,
-  isError = e => {
-    e && typeof e === 'object'
-    && typeof e.message === 'string'
-    && objToString.call(e) === '[object Error]'
-  },
-  looksLikeHtmlRE = /^\s*</
+const looksLikeHtmlRE = /^\s*</,
+  cl = (res, value) => res.setHeader('Content-Length', value),
+  ct = (res, value) => res.setHeader('Content-Type', value)
+
 
 function statusResponse (status, message, res) {
   res._headers = {}
   res.statusCode = status || 404
   message = message || statuses[res.statusCode] || ''
-  res.setHeader('Content-Type', 'text/plain')
-  res.setHeader('Content-Length', Buffer.byteLength(message))
+  ct(res, 'text/plain')
+  cl(res, byteLength(message))
   res.end(message)
 }
 
-function cannotRespond (res) {
-  return res.finished || res.headersSent || res.socket && !res.socket.writable
-}
+function defaultHandler (ctx) {
+  const res = ctx.res,
+    hasContentType = Boolean(res._headers['content-type']),
+    canRespond = res.socket && res.socket.writable && !res.headersSent || false
 
-export function defaultError (ctx) {
-  const res = ctx.res
-
-  if (cannotRespond(res)) {
+  if (!canRespond) {
     return
   }
 
-  statusResponse(res.statusCode || 500, res.statusMessage, res)
-}
+  if (ctx.hasError) {
+    //500
+    return statusResponse(res.statusCode || 500, res.statusMessage, res)
+  }
 
-
-export function defaultHandler(ctx) {
   let body = ctx.body
-  const res = ctx.res
-  if (cannotRespond(res)) {
-    return
-  }
-  if (emptyStatuses[res.statusCode]) {
+
+  if (statuses.empty[res.statusCode]) {
     res._headers = {}
-    res.statusCode = res.statusCode || 204
     return res.end()
   }
+
   if (!body) {
+    //not found
     return statusResponse(res.statusCode, res.statusMessage, res)
   }
+
   if (typeof body === 'string') {
-    res.setHeader('Content-Type', 'text/' + (looksLikeHtmlRE.test(body) ? 'html' : 'plain'))
-    res.setHeader('Content-Length', Buffer.byteLength(body))
+    !hasContentType && ct(res, 'text/' + (looksLikeHtmlRE.test(body) ? 'html' : 'plain'))
+    cl(res, byteLength(body))
     return res.end(body)
   }
-  if (Buffer.isBuffer(body)) {
-    res.setHeader('Content-Type', 'application/octet-stream')
-    res.setHeader('Content-Length', body.length)
+  if (isBuffer(body)) {
+    !hasContentType && ct(res, 'application/octet-stream')
+    cl(res, body.length)
     return res.end(body)
   }
-  if (body instanceof Stream) {
-    res.setHeader('Content-Type', 'application/octet-stream')
-    //todo cleanup, headers
+  if ('function' === typeof body.pipe) {
+    !hasContentType && ct(res, 'application/octet-stream')
+    //TODO handle stream end, errors
     return body.pipe(res)
   }
   body = JSON.stringify(body)
-  res.setHeader('Content-Type', 'application/json')
-  res.setHeader('Content-Length', Buffer.byteLength(body))
+  ct(res, 'application/json')
+  cl(res, byteLength(body))
   res.end(body)
+}
+
+export default function (onError) {
+  return function defaultHandler (context, next) {
+    return next.then(null, error => {
+      context.hasError = context.error = error
+      return onError(context)
+    }).then(() => defaultHandler(context))
+  }
 }

@@ -1,47 +1,34 @@
 import { AppBuilder } from 'app-builder'
-import createEnvironment, { Context } from './context'
+import createContext, { Context } from './context'
 import { HttpServer} from './http-server'
-import { defaultHandler, defaultError } from './default'
+import createDefaultHandler  from './default'
 
-export default function () {
-  return new Server
+export default function (...args) {
+  return new Server(...args)
 }
 
-export class Server {
+export class Server extends AppBuilder {
 
-  constructor (webserver = new HttpServer, contextFactory = x => new Context(x)) {
-    this.builder = new AppBuilder
+  constructor (server = new HttpServer, contextFactory = createContext) {
+    super()
     this.createContext = contextFactory
-    this.webserver = webserver
-  }
-
-  use (mw) {
-    this.builder.use(mw)
-    return this
+    this.webserver = server
   }
 
   useDefault (onError = () => {}) {
-    this.onError = onError
-    return this
+    this.use(createDefaultHandler(onError))
   }
 
   build () {
-    const appFn = this.builder.build(),
-      errorHandler = this.onError
+    const requestHandler = super.build()
+
     return (req, res) => {
-      const context = this.createContext({req, res}),
-        waiter = appFn(context)
-      if (errorHandler) {
-        waiter.then(() => defaultHandler(context), error => {
-          errorHandler(context, error)
-          defaultError(context)
-        })
-      }
+      requestHandler(this.createContext({ req, res }))
     }
   }
 
   listen (...args) {
-    this.webserver.onRequest(this.build())
+    this.webserver.on('request', this.build())
     return this.webserver.listen(...args)
   }
 
