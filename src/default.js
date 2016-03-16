@@ -64,7 +64,7 @@ function defaultHandler (ctx) {
 
 export default function (onError) {
   return function defaultHandler (context, next) {
-    return next.then(null, error => {
+    return next().then(null, error => {
       context.hasError = context.error = error
       return onError(context)
     }).then(() => defaultHandler(context))
