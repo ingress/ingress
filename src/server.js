@@ -23,7 +23,7 @@ export class Server extends AppBuilder {
     const requestHandler = super.build()
 
     return (req, res) => {
-      requestHandler(this.createContext({ req, res }))
+      return requestHandler(this.createContext({ req, res }))
     }
   }
 
