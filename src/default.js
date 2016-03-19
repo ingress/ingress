@@ -16,12 +16,10 @@ function statusResponse (status, message, res) {
 
 function defaultHandler (ctx) {
   const res = ctx.res,
-    hasContentType = Boolean(res._headers && res._headers['content-type']),
-    canRespond = Boolean(res.socket && res.socket.writable && !res.headersSent)
+    hasContentType = Boolean(res._headers && res._headers['content-type'])
 
-  if (!canRespond) {
-    console.log('Cannot respond')
-    return
+  if (res.finished || res.headersSent || res.socket && !res.socket.writable) {
+    return //cannot respond
   }
 
   if (ctx.error) {
@@ -63,7 +61,6 @@ function defaultHandler (ctx) {
 export default function (onError) {
   return function defaultRequestHandler (context, next) {
     context.res.statusCode = 404
-
     return next().then(null, () => {
       context.error = error
       return onError(context)
