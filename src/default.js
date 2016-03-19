@@ -61,7 +61,7 @@ function defaultHandler (ctx) {
 export default function (onError) {
   return function defaultRequestHandler (context, next) {
     context.res.statusCode = 404
-    return next().then(null, () => {
+    return next().then(null, (error) => {
       context.error = error
       return onError(context)
     }).then(() => defaultHandler(context))
