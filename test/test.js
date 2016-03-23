@@ -10,6 +10,14 @@ function makeRequest (path) {
   )
 }
 
+function getResponse (res) {
+  return new Promise(function (resolve, reject) {
+    let data = ''
+    res.on('data', chunk => data = data + chunk)
+    res.on('end', () => resolve(data))
+  })
+}
+
 describe('Server', () => {
 
   let server
@@ -133,6 +141,8 @@ describe('Server', () => {
       await server.listen(port)
       const res = await makeRequest('/')
       expect(res.statusCode).to.equal(404)
+      const response = await getResponse(res)
+      expect(response).to.equal('Not Found')
     })
 
     it('should respond 500 when error is set', async () => {

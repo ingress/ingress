@@ -8,9 +8,9 @@ const looksLikeHtmlRE = /^\s*</,
 
 function statusResponse (status, message, res) {
   res.statusCode = status || 404
-  message = message || statuses[res.statusCode] || ''
+  res.statusMessage = message = message || statuses[res.statusCode] || ''
   ct(res, 'text/plain')
-  cl(res, Buffer.byteLength(message))
+  cl(res, message)
   res.end(message)
 }
 
@@ -18,7 +18,7 @@ function defaultHandler (ctx) {
   const res = ctx.res,
     hasContentType = Boolean(res._headers && res._headers['content-type'])
 
-  if (res.finished || res.headersSent || res.socket && !res.socket.writable) {
+  if (res.headersSent || res.socket && !res.socket.writable) {
     return //cannot respond
   }
 
