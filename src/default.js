@@ -2,7 +2,7 @@ import { Buffer } from 'buffer'
 import statuses from 'statuses'
 
 const looksLikeHtmlRE = /^\s*</,
-  cl = (res, value) => res.setHeader('Content-Length', Buffer.byteLength(value)),
+  cl = (res, length) => res.setHeader('Content-Length', length),
   ct = (res, value) => res.setHeader('Content-Type', value)
 
 
@@ -10,7 +10,7 @@ function statusResponse (status, message, res) {
   res.statusCode = status || 404
   res.statusMessage = message = message || statuses[res.statusCode] || ''
   ct(res, 'text/plain')
-  cl(res, message)
+  cl(res, Buffer.byteLength(message))
   res.end(message)
 }
 
@@ -39,12 +39,12 @@ function defaultHandler (ctx) {
 
   if (typeof body === 'string') {
     !hasContentType && ct(res, 'text/' + (looksLikeHtmlRE.test(body) ? 'html' : 'plain'))
-    cl(res, body)
+    cl(res, Buffer.byteLength(body))
     return res.end(body)
   }
   if (Buffer.isBuffer(body)) {
     !hasContentType && ct(res, 'application/octet-stream')
-    cl(res, body)
+    cl(res, body.length)
     return res.end(body)
   }
   if ('function' === typeof body.pipe) {
@@ -54,7 +54,7 @@ function defaultHandler (ctx) {
   }
   body = JSON.stringify(body)
   ct(res, 'application/json')
-  cl(res, body)
+  cl(res, Buffer.byteLength(body))
   res.end(body)
 }
 
