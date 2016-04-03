@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 import { Server, Context, HttpServer }  from '../src/server'
 import http from 'http'
+import statuses from 'statuses'
 
 const port = 8888;
 
@@ -152,7 +153,24 @@ describe('Server', () => {
       })
       await server.listen(port)
       const res = await makeRequest('/')
+
       expect(res.statusCode).to.equal(500)
+      expect(await getResponse(res)).to.equal(statuses[500])
+    })
+
+    it('should respond 500 with a body when set', async () => {
+      const expectedBody = 'some error stack or something'
+
+      server.use((ctx, next) => {
+        ctx.error = true
+        ctx.body = expectedBody
+        return next()
+      })
+      await server.listen(port)
+      const res = await makeRequest('/')
+
+      expect(res.statusCode).to.equal(500)
+      expect(await getResponse(res)).to.equal(expectedBody)
     })
 
     it('strip the headers on an empty response (code)', async () => {
@@ -166,10 +184,5 @@ describe('Server', () => {
       expect(Object.keys(res.headers)).to.eql(['date', 'connection'])
       expect(res.statusCode).to.equal(204)
     })
-
   })
-
-
-
 })
-
