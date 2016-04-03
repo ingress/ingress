@@ -6,12 +6,13 @@ const looksLikeHtmlRE = /^\s*</,
   ct = (res, value) => res.setHeader('Content-Type', value)
 
 
-function statusResponse (status, message, res) {
+function statusResponse (status, message, res, body) {
   res.statusCode = status || 404
   res.statusMessage = message = message || statuses[res.statusCode] || ''
+  body = body || message
   ct(res, 'text/plain')
-  cl(res, Buffer.byteLength(message))
-  res.end(message)
+  cl(res, Buffer.byteLength(body))
+  res.end(body)
 }
 
 function defaultHandler (ctx) {
@@ -22,11 +23,11 @@ function defaultHandler (ctx) {
     return //cannot respond
   }
 
-  if (ctx.error) {
-    return statusResponse(500, res.statusMessage, res)
-  }
-
   let body = ctx.body
+
+  if (ctx.error) {
+    return statusResponse(500, res.statusMessage, res, body)
+  }
 
   if (statuses.empty[res.statusCode]) {
     res._headers = {}
