@@ -1,6 +1,6 @@
 {
   "name": "server.app-builder",
-  "version": "4.0.6",
+  "version": "4.1.0",
   "description": "http server abstraction",
   "main": "lib/server.js",
   "files": [
