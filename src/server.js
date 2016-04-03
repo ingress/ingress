@@ -16,15 +16,13 @@ export class Server extends AppBuilder {
   }
 
   useDefault (onError = () => {}) {
-    this.use(createDefaultHandler(onError))
+    return this.use(createDefaultHandler(onError))
   }
 
   build () {
     const requestHandler = super.build()
 
-    return (req, res) => {
-      return requestHandler(this.createContext({ req, res }))
-    }
+    return (req, res) => requestHandler(this.createContext({ req, res }))
   }
 
   listen (...args) {
