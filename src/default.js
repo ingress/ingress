@@ -38,7 +38,7 @@ function defaultHandler (ctx) {
     return statusResponse(res.statusCode, res.statusMessage, res)
   }
 
-  if (typeof body === 'string') {
+  if ('string' === typeof body) {
     !hasContentType && ct(res, 'text/' + (looksLikeHtmlRE.test(body) ? 'html' : 'plain'))
     cl(res, Buffer.byteLength(body))
     return res.end(body)
