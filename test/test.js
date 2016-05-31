@@ -1,6 +1,6 @@
 import { expect } from 'chai'
-import { Server, Context, HttpServer }  from '../src/server'
-import http from 'http'
+import { Server, Context }  from '../src/server'
+import http, { Server as HttpServer } from 'http'
 import statuses from 'statuses'
 
 const port = 8888;
@@ -54,8 +54,9 @@ describe('Server', () => {
     it('calls close on underlying webserver implementation', () => {
       let called
       const close = server.webserver.close
-      server.webserver.close = function (){
+      server.webserver.close = function (res){
         called = true
+        res()
         return close.call(this)
       }
       server.close()

@@ -1,6 +1,6 @@
 import { AppBuilder } from 'app-builder'
 import createContext, { Context } from './context'
-import { HttpServer} from './http-server'
+import { Server as HttpServer } from 'http'
 import createDefaultHandler  from './default'
 
 export default function (...args) {
@@ -13,11 +13,22 @@ export class Server extends AppBuilder {
     super()
     this.createContext = contextFactory
     this.webserver = server
+    this.startup = []
   }
 
   useDefault (onError = () => {}) {
     return this.use(createDefaultHandler(onError))
   }
+
+  use (middlewareOrAddon) {
+    if ('function' === typeof middlewareOrAddon.register) {
+      middlewareOrAddon.register(this)
+    } else {
+      super.use(middlewareOrAddon)
+    }
+    return this
+  }
+
 
   build () {
     const requestHandler = super.build()
@@ -27,15 +38,17 @@ export class Server extends AppBuilder {
 
   listen (...args) {
     this.webserver.on('request', this.build())
-    return this.webserver.listen(...args)
+    return Promise.all(this.startup).then(() => {
+      this.startup.length = 0
+      return new Promise(res => this.webserver.listen(...[...args, res]))
+    })
   }
 
   close () {
-    return this.webserver.close()
+    return new Promise(res => this.webserver.close(res))
   }
 }
 
 export {
-  Context,
-  HttpServer
+  Context
 }
