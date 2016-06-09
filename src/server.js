@@ -23,9 +23,12 @@ export class Server extends AppBuilder {
   use (middlewareOrAddon) {
     if ('function' === typeof middlewareOrAddon.register) {
       middlewareOrAddon.register(this)
-    } else {
+    }
+
+    if ('function' === typeof middlewareOrAddon) {
       super.use(middlewareOrAddon)
     }
+
     return this
   }
 
