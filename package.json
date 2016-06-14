@@ -1,8 +1,12 @@
 {
   "name": "server.app-builder",
-  "version": "4.2.2",
+  "version": "4.2.3",
   "description": "http server abstraction",
   "main": "lib/server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/calebboyd/server.app-builder"
+  },
   "files": [
     "lib"
   ],
