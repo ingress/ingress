@@ -7,28 +7,28 @@ export {
   createAnnotationFactory
 }
 
-export interface IAnnotatedPropertyDescription {
+export interface AnnotatedPropertyDescription {
   name: string,
   classAnnotations: Array<any>,
   methodAnnotations: Array<any>
 }
 
-class Property implements IAnnotatedPropertyDescription {
+class PropertyDescription implements AnnotatedPropertyDescription {
   classAnnotations: Array<any> = [];
   methodAnnotations: Array<any> = [];
   constructor (public name: string) {}
 }
 
-function addClassAnnotation (property: IAnnotatedPropertyDescription, annotation: any) {
+function addClassAnnotation (property: AnnotatedPropertyDescription, annotation: any) {
   property.classAnnotations.push(annotation)
   return property
 }
-function addMethodAnnotation (property: IAnnotatedPropertyDescription, annotation: any) {
+function addMethodAnnotation (property: AnnotatedPropertyDescription, annotation: any) {
   property.methodAnnotations.push(annotation)
   return property
 }
 
-function collectPropertyAnnotations (property: IAnnotatedPropertyDescription, ctor: Function) {
+function collectPropertyAnnotations (property: AnnotatedPropertyDescription, ctor: Function) {
   const annotations = property.name in ctor.prototype
       ? getAnnotations(ctor.prototype, property.name)
       : []
@@ -39,17 +39,16 @@ function collectPropertyAnnotations (property: IAnnotatedPropertyDescription, ct
     )
 }
 
-export function reflectAnnotations (source: Function) {
-  const classMetadata = reflectClassProperties(source),
-    result: Array<IAnnotatedPropertyDescription> = []
+export function reflectAnnotations (source: Function): Array<AnnotatedPropertyDescription> {
+  const classMetadata = reflectClassProperties(source)
 
   return classMetadata.properties
     .reduce((properties, propertyName) => {
       properties.push(classMetadata.constructors
-        .reduceRight(collectPropertyAnnotations, new Property(propertyName))
+        .reduceRight(collectPropertyAnnotations, new PropertyDescription(propertyName))
       )
       return properties
-    }, result)
+    }, [])
 }
 
 export default reflectAnnotations
