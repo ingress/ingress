@@ -9,7 +9,9 @@
     "outDir": "lib"
   },
   "compileOnSave": true,
-  "exclude": [
-    "node_modules"
+  "files": [
+    "src/index.ts",
+    "src/annotations.ts",
+    "src/reflect-class.ts"
   ]
 }

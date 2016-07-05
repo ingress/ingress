@@ -51,3 +51,5 @@ export function reflectAnnotations (source: Function) {
       return properties
     }, result)
 }
+
+export default reflectAnnotations
