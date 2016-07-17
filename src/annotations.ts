@@ -11,7 +11,7 @@ export function setAnnotations (target: any, key?: string | symbol , annotations
   Reflect.defineMetadata(ANNOTATIONS, annotations || [], target, key)
 }
 
-export function createAnnotationFactory (Type: Function) {
+export function createAnnotationFactory (Type: Function): (...params: Array<any>) => (target: any, key?: string) => void {
   return function () {
     const annotationInstance = new (bind.apply(Type, arguments))
     return (target: any, key?: string) => {
