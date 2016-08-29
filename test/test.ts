@@ -1,29 +1,30 @@
 import { expect } from 'chai'
-import { Server, Context }  from '../src/server'
-import http, { Server as HttpServer } from 'http'
-import statuses from 'statuses'
+import { Buffer } from 'buffer'
+import { get, ServerResponse, IncomingMessage } from 'http'
+import { Server, Context, DefaultContext}  from '../lib/server'
+import * as statuses from 'statuses'
 
 const port = 8888;
 
-function makeRequest (path) {
+function makeRequest (path: string): Promise<IncomingMessage> {
   return new Promise((res,rej) =>
-    http.get(`http://localhost:${ port }${ path }` + path, res).on('error', rej)
+    get(`http://localhost:${ port }${ path }` + path, res).on('error', rej)
   )
 }
 
-function getResponse (res) {
+function getResponse (res: IncomingMessage) {
   return new Promise(function (resolve, reject) {
     let data = ''
-    res.on('data', chunk => data = data + chunk)
+    res.on('data', (chunk: Buffer) => data += chunk)
     res.on('end', () => resolve(data))
   })
 }
 
 describe('Server', () => {
 
-  let server
+  let server: Server<Context>
   beforeEach(() => {
-    server = new Server
+    server = new Server<Context>()
     server.use((ctx, next) => next())
   })
 
@@ -32,17 +33,13 @@ describe('Server', () => {
   })
 
   describe('listen', () => {
-    it('returns a promise, creates a server', async () => {
-      await server.listen(port)
-      expect(server.webserver).to.be.an.instanceOf(HttpServer)
-    })
-
     it('sets argument to a Context instance', async () => {
       let hasBeenCalled = false
       server.use(env => {
-        expect(env).to.be.an.instanceOf(Context)
+        expect(env).to.be.an.instanceOf(DefaultContext)
         hasBeenCalled = true
         env.res.end()
+        return Promise.resolve()
       })
       await server.listen(port)
       await makeRequest('/')
@@ -52,9 +49,9 @@ describe('Server', () => {
 
   describe('close', () => {
     it('calls close on underlying webserver implementation', () => {
-      let called
+      let called: boolean
       const close = server.webserver.close
-      server.webserver.close = function (res){
+      server.webserver.close = function (res: any){
         called = true
         res()
         return close.call(this)
@@ -71,7 +68,7 @@ describe('Server', () => {
     })
 
     it('should respond with json, when set on context body', async () => {
-      let length
+      let length: number
       server.use((ctx, next) => {
         ctx.body = {plain:'object'}
         length = JSON.stringify(ctx.body).length
@@ -84,7 +81,7 @@ describe('Server', () => {
     })
 
     it('should respond with octet-stream, when buffer is set on context body', async () => {
-      let length
+      let length: number
       server.use((ctx, next) => {
         ctx.body = new Buffer(JSON.stringify({plain:'object'}))
         length = ctx.body.length
@@ -97,7 +94,7 @@ describe('Server', () => {
     })
 
     it('should respond with html, when set on context body', async () => {
-      let length
+      let length: number
       server.use((ctx, next) => {
         ctx.body = '<div>I\'m HTML!</div>'
         length = ctx.body.length
@@ -110,7 +107,7 @@ describe('Server', () => {
     })
 
     it('should respond with text, when set on context body', async () => {
-      let length
+      let length: number
       server.use((ctx, next) => {
         ctx.body = 'just text'
         length = ctx.body.length
@@ -123,7 +120,7 @@ describe('Server', () => {
     })
 
     it('should not respond when the request has already been handled', async () => {
-      let length
+      let length: number
       server.use((ctx, next) => {
         const text = 'ended!'
         length = text.length
@@ -149,7 +146,7 @@ describe('Server', () => {
 
     it('should respond 500 when error is set', async () => {
       server.use((ctx, next) => {
-        ctx.error = true
+        ctx.error = new Error()
         return next()
       })
       await server.listen(port)
@@ -163,7 +160,7 @@ describe('Server', () => {
       const expectedBody = 'some error stack or something'
 
       server.use((ctx, next) => {
-        ctx.error = true
+        ctx.error = new Error()
         ctx.body = expectedBody
         return next()
       })
@@ -187,3 +184,4 @@ describe('Server', () => {
     })
   })
 })
+

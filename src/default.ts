@@ -1,12 +1,14 @@
 import { Buffer } from 'buffer'
-import statuses from 'statuses'
+import { Middleware } from 'app-builder'
+import { Context } from './context'
+import * as statuses from 'statuses'
+import { ServerResponse } from 'http'
 
 const looksLikeHtmlRE = /^\s*</,
-  cl = (res, length) => res.setHeader('Content-Length', length),
-  ct = (res, value) => res.setHeader('Content-Type', value)
+  cl = (res: ServerResponse, length: string | number) => res.setHeader('Content-Length', length.toString()),
+  ct = (res: ServerResponse, value: string) => res.setHeader('Content-Type', value)
 
-
-function statusResponse (status, message, res, body) {
+function statusResponse (status: number, message: string, res: ServerResponse, body?: string) {
   res.statusCode = status || 404
   res.statusMessage = message = message || statuses[res.statusCode] || ''
   body = body || message
@@ -15,8 +17,8 @@ function statusResponse (status, message, res, body) {
   res.end(body)
 }
 
-function defaultHandler (ctx) {
-  const res = ctx.res,
+function defaultHandler (ctx: Context) {
+  const res = <any>ctx.res,
     hasContentType = Boolean(res._headers && res._headers['content-type'])
 
   if (res.headersSent || res.socket && !res.socket.writable) {
@@ -59,16 +61,16 @@ function defaultHandler (ctx) {
   res.end(body)
 }
 
-export default function (onError) {
-  function defaultRequestHandler (context, next) {
+export default function <T extends Context> (onError: Middleware<T>) {
+  function defaultRequestHandler (context: T, next: Middleware<T>) {
     context.res.statusCode = 404
-    return next().then(null, (error) => {
+    return next().then(null, (error: Error) => {
       context.error = error
       return onError(context)
     }).then(() => defaultHandler(context))
   }
 
-  defaultRequestHandler.register = onError.register
+  (<any>defaultRequestHandler).register = (<any>onError).register
 
   return defaultRequestHandler
 }
