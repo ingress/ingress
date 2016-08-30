@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import { reflectClassProperties } from '../src/reflect-class'
 import { createAnnotationFactory, getAnnotations } from '../src/annotations'
 import { reflectAnnotations } from '../src/index'
