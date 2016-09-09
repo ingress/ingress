@@ -1,11 +1,11 @@
 {
-  "name": "server.app-builder",
-  "version": "5.0.1",
+  "name": "ingress",
+  "version": "2.0.2",
   "description": "http server abstraction",
   "main": "lib/server.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/calebboyd/server.app-builder"
+    "url": "https://github.com/calebboyd/ingress"
   },
   "typings": "lib/server.d.ts",
   "files": [
@@ -13,8 +13,8 @@
   ],
   "scripts": {
     "build": "tsc --declaration",
-    "prepublish": "npm test",
-    "test": "npm run build && cross-env TS_NODE_PROJECT=test mocha"
+    "prepublish": "npm run build && npm test",
+    "test": "cross-env TS_NODE_PROJECT=test mocha"
   },
   "engines": {
     "node": ">=4.0.0"
