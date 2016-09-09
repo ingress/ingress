@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { Buffer } from 'buffer'
 import { get, ServerResponse, IncomingMessage } from 'http'
-import { Server, Context, DefaultContext}  from '../lib/server'
+import { Server, Context, DefaultContext}  from '../src/server'
 import * as statuses from 'statuses'
 
 const port = 8888;
