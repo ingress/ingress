@@ -1,21 +1,31 @@
 import { AppBuilder, Middleware } from 'app-builder'
-import createContext, { Context, DefaultContext, RequestContext} from './context'
+import createContext, { DefaultContext, Context, RequestContext} from './context'
 import { Server as HttpServer,
   createServer,
   IncomingMessage,
   ServerResponse
 } from 'http'
-import createDefaultHandler  from './default'
+import { DefaultMiddleware } from './default'
+
+export {
+  DefaultContext,
+  Context,
+  DefaultMiddleware
+}
+
+declare global {
+  interface Promise<T> extends PromiseLike<T> {}
+}
 
 export default function(server?: HttpServer) {
-  return new Server<Context>(server, createContext)
+  return new Server<DefaultContext>(server, createContext)
 }
 
 export interface Addon<T> extends Middleware<T> {
-  register?<T extends Context>(server: Server<T>): any
+  register?<T extends DefaultContext>(server: Server<T>): any
 }
 
-export class Server<T extends Context> {
+export class Server<T extends DefaultContext> {
   private _appBuilder: AppBuilder<T>
   private _startupPromises: Array<Promise<any>>
   private _createContext: <T>(requestContext: RequestContext) => T
@@ -30,7 +40,7 @@ export class Server<T extends Context> {
    * @deprecated
    */
   useDefault (onError = () => Promise.resolve()) {
-    return this.use(createDefaultHandler(onError))
+    return this.use(new DefaultMiddleware(onError).middleware)
   }
 
   use (middlewareOrAddon: Addon<T>) {
@@ -62,9 +72,4 @@ export class Server<T extends Context> {
   close () {
     return new Promise(res => this.webserver.close(res))
   }
-}
-
-export {
-  Context,
-  DefaultContext
 }

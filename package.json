@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "http server abstraction",
   "main": "lib/server.js",
   "repository": {
@@ -12,8 +12,7 @@
     "lib"
   ],
   "scripts": {
-    "build": "tsc --declaration",
-    "prepublish": "npm run build && npm test",
+    "prepublish": "npm test",
     "test": "cross-env TS_NODE_PROJECT=test mocha"
   },
   "engines": {
@@ -27,7 +26,6 @@
   "license": "MIT",
   "devDependencies": {
     "@types/chai": "^3.4.31",
-    "@types/es6-promise": "0.0.30",
     "@types/mocha": "^2.2.30",
     "@types/node": "^6.0.38",
     "@types/statuses": "^1.2.27",

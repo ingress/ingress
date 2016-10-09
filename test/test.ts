@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { Buffer } from 'buffer'
 import { get, ServerResponse, IncomingMessage } from 'http'
-import { Server, Context, DefaultContext}  from '../src/server'
+import { Server, DefaultContext, Context}  from '../src/server'
 import * as statuses from 'statuses'
 
 const port = 8888;
@@ -22,9 +22,9 @@ function getResponse (res: IncomingMessage) {
 
 describe('Server', () => {
 
-  let server: Server<Context>
+  let server: Server<DefaultContext>
   beforeEach(() => {
-    server = new Server<Context>()
+    server = new Server<DefaultContext>()
     server.use((ctx, next) => next())
   })
 
@@ -36,7 +36,7 @@ describe('Server', () => {
     it('sets argument to a Context instance', async () => {
       let hasBeenCalled = false
       server.use(env => {
-        expect(env).to.be.an.instanceOf(DefaultContext)
+        expect(env).to.be.an.instanceOf(Context)
         hasBeenCalled = true
         env.res.end()
         return Promise.resolve()
