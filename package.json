@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "http server abstraction",
   "main": "lib/server.js",
   "repository": {
