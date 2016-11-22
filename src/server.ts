@@ -36,11 +36,12 @@ export class Server<T extends DefaultContext> {
     this.webserver = server
     this._startupPromises = []
   }
+
   /**
    * @deprecated
    */
-  useDefault (onError = () => Promise.resolve()) {
-    return this.use(new DefaultMiddleware(onError).middleware)
+  useDefault (onError?: (ctx: T) => any) {
+    return this.use(new DefaultMiddleware({ onError }).middleware)
   }
 
   use (middlewareOrAddon: Addon<T>) {
