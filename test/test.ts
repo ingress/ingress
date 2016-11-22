@@ -1,15 +1,17 @@
 import { expect } from 'chai'
 import { Buffer } from 'buffer'
-import { get, ServerResponse, IncomingMessage } from 'http'
+import * as fs from 'fs'
+import { get, request, ServerResponse, IncomingMessage } from 'http'
 import { Server, DefaultContext, Context}  from '../src/server'
 import * as statuses from 'statuses'
 
 const port = 8888;
 
-function makeRequest (path: string): Promise<IncomingMessage> {
-  return new Promise((res,rej) =>
-    get(`http://localhost:${ port }${ path }` + path, res).on('error', rej)
-  )
+function makeRequest (path: string, method: string = 'GET', body?: string): Promise<IncomingMessage> {
+  return new Promise((res,rej) => {
+    const req = request({ port, path, method}, res).on('error', rej)
+    req.end(body)
+  })
 }
 
 function getResponse (res: IncomingMessage) {
@@ -181,6 +183,38 @@ describe('Server', () => {
       const res = await makeRequest('/')
       expect(Object.keys(res.headers)).to.eql(['date', 'connection'])
       expect(res.statusCode).to.equal(204)
+    })
+
+    it('not return body result for head requests', async () => {
+      const expectedBody = ''
+      let expectedLength = 0
+
+      server.use((ctx, next) => {
+        ctx.res.statusCode = 200
+        expectedLength = Buffer.byteLength(JSON.stringify({test:'obj'}))
+        ctx.body = { test: 'obj' }
+        return next()
+      })
+      await server.listen(port)
+      const res = await makeRequest('/', 'HEAD')
+      expect(await getResponse(res)).to.equal(expectedBody)
+      expect(+res.headers['content-length']).to.equal(expectedLength)
+      expect(res.statusCode).to.equal(200)
+    })
+
+    it('should return that which is streamed', async () => {
+      const expectedBody = fs.readFileSync('./package.json').toString()
+
+      server.use((ctx, next) => {
+        ctx.res.statusCode = 200
+        ctx.body = fs.createReadStream('./package.json')
+        return next()
+      })
+      await server.listen(port)
+      const res = await makeRequest('/')
+      expect(res.headers['content-type']).to.equal('application/octet-stream')
+      expect(await getResponse(res)).to.equal(expectedBody)
+      expect(res.statusCode).to.equal(200)
     })
   })
 })
