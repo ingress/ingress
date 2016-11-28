@@ -1,31 +1,32 @@
 import { IncomingMessage, ServerResponse } from 'http'
 
-export type RequestContext = { req: IncomingMessage, res: ServerResponse }
-
-export default function <T extends Context> ({req, res }: RequestContext): Context {
+export default function createContext ({ req, res }: { req: IncomingMessage, res: ServerResponse }): Context {
   return new Context(req, res)
 }
 
-export interface DefaultContext {
-  req: IncomingMessage
-  res: ServerResponse
-  error: Error
+export interface DefaultContext<T> {
+  req: IncomingMessage & { context: T }
+  res: ServerResponse & { context: T }
+  error: Error | null | undefined
   body: any
-
-  handleError?: ((error: Error) => any) | void
-  handleResponse?: () => void
+  handleError?: ((error?: Error) => any) | any
+  handleResponse?: () => any
 }
 
-export class Context implements DefaultContext {
-  public req: IncomingMessage
-  public res: ServerResponse
-  public error: Error
+export abstract class BaseContext<T extends DefaultContext<T>> implements DefaultContext<T> {
+  public req: IncomingMessage & { context: T }
+  public res: ServerResponse & { context: T }
+  public error: Error | null | undefined
   public body: any
-  constructor (req: IncomingMessage, res: ServerResponse) {
-    this.req = req
-    this.res = res
+  constructor (request: IncomingMessage, response: ServerResponse) {
+    (<any>request).context = this;
+    (<any>response).context = this
+    this.req = <IncomingMessage & { context: T }>request
+    this.res = <ServerResponse & { context: T }>response
   }
 
   handleError () {}
   handleResponse () {}
 }
+
+export class Context extends BaseContext<Context>{}

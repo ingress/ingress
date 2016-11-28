@@ -15,12 +15,12 @@ const
       && stream.on('error', handler)
   }
 
-export class DefaultMiddleware {
+export class DefaultMiddleware<T extends DefaultContext<T>> {
 
-  private onError: (context?: DefaultContext) => any
+  private onError: (context?: DefaultContext<T>) => any
 
   constructor ({ onError }: {
-    onError?: (context?: DefaultContext) => any
+    onError?: (context?: DefaultContext<T>) => any
   } = {}) {
     this.onError = onError || function () {}
   }
@@ -42,7 +42,7 @@ export class DefaultMiddleware {
     res.end(body)
   }
 
-  private _handleResponse (ctx: DefaultContext, handleError: (error:Error) => any) {
+  private _handleResponse (ctx: DefaultContext<T>, handleError: (error:Error) => any) {
     const res = <any>ctx.res,
       hasContentType = Boolean(res._headers && res._headers['content-type'])
 
@@ -65,11 +65,11 @@ export class DefaultMiddleware {
       return this._statusResponse(res.statusCode, res.statusMessage, res)
     }
 
-    // if (ctx.req.method === 'HEAD') {
-    //   !isString(body) && !Buffer.isBuffer(body) && !isStreamLike(body)
-    //     && this._contentLength(res, Buffer.byteLength(JSON.stringify(body)))
-    //   return res.end()
-    // }
+    if (ctx.req.method === 'HEAD') {
+      !isString(body) && !Buffer.isBuffer(body) && !isStreamLike(body)
+        && this._contentLength(res, Buffer.byteLength(JSON.stringify(body)))
+      return res.end()
+    }
 
     if (isString(body)) {
       !hasContentType && this._contentType(res, 'text/' + (looksLikeHtmlRE.test(body) ? 'html' : 'plain'))
@@ -99,17 +99,20 @@ export class DefaultMiddleware {
   get middleware () {
     const onError = this.onError
 
-    return (context: DefaultContext, next: () => Promise<any>) => {
+    return (context: DefaultContext<T>, next: () => Promise<any>) => {
       const
-        handleError = (error: Error) => {
-          context.error = error
-          return onError(context)
+        handleError = (error?: Error) => {
+          if (error) {
+            context.error = error
+            return onError(context)
+          }
         },
         handleResponse = () => this._handleResponse(context, handleError)
 
       context.handleError = handleError
       context.handleResponse = handleResponse
       context.res.statusCode = 404
+      onFinished(context.req, handleError)
       return next().catch(handleError).then(handleResponse)
     }
   }

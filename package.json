@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "2.2.1",
+  "version": "3.0.0",
   "description": "http server abstraction",
   "main": "lib/server.js",
   "repository": {
@@ -12,8 +12,9 @@
     "lib"
   ],
   "scripts": {
+    "lint": "tslint 'src/**'",
     "prepublish": "npm test",
-    "test": "cross-env TS_NODE_PROJECT=test mocha"
+    "test": "npm run lint && cross-env TS_NODE_PROJECT=test mocha"
   },
   "engines": {
     "node": ">=4.0.0"

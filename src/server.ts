@@ -1,56 +1,57 @@
 import { AppBuilder, Middleware } from 'app-builder'
-import createContext, { DefaultContext, Context, RequestContext} from './context'
+import createContext, { DefaultContext } from './context'
+import { DefaultMiddleware } from './default'
 import { Server as HttpServer,
   createServer,
   IncomingMessage,
   ServerResponse
 } from 'http'
-import { DefaultMiddleware } from './default'
 
-export {
-  DefaultContext,
-  Context,
-  DefaultMiddleware
+export interface Addon<T extends DefaultContext<T>> {
+  register?(server: Server<T>): any
 }
 
-declare global {
-  interface Promise<T> extends PromiseLike<T> {}
+export interface MiddlewareAddon<T extends DefaultContext<T>> extends Middleware<T> {
+  register?(server: Server<T>): any
 }
 
-export default function(server?: HttpServer) {
-  return new Server<DefaultContext>(server, createContext)
+export interface MiddlewareOptions<T extends DefaultContext<T>> {
+  middleware?: Middleware<T>
 }
 
-export interface Addon<T> extends Middleware<T> {
-  register?<T extends DefaultContext>(server: Server<T>): any
+export interface ServerOptions<T> {
+  server?: HttpServer,
+  contextFactory?: <T>({ req, res }: { req: IncomingMessage, res: ServerResponse}) => T
 }
 
-export class Server<T extends DefaultContext> {
+export default function ingress<T extends DefaultContext<T>> (options?: ServerOptions<T>) {
+  return new Server<T>(options)
+}
+
+export class Server<T extends DefaultContext<T>> {
   private _appBuilder: AppBuilder<T>
   private _startupPromises: Array<Promise<any>>
-  private _createContext: <T>(requestContext: RequestContext) => T
+  private _createContext: <T>({ req, res }: { req: IncomingMessage, res: ServerResponse}) => T
   public webserver: HttpServer
-  constructor (server = createServer(), contextFactory = createContext) {
+
+  constructor ({ server = createServer(), contextFactory = createContext }: ServerOptions<T> = {}) {
     this._appBuilder = new AppBuilder<T>()
     this._createContext = contextFactory
-    this.webserver = server
     this._startupPromises = []
+    this.webserver = server
   }
 
-  /**
-   * @deprecated
-   */
-  useDefault (onError?: (ctx: T) => any) {
-    return this.use(new DefaultMiddleware({ onError }).middleware)
-  }
-
-  use (middlewareOrAddon: Addon<T>) {
-    if ('function' === typeof middlewareOrAddon.register) {
-      this._startupPromises.push(middlewareOrAddon.register(this))
+  use (addon: MiddlewareOptions<T> | Addon<T> | MiddlewareAddon<T>) {
+    if ('middleware' in addon) {
+      this.use((<MiddlewareOptions<T>>addon).middleware)
     }
 
-    if ('function' === typeof middlewareOrAddon) {
-      this._appBuilder.use(middlewareOrAddon)
+    if ('register' in addon) {
+      this._startupPromises.push((<Addon<T>>addon).register(this))
+    }
+
+    if ('function' === typeof addon) {
+      this._appBuilder.use(addon)
     }
 
     return this
@@ -74,3 +75,11 @@ export class Server<T extends DefaultContext> {
     return new Promise(res => this.webserver.close(res))
   }
 }
+
+export {
+  createContext,
+  DefaultMiddleware,
+  Server as Ingress
+}
+
+export * from './context'
