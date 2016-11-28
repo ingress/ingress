@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { Buffer } from 'buffer'
 import * as fs from 'fs'
 import { get, request, ServerResponse, IncomingMessage } from 'http'
-import { Server, DefaultContext, Context}  from '../src/server'
+import { Server, Context, DefaultMiddleware }  from '../src/server'
 import * as statuses from 'statuses'
 
 const port = 8888;
@@ -24,9 +24,11 @@ function getResponse (res: IncomingMessage) {
 
 describe('Server', () => {
 
-  let server: Server<DefaultContext>
+  let server: Server<Context>
   beforeEach(() => {
-    server = new Server<DefaultContext>()
+    server = new Server<Context>({
+      contextFactory: ({ req, res }: { req: IncomingMessage, res: ServerResponse }) => new Context(req, res)
+    })
     server.use((ctx, next) => next())
   })
 
@@ -37,10 +39,11 @@ describe('Server', () => {
   describe('listen', () => {
     it('sets argument to a Context instance', async () => {
       let hasBeenCalled = false
-      server.use(env => {
-        expect(env).to.be.an.instanceOf(Context)
+      server.use(ctx => {
+        expect(ctx.req.context).to.equal(ctx)
+        expect(ctx.res.context).to.equal(ctx)
         hasBeenCalled = true
-        env.res.end()
+        ctx.res.end()
         return Promise.resolve()
       })
       await server.listen(port)
@@ -63,10 +66,10 @@ describe('Server', () => {
     })
   })
 
-  describe('useDefault', () => {
+  describe('DefaultMiddleware', () => {
 
     beforeEach(() => {
-      server.useDefault()
+      server.use(new DefaultMiddleware<Context>())
     })
 
     it('should respond with json, when set on context body', async () => {
@@ -185,7 +188,7 @@ describe('Server', () => {
       expect(res.statusCode).to.equal(204)
     })
 
-    it('not return body result for head requests', async () => {
+    it('not return body result for head requests (cannot test with node native client)', async () => {
       const expectedBody = ''
       let expectedLength = 0
 
