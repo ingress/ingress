@@ -4,9 +4,17 @@ export default function createContext ({ req, res }: { req: IncomingMessage, res
   return new Context(req, res)
 }
 
+export interface Request<T> extends IncomingMessage {
+  context: T
+}
+
+export interface Response<T> extends ServerResponse {
+  context: T
+}
+
 export interface DefaultContext<T> {
-  req: IncomingMessage & { context: T }
-  res: ServerResponse & { context: T }
+  req: Request<T>
+  res: Response<T>
   error: Error | null | undefined
   body: any
   handleError?: ((error?: Error) => any) | any
@@ -14,15 +22,15 @@ export interface DefaultContext<T> {
 }
 
 export abstract class BaseContext<T extends DefaultContext<T>> implements DefaultContext<T> {
-  public req: IncomingMessage & { context: T }
-  public res: ServerResponse & { context: T }
+  public req: Request<T>
+  public res: Response<T>
   public error: Error | null | undefined
   public body: any
   constructor (request: IncomingMessage, response: ServerResponse) {
     (<any>request).context = this;
     (<any>response).context = this
-    this.req = <IncomingMessage & { context: T }>request
-    this.res = <ServerResponse & { context: T }>response
+    this.req = <Request<T>>request
+    this.res = <Response<T>>response
   }
 
   handleError () {}

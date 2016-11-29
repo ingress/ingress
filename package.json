@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "3.0.0-beta1",
+  "version": "3.0.0-beta2",
   "description": "http server abstraction",
   "main": "lib/server.js",
   "repository": {
