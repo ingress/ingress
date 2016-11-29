@@ -71,7 +71,7 @@ app
 
 #### handleError?: (error?: Error) => any | any
 
-#### handleError?: () => any
+#### handleResponse?: () => any
 
 
 The `context` argument passed to the middleware functions includes `req` and `res` properties. Which are instances of [http.IncomingMessage] and [http.ServerResponse] respectively.
