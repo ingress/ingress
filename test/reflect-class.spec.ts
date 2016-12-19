@@ -45,7 +45,7 @@ describe('reflect-annotations', () => {
       expect(data.source).to.equal(One)
     })
 
-    it('should handle odd hierarchys?', () => {
+    it('should handle odd hierarchies?', () => {
       const data = reflectClassProperties(Three)
       expect(data.source).to.equal(Three)
       expect(data.properties.sort()).to.eql(['three', 'threeb' , 'two', 'towa', 'twob', 'one', 'onea'].sort())
