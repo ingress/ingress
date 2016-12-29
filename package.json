@@ -1,0 +1,43 @@
+{
+  "name": "di",
+  "version": "1.0.0-beta.1",
+  "description": "Server-side dependency injection for ingress",
+  "main": "lib/src/index.js",
+  "files": [
+    "lib/src"
+  ],
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ingress/di.git"
+  },
+  "keywords": [
+    "server",
+    "side",
+    "dependency",
+    "injection"
+  ],
+  "author": "Caleb Boyd",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ingress/di/issues"
+  },
+  "homepage": "https://github.com/ingress/di#readme",
+  "peerDependencies": {
+    "reflect-metadata": "^0.1.9"
+  },
+  "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/mocha": "^2.2.35",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "reflect-metadata": "^0.1.9",
+    "ts-node": "^1.7.3",
+    "typescript": "^2.1.4"
+  },
+  "dependencies": {
+    "angular.di": "^2.4.1"
+  }
+}
