@@ -1,5 +1,5 @@
 import { DefaultContext } from './context'
-import * as statuses from 'statuses'
+import { StatusCode } from './status-code'
 import { ServerResponse } from 'http'
 import { Buffer } from 'buffer'
 import { Stream } from 'stream'
@@ -14,6 +14,8 @@ const
     stream.listeners('error').indexOf(handler) === -1
       && stream.on('error', handler)
   }
+
+export * from './status-code'
 
 export class DefaultMiddleware<T extends DefaultContext<T>> {
 
@@ -35,7 +37,7 @@ export class DefaultMiddleware<T extends DefaultContext<T>> {
 
   private _statusResponse (status: number, message: string, res: ServerResponse, body?: string) {
     res.statusCode = status || 404
-    res.statusMessage = message = message || statuses[res.statusCode] || ''
+    res.statusMessage = message = message || StatusCode[res.statusCode] || ''
     body = body || message
     this._contentType(res, 'text/plain')
     this._contentLength(res, Buffer.byteLength(body))
@@ -56,7 +58,7 @@ export class DefaultMiddleware<T extends DefaultContext<T>> {
       return this._statusResponse((<any>ctx.error).code || 500, res.statusMessage, res, body)
     }
 
-    if (statuses.empty[res.statusCode]) {
+    if (StatusCode.Empty[res.statusCode]) {
       res._headers = {}
       return res.end()
     }

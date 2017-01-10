@@ -8,6 +8,7 @@ import { Server as HttpServer,
 } from 'http'
 
 export interface Addon<T extends DefaultContext<T>> {
+  middleware?: Middleware<T>
   register?(server: Server<T>): any
 }
 
@@ -15,9 +16,7 @@ export interface MiddlewareAddon<T extends DefaultContext<T>> extends Middleware
   register?(server: Server<T>): any
 }
 
-export interface MiddlewareOptions<T extends DefaultContext<T>> {
-  middleware?: Middleware<T>
-}
+export type Usable<T extends DefaultContext<T>> = MiddlewareAddon<T> | Addon<T>
 
 export interface ServerOptions<T> {
   server?: HttpServer,
@@ -30,24 +29,24 @@ export default function ingress<T extends DefaultContext<T>> (options?: ServerOp
 
 export class Server<T extends DefaultContext<T>> {
   private _appBuilder: AppBuilder<T>
-  private _startupPromises: Array<Promise<any>>
+  private _starting: Array<Promise<any>>
   private _createContext: <T>({ req, res }: { req: IncomingMessage, res: ServerResponse}) => T
   public webserver: HttpServer
 
   constructor ({ server = createServer(), contextFactory = createContext }: ServerOptions<T> = {}) {
     this._appBuilder = new AppBuilder<T>()
     this._createContext = contextFactory
-    this._startupPromises = []
+    this._starting = []
     this.webserver = server
   }
 
-  use (addon: MiddlewareOptions<T> | Addon<T> | MiddlewareAddon<T>) {
+  use (addon: Usable<T>) {
     if ('middleware' in addon) {
-      this.use((<MiddlewareOptions<T>>addon).middleware)
+      this.use((addon as Addon<T>).middleware)
     }
 
     if ('register' in addon) {
-      this._startupPromises.push((<Addon<T>>addon).register(this))
+      this._starting.push((addon as Addon<T>).register(this))
     }
 
     if ('function' === typeof addon) {
@@ -65,8 +64,8 @@ export class Server<T extends DefaultContext<T>> {
 
   listen (...args: Array<any>) {
     this.webserver.on('request', this.build())
-    return Promise.all(this._startupPromises).then(() => {
-      this._startupPromises.length = 0
+    return Promise.all(this._starting).then(() => {
+      this._starting.length = 0
       return new Promise(res => (<any>this.webserver).listen(...[...args, res]))
     })
   }
