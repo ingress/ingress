@@ -35,7 +35,7 @@
     "no-use-before-declare": true,
     "handle-callback-err": true,
     "brace-style": [true,"1tbs"],
-    "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],
+    "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore", "allow-pascal-case"],
     "class-name": true,
     "indent": [true, "spaces"],
     "no-consecutive-blank-lines": [true, 1],

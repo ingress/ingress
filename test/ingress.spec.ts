@@ -2,8 +2,8 @@ import { expect } from 'chai'
 import { Buffer } from 'buffer'
 import * as fs from 'fs'
 import { get, request, ServerResponse, IncomingMessage } from 'http'
-import { Server, Context, DefaultMiddleware }  from '../src/server'
-import * as statuses from 'statuses'
+import { Server, Context, DefaultMiddleware }  from '../src'
+import { StatusCode } from '../src/status-code'
 
 const port = 8888;
 
@@ -156,9 +156,8 @@ describe('Server', () => {
       })
       await server.listen(port)
       const res = await makeRequest('/')
-
       expect(res.statusCode).to.equal(500)
-      expect(await getResponse(res)).to.equal(statuses[500])
+      expect(await getResponse(res)).to.equal('Internal Server Error')
     })
 
     it('should respond 500 with a body when set', async () => {
