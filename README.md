@@ -1,30 +1,32 @@
-# ingress
+# @ingress/core
 
-install: `npm i ingress`
+install: `npm i @ingress/core`
 
 A small abstraction around the [http.Server] class that uses [promise-based middleware]
 
-If you use javascript, just ignore the type annotations in the following example.
-
 ```javascript
-import ingress, { Context, DefaultMiddleware } from 'ingress'
+import ingress, { DefaultMiddleware } from 'ingress'
 
-const app = ingress<Context>()
+const app = ingress(),
+  defaultMiddleware = new DefaultMiddleware({
+    onError: ({ error }) => console.log(error)
+  })
 
-app
-.use(new DefaultMiddleware<Context>({
-  onError (context) {
-    console.log(context.error)
-  }
-}))
-.use((context, next) => {
-  context.body = "Hello World"
-  return next()
-})
-.listen(8080).then(() => console.log('Listening on port 8080'))
+app.use(defaultMiddleware)
+  .use((context, next) => {
+    context.body = 'Hello World'
+    return next()
+  })
+  .listen(8080)
+  .then(() => console.log('Listening on port 8080'))
 ```
 
-## Server\<T extends DefaultContext\<T\>\> (options?: ServerOptions): Class
+Ingress Core provides a `DefaultMiddleware` export. The middleware contsructor accepts an options argument with an `onError` handler which
+is called whenever an error occurs during a request. Additionally, setting the `context.body` property to one of
+the following types `String | Buffer | Stream | Object` will provide best guess headers and content length responses.
+
+
+## Ingress\<T extends DefaultContext\<T\>\> (options?: ServerOptions): Class
 
 - **ServerOptions\<T\>** Object Interface:
   - **server?: http.Server**
@@ -38,64 +40,51 @@ app
 #### listen (...listenArguments): Promise\<void\>
 - The listen method takes the same arguments as the `net.Server.prototype.listen` method except it returns a promise, in lieu of accepting a callback.
 
-#### use (addon: MiddlewareAddon\<T\> | Addon\<T\> | MiddlewareOptions\<T\>): Server\<T\>
+#### use (addon: Usable\<T\>): Server\<T\>
 
-- **MiddlewareAddon\<T\>** Function Interface:
+- **Usable\<T\>** Function & Object Interface:
   - **(context: T, next: () => Promise\<void\>): any**
   - **register?(server: Server\<T\>): Promise\<void\>**
-    - Optionally register a server addon. The resulting promise is waited upon, and resolved before binding the server to a port (`listen`)
-
-- **Addon\<T\>** Object Interface:
-  - **register (server: Server\<T\>): Promise\<void\>**
-    - Register a server addon. The resulting promise is waited upon, and resolved before binding the server to a port (`listen`)
-
-- **MiddlewareOptions\<T\>** Object Interface:
+    - Optionally register a server addon. The resulting promise is waited upon, and resolved before binding the server to a port after `listen` is called
   - **middleware: Middleware\<T\>**
-    - An object that exposes a bound (dereferencable) middleware function
-
+    - de-referencable middleware function property
 
 #### close (): Promise\<void\>
-- Shudown the server.
+  - Shudown the server.
+
+#### build (): Promise\<void\>
+  - get a callback made up of all middleware, suitble for use as a server request handler
 
 ## DefaultContext\<T\>: Object Interface
-- Baseclass implementation: **BaseContext\<T\>**. Implementation: **Context** (BaseContext\<Context\>),
+  - Implemented with: **Context** (BaseContext\<Context\>) - factory: createContext,
 
-#### req: IncomingMessage & { context: T }
+#### req: Request\<T\>
+  - [IncomingMessage](https://nodejs.org/api/http.html#http_class_http_incomingmessage) & { context: T }
 
-#### res: ServerResponse & { context: T }
+#### res: Response\<T\>
+  - [ServerResponse](https://nodejs.org/api/http.html#http_class_http_serverresponse) & { context: T }
 
 #### error: Error | null | undefined
 
-#### body: any
-- Response body content
+#### body: String | Buffer | Stream | Object
+  - Response body content
 
 #### handleError?: (error?: Error) => any | any
 
 #### handleResponse?: () => any
 
-
-The `context` argument passed to the middleware functions includes `req` and `res` properties. Which are instances of [http.IncomingMessage] and [http.ServerResponse] respectively.
-The `req` and `res` properties also have a `.context` property, a (circular) reference to the primary context object. The argument can be modified arbitrarily by the middleware functions and is created per request.
-
 Ingress has the following exports
-- createServer (default)
-- Server
-- Ingress (Server alias)
+- Ingress\<T\> (alias: Server, factory: default export)
 - Context
 - createContext
-- BaseContext\<T\>
 - DefaultMiddleware\<T\>
 
 Additionally, the necessary TypeScript interfaces are exposed.
 
 #### Supported Middleware
-- [di.middleware](https://github.com/calebboyd/di.middleware)
-- [router.middleware](https://github.com/calebboyd/router.middleware)
+- [di](https://github.com/ingress/di)
+- [router](https://github.com/ingress/router)
 
-
-
-[http.IncomingMessage]: https://nodejs.org/api/http.html#http_class_http_incomingmessage
-[http.ServerResponse]: https://nodejs.org/api/http.html#http_class_http_serverresponse
 [http.Server]: https://nodejs.org/api/http.html#http_class_http_server
 [promise-based middleware]: https://github.com/calebboyd/app-builder
 
