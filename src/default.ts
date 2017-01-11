@@ -8,6 +8,7 @@ import onFinished = require('on-finished')
 
 const
   looksLikeHtmlRE = /^\s*</,
+  logError = (context: { error: Error }) => console.error(context.error),
   isString = (str: any) => typeof str === 'string' || str instanceof String,
   isStreamLike = (val: any) => val && val instanceof Stream || 'function' === typeof val.pipe,
   ensureErrorHandler = (stream: Stream, handler: (error: Error) => any) => {
@@ -24,7 +25,7 @@ export class DefaultMiddleware<T extends DefaultContext<T>> {
   constructor ({ onError }: {
     onError?: (context?: DefaultContext<T>) => any
   } = {}) {
-    this.onError = onError || function () {}
+    this.onError = onError || logError
   }
 
   private _contentLength (res: ServerResponse, length: number) {

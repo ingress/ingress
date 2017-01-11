@@ -9,7 +9,7 @@ function camelize (val: string) {
 }
 
 //node -e "var c; Object.keys(c=require('http').STATUS_CODES).forEach(x => console.log(c[x].split(/\s|-/).map(a=>a[0].toUpperCase()+a.slice(1).toLowerCase()).join('').replace(/'/g,'')))"
-//v6.9.3
+//v6.9.4
 export interface StatusCodes {
   Continue: number
   SwitchingProtocols: number
