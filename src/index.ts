@@ -36,9 +36,9 @@ export interface ContainerOptions {
 }
 
 const EMPTY_DEPS: Array<any> = [],
-  ContextToken = Symbol.for('ingress.context'),
+  ContextToken = Symbol.for('ingress.context')
 
-export class Container {
+export class Container implements Injector {
   private rootInjector: ReflectiveInjector
   private resolvedChildProviders: ResolvedReflectiveProvider[]
   private ResolvedContextProvider: Type<ResolvedReflectiveProvider>
@@ -54,7 +54,7 @@ export class Container {
   constructor ({
     providers = [],
     perRequestProviders = [],
-    contextToken = ContextToken,
+    contextToken = ContextToken
   }: ContainerOptions = {}) {
     Object.assign(this, { providers, perRequestProviders })
     const key = ReflectiveKey.get(contextToken)
@@ -99,4 +99,8 @@ export class Container {
       return next()
     }
   }
+}
+
+export default function createContainer (options: ContainerOptions) {
+  return new Container(options)
 }

@@ -1,25 +1,29 @@
 {
-  "name": "di",
-  "version": "1.0.0-beta.1",
+  "name": "@ingress/di",
+  "version": "1.0.0-beta.2",
   "description": "Server-side dependency injection for ingress",
   "main": "lib/src/index.js",
+  "typings": "lib/src/index.d.ts",
   "files": [
     "lib/src"
   ],
   "scripts": {
-    "test": "mocha"
+    "build": "rm -rf lib && tsc --declaration",
+    "test": "npm run lint && cross-env TS_NODE_IGNORE_WARNINGS=2307 ts-node test/index.spec.ts",
+    "prepublish": "npm run build && npm test",
+    "lint": "tslint 'src/**/*.ts'"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ingress/di.git"
+    "url": "https://github.com/ingress/di.git"
   },
   "keywords": [
-    "server",
-    "side",
+    "server di",
+    "node dependency injection",
     "dependency",
     "injection"
   ],
-  "author": "Caleb Boyd",
+  "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ingress/di/issues"
@@ -29,12 +33,12 @@
     "reflect-metadata": "^0.1.9"
   },
   "devDependencies": {
-    "@types/chai": "^3.4.34",
-    "@types/mocha": "^2.2.35",
-    "chai": "^3.5.0",
-    "mocha": "^3.2.0",
+    "@types/node": "^7.0.0",
+    "cross-env": "^3.1.4",
     "reflect-metadata": "^0.1.9",
     "ts-node": "^1.7.3",
+    "tslint": "^4.3.1",
+    "tslint-eslint-rules": "^3.2.3",
     "typescript": "^2.1.4"
   },
   "dependencies": {
