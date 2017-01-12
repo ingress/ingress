@@ -1,14 +1,14 @@
-### router.middleware
-Decorator based router middleware for [`ingress`](https://github.com/calebboyd/ingress)
+### @ingress/router
+Decorator based router middleware for [`ingress`](https://github.com/ingress/core)
 
-`npm i router.middleware`
+`npm i @ingress/router`
 
 Define routes using the `@Route` decorator, and plain javascript classes.
 
 ## Route Definition
 
 ```javascript
-import { Route } from 'router.middleware'
+import { Route } from '@ingress/router'
 
 @Route('prefix')
 export class MyController {
@@ -25,7 +25,7 @@ export class MyController {
 
 ```javascript
 import { Server, DefaultMiddleware } from 'ingress'
-import { Router } from 'router.middleware'
+import { Router } from '@ingress/router'
 import { MyController } from './my-controller'
 
 const app = new Server()
