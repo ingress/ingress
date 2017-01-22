@@ -1,6 +1,6 @@
 {
   "name": "@ingress/di",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.4",
   "description": "Server-side dependency injection for ingress",
   "main": "lib/src/index.js",
   "typings": "lib/src/index.d.ts",
@@ -33,13 +33,12 @@
     "reflect-metadata": "^0.1.9"
   },
   "devDependencies": {
-    "@types/node": "^7.0.0",
+    "@types/node": "^7.0.1",
     "cross-env": "^3.1.4",
     "reflect-metadata": "^0.1.9",
     "ts-node": "^1.7.3",
     "tslint": "^4.3.1",
-    "tslint-eslint-rules": "^3.2.3",
-    "typescript": "^2.1.4"
+    "tslint-eslint-rules": "^3.2.3"
   },
   "dependencies": {
     "angular.di": "^2.4.1"

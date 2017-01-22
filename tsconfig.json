@@ -5,6 +5,7 @@
     "module": "commonjs",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "strictNullChecks": true,
     "noImplicitAny": true,
     "removeComments": true,
     "outDir": "lib"

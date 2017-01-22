@@ -7,26 +7,19 @@ import {
   ReflectiveKey
 } from 'angular.di'
 
+import {
+  Type,
+  DependencyCollector
+} from './collector'
+
 export {
   ReflectiveInjector,
   Injector,
   Provider
 }
 
-export const Type = Function
-export interface Type<T> {
-  new(...args: any[]): T
-}
-
-class Collector {
-  public collected: Array<Type<any>> = []
-  public collect: ClassDecorator
-  constructor () {
-    this.collect = (target: Type<any>) => {
-      target && this.collected.push(target)
-      return target && target || this.collect
-    }
-  }
+export interface ContainerContext {
+  scope: Injector
 }
 
 export interface ContainerOptions {
@@ -38,13 +31,13 @@ export interface ContainerOptions {
 const EMPTY_DEPS: Array<any> = [],
   ContextToken = Symbol.for('ingress.context')
 
-export class Container implements Injector {
+export class Container<T extends ContainerContext> implements Injector {
   private rootInjector: ReflectiveInjector
   private resolvedChildProviders: ResolvedReflectiveProvider[]
   private ResolvedContextProvider: Type<ResolvedReflectiveProvider>
 
-  private _singletonCollector = new Collector()
-  private _perRequestCollector = new Collector()
+  private _singletonCollector = new DependencyCollector()
+  private _perRequestCollector = new DependencyCollector()
 
   public providers: Provider []
   public perRequestProviders: Provider []
@@ -94,7 +87,7 @@ export class Container implements Injector {
 
   get middleware () {
     this._initialize()
-    return (context: { scope: Injector }, next: () => any) => {
+    return (context: T, next: () => any) => {
       context.scope = this.createChild(new this.ResolvedContextProvider(context))
       return next()
     }
