@@ -9,6 +9,7 @@ import {
 
 import {
   Type,
+  DependencyCollectorFactory,
   DependencyCollector
 } from './collector'
 
