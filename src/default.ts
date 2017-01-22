@@ -1,4 +1,4 @@
-import { DefaultContext } from './context'
+import { CoreContext, Body } from './context'
 import { StatusCode } from './status-code'
 import { ServerResponse } from 'http'
 import { Buffer } from 'buffer'
@@ -8,9 +8,9 @@ import onFinished = require('on-finished')
 
 const
   looksLikeHtmlRE = /^\s*</,
-  logError = (context: { error: Error }) => console.error(context.error),
-  isString = (str: any) => typeof str === 'string' || str instanceof String,
-  isStreamLike = (val: any) => val && val instanceof Stream || 'function' === typeof val.pipe,
+  logError = <T extends { error: Error }>(context: T) => console.error(context.error),
+  isString = (str: any): str is string => typeof str === 'string' || str instanceof String,
+  isStreamLike = (body: Body): body is Stream => Boolean(body && typeof (body as Stream).pipe === 'function' || body instanceof Stream),
   ensureErrorHandler = (stream: Stream, handler: (error: Error) => any) => {
     stream.listeners('error').indexOf(handler) === -1
       && stream.on('error', handler)
@@ -18,14 +18,14 @@ const
 
 export * from './status-code'
 
-export class DefaultMiddleware<T extends DefaultContext<T>> {
+export class DefaultMiddleware<T extends CoreContext<T>> {
 
-  private onError: (context?: DefaultContext<T>) => any
+  private onError: (context: T) => any
 
   constructor ({ onError }: {
-    onError?: (context?: DefaultContext<T>) => any
-  } = {}) {
-    this.onError = onError || logError
+    onError: (context: T) => any
+  } = { onError: logError }) {
+    this.onError = onError
   }
 
   private _contentLength (res: ServerResponse, length: number) {
@@ -36,16 +36,16 @@ export class DefaultMiddleware<T extends DefaultContext<T>> {
     res.setHeader('Content-Type', value)
   }
 
-  private _statusResponse (status: number, message: string, res: ServerResponse, body?: string) {
+  private _statusResponse (status: number, message: string, res: ServerResponse, body?: Body) {
     res.statusCode = status || 404
     res.statusMessage = message = message || StatusCode[res.statusCode] || ''
     body = body || message
     this._contentType(res, 'text/plain')
-    this._contentLength(res, Buffer.byteLength(body))
+    this._contentLength(res, Buffer.byteLength(body as string))
     res.end(body)
   }
 
-  private _handleResponse (ctx: DefaultContext<T>, handleError: (error:Error) => any) {
+  private _handleResponse (ctx: CoreContext<T>, handleError: (error:Error) => any) {
     const res = <any>ctx.res,
       hasContentType = Boolean(res._headers && res._headers['content-type'])
 
@@ -89,20 +89,19 @@ export class DefaultMiddleware<T extends DefaultContext<T>> {
     if (isStreamLike(body)) {
       !hasContentType && this._contentType(res, 'application/octet-stream')
       onFinished(res, () => destroy(body))
-      ensureErrorHandler(body, handleError)
-      return body.pipe(res)
+      ensureErrorHandler(body as Stream, handleError)
+      return (body as Stream).pipe(res)
     }
 
     body = JSON.stringify(body)
     this._contentType(res, 'application/json')
-    this._contentLength(res, Buffer.byteLength(body))
+    this._contentLength(res, Buffer.byteLength(body as string))
     res.end(body)
   }
 
   get middleware () {
     const onError = this.onError
-
-    return (context: DefaultContext<T>, next: () => Promise<any>) => {
+    return (context: T, next: () => Promise<void>) => {
       const
         handleError = (error?: Error) => {
           if (error) {
