@@ -1,44 +1,41 @@
 import { IncomingMessage, ServerResponse } from 'http'
+import { Buffer } from 'buffer'
+import { Stream } from 'stream'
 
-export default function createContext ({ req, res }: { req: IncomingMessage, res: ServerResponse }): Context {
-  return new Context(req, res)
+export default function createContext ({ req, res }: { req: IncomingMessage, res: ServerResponse }): DefaultContext {
+  return new DefaultContext(req, res)
 }
 
 export interface Request<T> extends IncomingMessage {
-  context?: T
+  context: T
 }
+
+export type Body = any
 
 export interface Response<T> extends ServerResponse {
-  context?: T
+  context: T
 }
 
-export interface DefaultContext<T extends DefaultContext<T>> {
+export interface CoreContext<T extends CoreContext<T>> {
   req: Request<T>
   res: Response<T>
-  error: Error | null | undefined
-  body: any
+  error: Error | null
+  body: Body
   handleError?: ((error?: Error) => any) | any
   handleResponse?: () => any
 }
 
-export abstract class BaseContext<T extends DefaultContext<T>> implements DefaultContext<T> {
+export abstract class BaseContext<T extends CoreContext<T>> implements CoreContext<T> {
   public req: Request<T>
   public res: Response<T>
-  public error: Error | null | undefined
-  public body: any
+  public error: Error | null
+  public body: Body
   constructor (req: IncomingMessage, res: ServerResponse) {
-    this.req = req
-    this.res = res
-    this.res.context = this.req.context = <T>(<any>this)
-  }
-
-  handleError () {
-    throw new Error('Not Implemented')
-  }
-
-  handleResponse () {
-    throw new Error('Not Implemented')
+    this.req = req as Request<T>
+    this.res = res as Response<T>
+    this.error = this.body = null
+    this.res.context = this.req.context = <T><any>this
   }
 }
 
-export class Context extends BaseContext<Context>{}
+export class DefaultContext extends BaseContext<DefaultContext>{}

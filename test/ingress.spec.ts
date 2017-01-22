@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { Buffer } from 'buffer'
 import * as fs from 'fs'
 import { get, request, ServerResponse, IncomingMessage } from 'http'
-import { Server, Context, DefaultMiddleware }  from '../src'
+import { Server, DefaultContext, DefaultMiddleware }  from '../src'
 import { StatusCode } from '../src/status-code'
 
 const port = 8888;
@@ -24,10 +24,10 @@ function getResponse (res: IncomingMessage) {
 
 describe('Server', () => {
 
-  let server: Server<Context>
+  let server: Server<DefaultContext>
   beforeEach(() => {
-    server = new Server<Context>({
-      contextFactory: ({ req, res }: { req: IncomingMessage, res: ServerResponse }) => new Context(req, res)
+    server = new Server<DefaultContext>({
+      contextFactory: ({ req, res }: { req: IncomingMessage, res: ServerResponse }) => new DefaultContext(req, res)
     })
     server.use((ctx, next) => next())
   })
@@ -54,7 +54,7 @@ describe('Server', () => {
 
   describe('close', () => {
     it('calls close on underlying webserver implementation', () => {
-      let called: boolean
+      let called = false
       const close = server.webserver.close
       server.webserver.close = function (res: any){
         called = true
@@ -69,11 +69,11 @@ describe('Server', () => {
   describe('DefaultMiddleware', () => {
 
     beforeEach(() => {
-      server.use(new DefaultMiddleware<Context>())
+      server.use(new DefaultMiddleware<DefaultContext>())
     })
 
     it('should respond with json, when set on context body', async () => {
-      let length: number
+      let length: number | null = null
       server.use((ctx, next) => {
         ctx.body = {plain:'object'}
         length = JSON.stringify(ctx.body).length
@@ -86,7 +86,7 @@ describe('Server', () => {
     })
 
     it('should respond with octet-stream, when buffer is set on context body', async () => {
-      let length: number
+      let length: number | null = null
       server.use((ctx, next) => {
         ctx.body = new Buffer(JSON.stringify({plain:'object'}))
         length = ctx.body.length
@@ -99,7 +99,7 @@ describe('Server', () => {
     })
 
     it('should respond with html, when set on context body', async () => {
-      let length: number
+      let length: number | null = null
       server.use((ctx, next) => {
         ctx.body = '<div>I\'m HTML!</div>'
         length = ctx.body.length
@@ -110,9 +110,9 @@ describe('Server', () => {
       expect(+res.headers['content-length']).to.equal(length)
       expect(res.headers['content-type']).to.equal('text/html')
     })
-
+Object
     it('should respond with text, when set on context body', async () => {
-      let length: number
+      let length: number | null = null
       server.use((ctx, next) => {
         ctx.body = 'just text'
         length = ctx.body.length
@@ -125,7 +125,7 @@ describe('Server', () => {
     })
 
     it('should not respond when the request has already been handled', async () => {
-      let length: number
+      let length: number | null = null
       server.use((ctx, next) => {
         const text = 'ended!'
         length = text.length

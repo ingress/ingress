@@ -1,35 +1,31 @@
-import { AppBuilder, Middleware } from 'app-builder'
-import createContext, { DefaultContext } from './context'
+import { AppBuilder } from 'app-builder'
+import createContext, { CoreContext } from './context'
 import { DefaultMiddleware } from './default'
+import { Middleware, MiddlewareOptions } from './middleware'
 import { Server as HttpServer,
   createServer,
   IncomingMessage,
   ServerResponse
 } from 'http'
 
-export interface Addon<T extends DefaultContext<T>> {
-  middleware?: Middleware<T>
-  register?(server: Server<T>): any
+export interface Addon<T extends CoreContext<T>> {
+  register?(server: Server<T>): Promise<any> | undefined
 }
 
-export interface MiddlewareAddon<T extends DefaultContext<T>> extends Middleware<T> {
-  register?(server: Server<T>): any
-}
-
-export type Usable<T extends DefaultContext<T>> = MiddlewareAddon<T> | Addon<T>
+export type Usable<T extends CoreContext<T>> = (Addon<T> & Middleware<T>) | (Addon<T> & MiddlewareOptions<T>)
 
 export interface ServerOptions<T> {
   server?: HttpServer,
   contextFactory?: <T>({ req, res }: { req: IncomingMessage, res: ServerResponse}) => T
 }
 
-export default function ingress<T extends DefaultContext<T>> (options?: ServerOptions<T>) {
+export default function ingress<T extends CoreContext<T>> (options?: ServerOptions<T>) {
   return new Server<T>(options)
 }
 
-export class Server<T extends DefaultContext<T>> {
+export class Server<T extends CoreContext<T>> {
   private _appBuilder: AppBuilder<T>
-  private _starting: Array<Promise<any>>
+  private _starting: Array<undefined | Promise<any>>
   private _createContext: <T>({ req, res }: { req: IncomingMessage, res: ServerResponse}) => T
   public webserver: HttpServer
 
@@ -40,17 +36,17 @@ export class Server<T extends DefaultContext<T>> {
     this.webserver = server
   }
 
-  use (addon: Usable<T>) {
-    if ('middleware' in addon) {
-      this.use((addon as Addon<T>).middleware)
+  use (middleware: Usable<T>) {
+    if ('middleware' in middleware) {
+      this.use((middleware as MiddlewareOptions<T>).middleware as Middleware<T>)
     }
 
-    if ('register' in addon) {
-      this._starting.push((addon as Addon<T>).register(this))
+    if (middleware.register) {
+      this._starting.push(middleware.register(this))
     }
 
-    if ('function' === typeof addon) {
-      this._appBuilder.use(addon)
+    if ('function' === typeof middleware) {
+      this._appBuilder.use(middleware as Middleware<T>)
     }
 
     return this
