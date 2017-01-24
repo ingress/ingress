@@ -1,6 +1,6 @@
 import { reflectAnnotations, AnnotatedPropertyDescription } from 'reflect-annotations'
 import RouteRecognizer = require('route-recognizer')
-import { Middleware } from 'app-builder'
+import { Middleware as GenericMiddleware } from 'app-builder'
 import { IncomingMessage, ServerResponse } from 'http'
 import {
   createHandler,
@@ -14,20 +14,21 @@ import { Type } from './type'
 import { ControllerCollector, ControllerDecorator } from './controller'
 import { RouterContext } from './context'
 
-export interface RouterOptions {
+export interface RouterOptions<T> {
   controllers?: Array<Type<any>>,
-  resolveController?: ControllerResolver
+  resolveController<C> (context: T, controller: Type<C>): C
   baseUrl?: string
   isRoutable?: (routeDefinition: RouteMetadata) => boolean
   getMethods?: (routeDefinition: RouteMetadata) => string[]
   getPath?: (baseUrl: string, routeDefinition: RouteMetadata) => string
 }
 
-export type ControllerResolver = (context: any, controller: Type<any>) => any
+export interface Middleware<T extends RouterContext<T>> {
+  (context: T, next: GenericMiddleware<T>): any
+}
 
 const defaultOptions = {
-  isRoutable: isExplictlyRoutable,
-  resolveController(ctx: any, ctrl: Type<any>) {
+  resolveController (ctx: any, ctrl: Type<any>) {
     if (ctx.scope && typeof ctx.scope.get === 'function') {
       this.resolveController = (context: any, controller: Type<any>) => context.scope.get(controller)
       return this.resolveController(ctx, ctrl)
@@ -40,14 +41,14 @@ const defaultOptions = {
 export class Router<T extends RouterContext<T>> {
 
   private routers: { [key: string]: RouteRecognizer<Handler<T>> }
-  private _options: RouterOptions
+  private _options: RouterOptions<T>
   private _initialized = false
   private _controllerCollector = new ControllerCollector()
 
   public handlers: Handler<T>[]
   public Controller: ControllerDecorator = this._controllerCollector.collect
 
-  constructor (options: RouterOptions = {}) {
+  constructor (options: RouterOptions<T> = { resolveController: defaultOptions.resolveController }) {
     this._options = Object.assign({}, defaultOptions, options)
     this.routers = {}
   }
@@ -59,13 +60,13 @@ export class Router<T extends RouterContext<T>> {
     this._initialized = true
 
     const { isRoutable, baseUrl, getPath, getMethods } = this._options,
-      controllers = this._controllerCollector.collected.concat(this._options.controllers)
+      controllers = this._controllerCollector.collected.concat(this._options.controllers || [])
 
     this.handlers = controllers
-      .reduce((routes, controller) => routes
+      .reduce((routes: AnnotatedPropertyDescription[], controller) => routes
         .concat(...reflectAnnotations(controller)
         .map(x => Object.assign(x, { controller }))
-        .filter(isRoutable))
+        .filter(isRoutable || isExplictlyRoutable))
       , [])
       .map((route: RouteMetadata) => {
         const handler = createHandler(route, baseUrl, getPath, getMethods)
@@ -87,11 +88,13 @@ export class Router<T extends RouterContext<T>> {
   get middleware (): Middleware <T> {
     this._initialize()
     return (context, next) => {
-      const url = context.url = parseUrl(context.req.url),
-        route = this._match(context.req.method, url.pathname),
+      const
+        req = context.req,
+        url = context.url = parseUrl(req.url || ''),
+        route = req.method && url.pathname && this._match(req.method, url.pathname),
         handler = route && route.handler
 
-      if (!route) {
+      if (!route || !handler) {
         context.res.statusCode = 404
         return next()
       }

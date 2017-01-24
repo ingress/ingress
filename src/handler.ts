@@ -28,7 +28,7 @@ export function getMethods (route: RouteMetadata): string[] {
     )
 }
 
-export function isRoutable (maybeRoute: RouteMetadata) {
+export function isRoutable (maybeRoute: AnnotatedPropertyDescription) {
   const annotations = maybeRoute.classAnnotations.concat(maybeRoute.methodAnnotations),
     hasMethod = annotations.some(x => x.isRouteAnnotation),
     hasRoute = annotations.some(x => x.isHttpMethodAnnotation)
@@ -86,7 +86,7 @@ export class Handler<T extends RouterContext<T>> {
 
 export function createHandler (
   source: RouteMetadata,
-  baseUrl: string,
+  baseUrl: string = '/',
   derivePath: (baseUrl: string, route: RouteMetadata) => string = getPath,
   deriveMethods: (route: RouteMetadata) => string[] = getMethods
     ) {

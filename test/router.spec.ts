@@ -26,7 +26,7 @@ describe('Routing', () => {
       .use(new DefaultMiddleware<MyContext>({ onError: errorStub = sinon.stub() }))
     router = new Router<MyContext>({
       baseUrl: 'api',
-      resolveController: (_, C) => new C(routeSpy = sinon.spy(() => expectedResponse))
+      resolveController: (_:any, C: any) => new C(routeSpy = sinon.spy(() => expectedResponse))
     })
 
     const { Controller } = router

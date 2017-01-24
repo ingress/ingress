@@ -6,6 +6,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "noImplicitAny": true,
+    "strictNullChecks": true,
     "removeComments": true,
     "outDir": "lib"
   },

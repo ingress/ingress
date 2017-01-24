@@ -7,7 +7,7 @@ export function getAsync (url: string) {
   })
 }
 
-function parseResponse (response: any) {
+function parseResponse (response: any): Promise<string> {
   return new Promise((resolve, reject) => {
     var res = '',
       consume = (chunk: Buffer) => res += chunk
@@ -29,7 +29,7 @@ export function postAsync (path: string, data: any) {
     postData = data ? JSON.stringify(data) : '',
     options = {
       host: url.hostname,
-      port: parseInt(url.port),
+      port: parseInt(url.port as string, 10),
       path: url.path,
       method: 'POST',
       headers: {

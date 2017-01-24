@@ -25,12 +25,12 @@ export class ControllerCollector {
       }
       const routePrefix: string = typeof options === 'string' && options || options.routePrefix
       if (routePrefix) {
-        return (target: any) => {
+        return ((target: any) => {
           Route(routePrefix)(target)
           this._collector(target)
-        }
+        }) as ClassDecorator
       }
-      this._collector(options)
+      return this._collector(options) as ClassDecorator
     }
 
   }
