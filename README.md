@@ -41,12 +41,14 @@ app
 
 ### **Router** (routerOptions): class
 
- - **RouterOptions: object**
+ - **RouterOptions\<T\>: object**
    - **controllers: Array\<Type\>** (required)
    - **baseUrl: string**
      - Define the base url. Defaults to `'/'`
-   - **resolveController: (context, controller) => any**
-     - resolve the controller instance. Defaults to `(ctx, ctrl) => ctx.scope.get(ctrl)`
+   - **resolveController\<C\>(context: T, controller: Type\<C\>): C**
+     - resolve the controller instance. By default it return the result of `new C()`
+     - If used in conjunction with [@ingress/di](https://github.com/ingress/di)
+     The controller will be requested from the current `context.scope` injector
    - **isRoutable: (def: RouteMeatdata) => boolean**
      - Identify a class method as routable. Defaults to methods with a `@Route` decorator
    - **getMethods: (def: RouteMetdata) => string[]**
@@ -63,8 +65,8 @@ app
      - `Route.Put`
      - `Route.Delete`
      - `Route.Patch`
- - The `@Route` decorator can be used on classes and controllers.
-   The handler will be prefixed by the route defined on its class definition
+ - The `@Route` decorator can be used on classes and class methods.
+    - The default behavior will concatenate parent-child (class-method) declarations
  - It can accept additional `Route` methods, or strings, as rest parameters.
    - `@Route('/some/route', Route.Post, 'Put')`
 
@@ -85,7 +87,7 @@ class FancyAnnotation {
   constructor (fancyOrNot) {
     this.fancy = fancyOrNot
   }
-  get middleware () {
+  middleware () {
     return (context, next) => {
       context.isFancy = this.fancyOrNot
       next()

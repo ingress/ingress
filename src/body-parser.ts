@@ -17,7 +17,7 @@ export class ParseBodyAnnotation {
       compression?: { [key: string]: Function }
     } = { parse: true, output: 'data' }) {}
 
-  get parser() {
+  middleware() {
     const options = this.options
     return (context: any, next: () => Promise<any>) => {
       return new Promise((resolve, reject) => {
