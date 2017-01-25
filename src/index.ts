@@ -86,7 +86,7 @@ export class Container<T extends ContainerContext> implements Injector {
     this.resolvedChildProviders = ReflectiveInjector.resolve(this.perRequestProviders)
   }
 
-  get middleware () {
+  middleware () {
     this._initialize()
     return (context: T, next: () => any) => {
       context.scope = this.createChild(new this.ResolvedContextProvider(context))

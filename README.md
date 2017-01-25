@@ -10,15 +10,16 @@ Based on [angular di](https://github.com/calebboyd/angular.di)
 import ingress from '@ingress/core'
 import di from '@ingress/di'
 import {
-  perRequestLifetimeProviders,
-  singletons,
+  perRequestProviders,
+  providers,
   SomeDependency
 } from './my-dependencies'
 
-const app = ingress()
+const app = ingress(),
+  container = di({ providers, perRequestProviders })
 
 app
-  .use(di({ singletons, perRequestLifetimeProviders }))
+  .use(container)
   .use((context, next) => {
     const someDep = context.scope.get(SomeDependency)
     ...
@@ -27,15 +28,15 @@ app
 
 ### Configuration
 
-As an alternative (or in addition) to the options provided at creation,
-decorators are exposed on the container instance allowing registration/collection of
-the initial singleton/per-request-lifetime dependencies.
+There are a few ways to let the root container know about your dependencies and their lifetimes.
+  1. Provide them at creation time (shown in example)
+  2. Use `.Singleton` and `.PerRequestLifetime` decorators exposed on a container instance
+  3. Builder (TODO) -  Use a container builder to discover, configure, and load dependencies.
 
-Eg:
+#### Decorator Configuration example
 
 ```javascript
 //configuration.js
-
 import di from '@ingress/di'
 
 const container = di()
@@ -48,7 +49,6 @@ export {
 }
 
 //my-dependency.js
-
 import { Singleton } from './configuration'
 
 @Singleton
@@ -57,15 +57,14 @@ export class MyDependency {
 }
 
 //index.js
-
-import { MyDependency } from './my-dependency'
-import { container } from './configuration'
 import ingress from '@ingress/core'
+import { container } from './configuration'
+import { MyDependency } from './my-dependency'
 
 const app = ingress()
 app.use(container).use((context, next) => {
   const dep = context.scope.get(MyDependency)
   ...
 })
-
 ```
+It is important to note that in `index.js` loading `./my-dependency` _after_ `./configuration` is required.

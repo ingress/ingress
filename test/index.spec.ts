@@ -37,7 +37,7 @@ class TestD {
 
 const context1 = new Context(),
   context2 = new Context(),
-  middleware = container.middleware
+  middleware = container.middleware()
 
 let called = false,
   expectedSingleton: any,
