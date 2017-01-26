@@ -48,7 +48,7 @@ export class Router<T extends RouterContext<T>> {
   public handlers: Handler<T>[]
   public Controller: ControllerDecorator = this._controllerCollector.collect
 
-  constructor (options: RouterOptions<T> = { resolveController: defaultOptions.resolveController }) {
+  constructor (options: RouterOptions<T> = {}) {
     this._options = Object.assign({}, defaultOptions, options)
     this.routers = {}
   }
