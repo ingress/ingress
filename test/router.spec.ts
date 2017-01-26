@@ -1,4 +1,4 @@
-import { Server, DefaultMiddleware } from 'ingress'
+import { Server, DefaultMiddleware } from '@ingress/core'
 import * as sinon from 'sinon'
 import { getAsync as get, postAsync as post } from './util/http'
 import { expect } from 'chai'

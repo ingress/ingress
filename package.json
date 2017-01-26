@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/ingress/router#readme",
   "devDependencies": {
+    "@ingress/core": "^1.0.0-beta.6",
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.37",
     "@types/node": "^7.0.0",
@@ -31,7 +32,6 @@
     "@types/sinon": "^1.16.34",
     "chai": "^3.5.0",
     "cross-env": "^3.1.4",
-    "ingress": "^3.0.0-beta2",
     "mocha": "^3.2.0",
     "sinon": "^1.17.7",
     "ts-node": "^2.0.0",
