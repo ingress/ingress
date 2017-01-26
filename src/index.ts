@@ -16,7 +16,7 @@ import { RouterContext } from './context'
 
 export interface RouterOptions<T> {
   controllers?: Array<Type<any>>,
-  resolveController<C> (context: T, controller: Type<C>): C
+  resolveController?<C> (context: T, controller: Type<C>): C
   baseUrl?: string
   isRoutable?: (routeDefinition: RouteMetadata) => boolean
   getMethods?: (routeDefinition: RouteMetadata) => string[]
@@ -98,11 +98,12 @@ export class Router<T extends RouterContext<T>> {
         context.res.statusCode = 404
         return next()
       }
-      context.router = {
-        controller: this._options.resolveController(context, handler.controller),
-        bodyResult: null
+      if (this._options.resolveController) {
+          context.router = {
+          controller: this._options.resolveController(context, handler.controller),
+          bodyResult: null
+        }
       }
-
       context.res.statusCode = 200
       context.req.query = url.search && parseQuery(url.search.slice(1))
       context.req.params = route.params
