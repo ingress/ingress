@@ -69,7 +69,7 @@ export class Router<T extends RouterContext<T>> {
         .filter(isRoutable || isExplictlyRoutable))
       , [])
       .map((route: RouteMetadata) => {
-        const handler = createHandler(route, baseUrl, getPath, getMethods)
+        const handler = createHandler<T>(route, baseUrl, getPath, getMethods)
         handler.httpMethods.forEach(method => {
           const recognizer = this.routers[method] = this.routers[method]
             || new RouteRecognizer<Handler<T>>()

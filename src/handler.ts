@@ -47,7 +47,7 @@ function extractBodyParser (route: RouteMetadata) {
       .concat(route.methodAnnotations)
       .find(x => x.isBodyParser)
 
-  return bodyParser && bodyParser.middleware() || parseJsonBody.middleware()
+  return bodyParser ? bodyParser.middleware() : parseJsonBody.middleware()
 }
 
 export class Handler<T extends RouterContext<T>> {
@@ -84,11 +84,11 @@ export class Handler<T extends RouterContext<T>> {
   }
 }
 
-export function createHandler (
+export function createHandler<T extends RouterContext<T>> (
   source: RouteMetadata,
   baseUrl: string = '/',
   derivePath: (baseUrl: string, route: RouteMetadata) => string = getPath,
   deriveMethods: (route: RouteMetadata) => string[] = getMethods
     ) {
-  return new Handler(source, baseUrl, derivePath(baseUrl, source), deriveMethods(source))
+  return new Handler<T>(source, baseUrl, derivePath(baseUrl, source), deriveMethods(source))
 }
