@@ -19,7 +19,7 @@ export interface Response<T> extends ServerResponse {
 export interface CoreContext<T extends CoreContext<T>> {
   req: Request<T>
   res: Response<T>
-  error: Error | null
+  error: Error | null | undefined
   body: Body
   handleError?: ((error?: Error) => any) | any
   handleResponse?: () => any
