@@ -8,11 +8,13 @@ import { Server as HttpServer,
   ServerResponse
 } from 'http'
 
-export interface Addon<T extends CoreContext<T>> {
+export interface Addon<T extends CoreContext<T>> extends MiddlewareOptions<T> {
   register?(server: Server<T>): Promise<any> | undefined
 }
 
-export type Usable<T extends CoreContext<T>> = (Addon<T> & Middleware<T>) | (Addon<T> & MiddlewareOptions<T>)
+export interface MiddlewareAddon<T extends CoreContext<T>> extends Middleware<T>, Addon<T> {}
+
+export type Usable<T extends CoreContext<T>> = Addon<T> | MiddlewareAddon<T>
 
 export interface ServerOptions<T> {
   server?: HttpServer,
@@ -37,8 +39,8 @@ export class Server<T extends CoreContext<T>> {
   }
 
   use (middleware: Usable<T>) {
-    if ('middleware' in middleware) {
-      this.use((middleware as MiddlewareOptions<T>).middleware as Middleware<T>)
+    if (middleware.middleware) {
+      this.use(middleware.middleware())
     }
 
     if (middleware.register) {
@@ -46,7 +48,7 @@ export class Server<T extends CoreContext<T>> {
     }
 
     if ('function' === typeof middleware) {
-      this._appBuilder.use(middleware as Middleware<T>)
+      this._appBuilder.use(middleware)
     }
 
     return this
