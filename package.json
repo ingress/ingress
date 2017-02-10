@@ -1,6 +1,6 @@
 {
   "name": "@ingress/core",
-  "version": "1.0.0-beta.6",
+  "version": "1.0.0-beta.7",
   "description": "http server abstraction",
   "main": "lib/src/index.js",
   "repository": {

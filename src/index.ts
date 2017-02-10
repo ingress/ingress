@@ -75,8 +75,8 @@ export class Server<T extends CoreContext<T>> {
 
 export {
   createContext,
-  DefaultMiddleware,
-  Server as Ingress
+  DefaultMiddleware
 }
 
+export { StatusCode } from './status-code'
 export * from './context'
