@@ -7,6 +7,7 @@ import { Server as HttpServer,
   IncomingMessage,
   ServerResponse
 } from 'http'
+import { PromiseConfig } from './promise'
 
 export interface Addon<T extends CoreContext<T>> extends MiddlewareOptions<T> {
   register?(server: Server<T>): Promise<any> | undefined
@@ -62,14 +63,14 @@ export class Server<T extends CoreContext<T>> {
 
   listen (...args: Array<any>) {
     this.webserver.on('request', this.build())
-    return Promise.all(this._starting).then(() => {
+    return PromiseConfig.constructor.all(this._starting).then(() => {
       this._starting.length = 0
-      return new Promise(res => (<any>this.webserver).listen(...[...args, res]))
+      return new PromiseConfig.constructor(res => (<any>this.webserver).listen(...[...args, res]))
     })
   }
 
   close () {
-    return new Promise(res => this.webserver.close(res))
+    return new PromiseConfig.constructor(res => this.webserver.close(res))
   }
 }
 
@@ -80,3 +81,4 @@ export {
 
 export { StatusCode } from './status-code'
 export * from './context'
+export { PromiseConfig } from './promise'

@@ -1,6 +1,6 @@
 {
   "name": "@ingress/core",
-  "version": "1.0.0-beta.7",
+  "version": "1.0.0-beta.8",
   "description": "http server abstraction",
   "main": "lib/src/index.js",
   "repository": {
@@ -31,27 +31,28 @@
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
   "devDependencies": {
-    "@types/chai": "^3.4.34",
-    "@types/mocha": "^2.2.33",
-    "@types/node": "^6.0.57",
+    "@types/bluebird": "^3.5.2",
+    "@types/chai": "^3.4.35",
+    "@types/mocha": "^2.2.40",
+    "@types/node": "^7.0.11",
     "@types/on-finished": "^2.2.29",
-    "@types/sinon": "^1.16.33",
+    "@types/sinon": "^1.16.36",
+    "bluebird": "^3.5.0",
     "chai": "^3.5.0",
-    "cross-env": "^1.0.8",
-    "mocha": "^2.3.2",
-    "reflect-metadata": "^0.1.9",
-    "rimraf": "^2.5.0",
-    "sinon": "^1.17.7",
-    "ts-node": "^2.0.0",
-    "tslint": "^4.2.0",
-    "tslint-eslint-rules": "^3.2.3",
-    "typescript": "^2.1.5"
+    "cross-env": "^3.2.4",
+    "mocha": "^3.2.0",
+    "rimraf": "^2.6.1",
+    "sinon": "^2.1.0",
+    "ts-node": "^3.0.2",
+    "tslint": "^4.5.1",
+    "tslint-eslint-rules": "^3.5.1",
+    "typescript": "^2.2.1"
   },
   "peerDependencies": {
-    "reflect-metadata": "^0.1.9"
+    "reflect-metadata": "^0.1.10"
   },
   "dependencies": {
-    "app-builder": "^5.0.7",
+    "app-builder": "^5.1.0",
     "destroy": "^1.0.4",
     "on-finished": "^2.3.0"
   }
