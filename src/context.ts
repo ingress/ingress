@@ -5,7 +5,7 @@ import { Type } from './type'
 export interface RoutedRequest<T> extends IncomingMessage {
   context: T
   body: any,
-  query: { [key: string]: any } | null,
+  query: { [key: string]: any },
   params: { [key: string]: any }
 }
 

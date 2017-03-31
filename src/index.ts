@@ -105,7 +105,7 @@ export class Router<T extends RouterContext<T>> {
         }
       }
       context.res.statusCode = 200
-      context.req.query = url.search && parseQuery(url.search.slice(1))
+      context.req.query = url.search ? parseQuery(url.search.slice(1)) : {}
       context.req.params = route.params
 
       return handler.invokeAsync(context, next)
