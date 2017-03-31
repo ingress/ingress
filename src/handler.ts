@@ -39,7 +39,7 @@ function extractMiddleware<T>(route: RouteMetadata): Array<Middleware<T>> {
   return route.classAnnotations
     .concat(route.methodAnnotations)
     .filter((x) => 'middleware' in x)
-    .map(x => x.middleware())
+    .map(x => x.middleware)
 }
 
 function extractBodyParser (route: RouteMetadata) {
@@ -47,7 +47,7 @@ function extractBodyParser (route: RouteMetadata) {
       .concat(route.methodAnnotations)
       .find(x => x.isBodyParser)
 
-  return bodyParser ? bodyParser.middleware() : parseJsonBody.middleware()
+  return bodyParser ? bodyParser.middleware : parseJsonBody.middleware
 }
 
 export class Handler<T extends RouterContext<T>> {

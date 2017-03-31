@@ -85,7 +85,7 @@ export class Router<T extends RouterContext<T>> {
     return <{ handler: Handler<T>, params: {[key: string]: string} }> route
   }
 
-  middleware (): Middleware <T> {
+  get middleware (): Middleware <T> {
     this._initialize()
     return (context, next) => {
       const
