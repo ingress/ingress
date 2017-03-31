@@ -99,7 +99,7 @@ export class DefaultMiddleware<T extends CoreContext<T>> {
     res.end(body)
   }
 
-  middleware () {
+  get middleware () {
     const onError = this.onError
     return (context: T, next: () => Promise<void>) => {
       const
