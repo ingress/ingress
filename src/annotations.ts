@@ -1,6 +1,7 @@
 import { createAnnotationFactory } from 'reflect-annotations'
 
 const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
+  result = (x: string) => '/' + trim(x),
   upper = (x: any) => x.toString().toUpperCase()
 
 export class RouteAnnotation {
@@ -15,8 +16,7 @@ export class RouteAnnotation {
     path = path || ''
     this.ignoreAllPrefix = path.startsWith('$')
     this.ignoreParentPrefix = path.startsWith('~')
-    this.path = trim(path.replace(/^\$|^~/,'')),
-    this.resolvedPaths = []
+    this.path = trim(path.replace(/^\$|^~/, '')),
     this.methods = Array.from(new Set(methods.map(upper)))
   }
 
@@ -30,18 +30,16 @@ export class RouteAnnotation {
 
   resolvePath (prefix:string, suffix?: RouteAnnotation) {
     prefix = trim(prefix)
-    let path = ''
-    if (suffix) {
-      path = suffix.ignoreAllPrefix && suffix.path
-        || suffix.ignoreParentPrefix && prefix + '/' + suffix.path
-        || prefix + '/' + this.path + '/' + suffix.path
-    } else {
-      path = this.ignoreAllPrefix && this.path
-        || prefix + '/' + this.path
+    if (!suffix) {
+      return result(this.ignoreAllPrefix ? this.path : (prefix + '/' + this.path))
     }
-    const result = '/' + trim(path)
-    this.resolvedPaths.push(result)
-    return result
+    if (suffix.ignoreAllPrefix) {
+      return result(suffix.path)
+    }
+    if (suffix.ignoreParentPrefix) {
+      return result(prefix + '/' + suffix.path)
+    }
+    return result(prefix + '/' + this.path + '/' + suffix.path)
   }
 }
 

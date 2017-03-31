@@ -1,5 +1,6 @@
 import { Url } from 'url'
 import { IncomingMessage, ServerResponse } from 'http'
+import { Handler } from './handler'
 import { Type } from './type'
 
 export interface RoutedRequest<T> extends IncomingMessage {
@@ -13,9 +14,15 @@ export interface Response<T> extends ServerResponse {
   context: T
 }
 
-export interface RouterContext<T> {
+export interface CurrentRoute<T extends RouterContext<T>> {
+  controllerInstance: any,
+  parserResult: any,
+  handler: Handler<T>
+}
+
+export interface RouterContext<T extends RouterContext<T>> {
   url: Url
-  router: { controller: any, bodyResult: any }
+  route: CurrentRoute<T>
   req: RoutedRequest<T>
   res: Response<T>
   error: Error | null | undefined
@@ -24,9 +31,9 @@ export interface RouterContext<T> {
   handleResponse?: () => any
 }
 
-export abstract class BaseRouterContext<T> implements RouterContext<T> {
+export abstract class BaseRouterContext<T extends RouterContext<T>> implements RouterContext<T> {
   public url: Url
-  public router: { controller: any, bodyResult: any }
+  public route: CurrentRoute<T>
   public req: RoutedRequest<T>
   public res: Response<T>
   public error: Error | null | undefined

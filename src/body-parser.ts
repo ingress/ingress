@@ -25,7 +25,7 @@ export class ParseBodyAnnotation {
           if (err) {
             return reject(err)
           }
-          context.router.bodyResult = result
+          context.route.parserResult = result
           context.req.body = result.payload
           resolve(next())
         })

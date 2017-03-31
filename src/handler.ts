@@ -11,8 +11,8 @@ const supportedHttpMethods: Array<string> = ['GET','POST', 'PUT', 'DELETE', 'HEA
   isRouteAnnotation = (x: any) => x.isRouteAnnotation
 
 export function getPath (baseUrl = '/', route: RouteMetadata): string {
-  const parent = <RouteAnnotation>route.classAnnotations.find(isRouteAnnotation),
-    child = <RouteAnnotation>route.methodAnnotations.find(isRouteAnnotation)
+  const parent = route.classAnnotations.find(isRouteAnnotation) as RouteAnnotation | undefined,
+    child = route.methodAnnotations.find(isRouteAnnotation) as RouteAnnotation | undefined
 
   return parent && parent.resolvePath(baseUrl, child)
     || new RouteAnnotation(baseUrl).resolvePath('/', child)
@@ -75,7 +75,7 @@ export class Handler<T extends RouterContext<T>> {
   _resolveRouteMiddleware() {
     const routeName = this.controllerMethod
     return (context: T, next: () => Promise<any>) => {
-      return Promise.resolve(context.router.controller[routeName](context.req))
+      return Promise.resolve(context.route.controllerInstance[routeName](context.req))
         .then(x => {
           context.body = x
           return next()

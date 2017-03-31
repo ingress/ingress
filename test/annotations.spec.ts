@@ -51,6 +51,15 @@ describe('Route annotations', () => {
     expect(path).to.equal('/child/path')
   })
 
+  it('should ignore the base path $', () => {
+    const child = new RouteAnnotation('$'),
+      path = parent.resolvePath('a-prefix', child),
+      childPath = child.resolvePath('something')
+
+    expect(path).to.equal('/')
+    expect(childPath).to.equal('/')
+  })
+
   it('should ignore parent prefixes with ~', () => {
     const child = new RouteAnnotation('~/child/path/'),
       path = parent.resolvePath('a-prefix', child),

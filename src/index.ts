@@ -99,10 +99,11 @@ export class Router<T extends RouterContext<T>> {
         return next()
       }
       if (this._options.resolveController) {
-          context.router = {
-          controller: this._options.resolveController(context, handler.controller),
-          bodyResult: null
-        }
+          context.route = {
+            handler,
+            controllerInstance: this._options.resolveController(context, handler.controller),
+            parserResult: null
+          }
       }
       context.res.statusCode = 200
       context.req.query = url.search ? parseQuery(url.search.slice(1)) : {}
