@@ -10,5 +10,5 @@ export {
 }
 
 export interface MiddlewareOptions<T extends CoreContext<T>> {
-  middleware?(): Middleware<T>
+  middleware?: Middleware<T>
 }

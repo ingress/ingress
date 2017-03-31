@@ -40,8 +40,9 @@ export class Server<T extends CoreContext<T>> {
   }
 
   use (middleware: Usable<T>) {
-    if (middleware.middleware) {
-      this.use(middleware.middleware())
+    const mw = middleware.middleware
+    if (mw) {
+      this.use(mw)
     }
 
     if (middleware.register) {
