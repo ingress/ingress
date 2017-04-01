@@ -36,4 +36,4 @@ export class ParseBodyAnnotation {
 
 export const ParseBody = createAnnotationFactory(ParseBodyAnnotation)
 
-export const parseJsonBody = new ParseBodyAnnotation()
+export const parseJsonBody = new ParseBodyAnnotation().middleware
