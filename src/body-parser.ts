@@ -15,7 +15,7 @@ export class ParseBodyAnnotation {
       uploads?: string,
       decoders?: { [key: string]: Function },
       compression?: { [key: string]: Function }
-    } = { parse: true, output: 'data', maxBytes: 10000 }) {}
+    } = { parse: true, output: 'data', maxBytes: 1e7 }) {}
 
   get middleware() {
     const options = this.options
