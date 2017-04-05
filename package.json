@@ -1,6 +1,6 @@
 {
   "name": "@ingress/router",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0-rc.3",
   "description": "decorator based api router",
   "main": "lib/src/index.js",
   "typings": "lib/src/index.d.ts",
@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "app-builder": "^5.1.0",
-    "reflect-annotations": "^1.0.6",
+    "reflect-annotations": "^2.0.0",
     "route-recognizer": "^0.2.9",
     "subtext": "^4.4.0"
   }

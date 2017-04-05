@@ -1,4 +1,5 @@
 import { Server, DefaultMiddleware } from '@ingress/core'
+import { createAnnotationFactory } from 'reflect-annotations'
 import * as sinon from 'sinon'
 import { getAsync as get, postAsync as post } from './util/http'
 import { expect } from 'chai'
@@ -19,6 +20,7 @@ describe('Routing', () => {
   let server: Server<MyContext>,
     router: Router<MyContext>,
     routeSpy: sinon.SinonSpy,
+    orderedSpys: sinon.SinonSpy[],
     errorStub: sinon.SinonStub
 
   beforeEach(() => {
@@ -27,6 +29,15 @@ describe('Routing', () => {
     router = new Router<MyContext>({
       baseUrl: 'api',
       resolveController: (_:any, C: any) => new C(routeSpy = sinon.spy(() => expectedResponse))
+    })
+    orderedSpys = Array.from(Array(3)).map(x => sinon.spy())
+
+    const [One, Two, Three] = orderedSpys.map(x => {
+      return createAnnotationFactory(class {
+        middleware (_:any, next: any) {
+          return next(x())
+        }
+      })
     })
 
     const { Controller } = router
@@ -44,6 +55,14 @@ describe('Routing', () => {
       }
       @Route('~/route', Route.Get, Route.Post)
       c (...args: any[]) {
+        return this.spy(...args)
+      }
+
+      @Route.Get('ordered-middleware')
+      @One()
+      @Two()
+      @Three()
+      d (...args: any[]) {
         return this.spy(...args)
       }
     }
@@ -75,11 +94,16 @@ describe('Routing', () => {
     return server.close()
   })
 
-  it("should route", async () => {
+  it('should route', async () => {
     expectedResponse = 'Hello World'
     const response = await getAsync('/api/test/route')
     expect(response).to.equal(expectedResponse)
     sinon.assert.calledOnce(routeSpy)
+  })
+
+  it('should call middleware in order', async () => {
+    const response = await getAsync('/api/test/ordered-middleware')
+    sinon.assert.callOrder(...orderedSpys)
   })
 
   it('$ should ignore all route prefixes', async () => {
