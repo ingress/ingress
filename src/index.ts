@@ -33,9 +33,9 @@ function collectPropertyAnnotations (property: AnnotatedPropertyDescription, cto
       ? getAnnotations(ctor.prototype, property.name)
       : []
 
-  return getAnnotations(ctor).reduce(
+  return getAnnotations(ctor).reduceRight(
       addClassAnnotation,
-      annotations.reduce(addMethodAnnotation, property)
+      annotations.reduceRight(addMethodAnnotation, property)
     )
 }
 

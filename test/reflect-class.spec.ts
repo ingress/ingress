@@ -12,13 +12,18 @@ class MiddlewareFixture {
 class Fixture {
   cascade: boolean = true
 }
+class ExtraFixture {}
 
 const FixtureAnnotation = createAnnotationFactory(Fixture)
 const MiddlewareAnnotation = createAnnotationFactory(MiddlewareFixture)
+const ExtraAnnotation = createAnnotationFactory(ExtraFixture)
 
+@MiddlewareAnnotation()
+@ExtraAnnotation()
 @FixtureAnnotation()
 class One {
   @FixtureAnnotation()
+  @ExtraAnnotation()
   @MiddlewareAnnotation()
   one () {}
   onea(){}
@@ -66,10 +71,34 @@ describe('reflect-annotations', () => {
   })
 
   describe('reflectAnnotations', () => {
-    const classProperties = reflectAnnotations(One)
-    expect(classProperties).to.have.length(2)
-    expect(classProperties[0].classAnnotations).to.eql(classProperties[1].classAnnotations)
-    expect(classProperties[0].methodAnnotations).to.have.length(2)
-    expect(classProperties[1].methodAnnotations).to.have.length(0)
+    it('should return all annotations', () => {
+      const classProperties = reflectAnnotations(One)
+      expect(classProperties).to.have.length(2)
+      expect(classProperties[0].classAnnotations).to.eql(classProperties[1].classAnnotations)
+      expect(classProperties[0].methodAnnotations).to.have.length(3)
+      expect(classProperties[1].methodAnnotations).to.have.length(0)
+    })
+
+    it('should return method annotations in the declared order', () => {
+      const classProperties = reflectAnnotations(One)
+      const methodOne = classProperties.find(x => x.name === 'one')
+
+      expect(methodOne.methodAnnotations.map(x => x.constructor.toString())).to.eql([
+        Fixture.toString(),
+        ExtraFixture.toString(),
+        MiddlewareFixture.toString()
+      ])
+    })
+
+    it('should return class annotations in the declared order', () => {
+      const classProperties = reflectAnnotations(One)
+      const annotations = classProperties[0].classAnnotations
+
+      expect(annotations.map(x => x.constructor.toString())).to.eql([
+        MiddlewareFixture.toString(),
+        ExtraFixture.toString(),
+        Fixture.toString()
+      ])
+    })
   })
 })
