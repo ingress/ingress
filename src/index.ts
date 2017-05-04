@@ -10,13 +10,14 @@ export {
 export interface AnnotatedPropertyDescription {
   name: string,
   classAnnotations: Array<any>,
-  methodAnnotations: Array<any>
+  methodAnnotations: Array<any>,
+  declaredOrder: boolean
 }
 
 class PropertyDescription implements AnnotatedPropertyDescription {
   classAnnotations: Array<any> = [];
   methodAnnotations: Array<any> = [];
-  constructor (public name: string) {}
+  constructor (public name: string, public declaredOrder: boolean) {}
 }
 
 function addClassAnnotation (property: AnnotatedPropertyDescription, annotation: any) {
@@ -31,21 +32,21 @@ function addMethodAnnotation (property: AnnotatedPropertyDescription, annotation
 function collectPropertyAnnotations (property: AnnotatedPropertyDescription, ctor: Function) {
   const annotations = property.name in ctor.prototype
       ? getAnnotations(ctor.prototype, property.name)
-      : []
-
-  return getAnnotations(ctor).reduceRight(
+      : [],
+    order = property.declaredOrder ? 'reduceRight' : 'reduce'
+  return getAnnotations(ctor)[order](
       addClassAnnotation,
-      annotations.reduceRight(addMethodAnnotation, property)
+      annotations[order](addMethodAnnotation, property)
     )
 }
 
-export function reflectAnnotations (source: Function): Array<AnnotatedPropertyDescription> {
+export function reflectAnnotations (source: Function, options: { declaredOrder: boolean } = { declaredOrder: true }): Array<AnnotatedPropertyDescription> {
   const classMetadata = reflectClassProperties(source)
 
   return classMetadata.properties
     .reduce((properties, propertyName) => {
       properties.push(classMetadata.constructors
-        .reduceRight(collectPropertyAnnotations, new PropertyDescription(propertyName))
+        .reduceRight(collectPropertyAnnotations, new PropertyDescription(propertyName, options.declaredOrder))
       )
       return properties
     }, [])
