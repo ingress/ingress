@@ -14,9 +14,19 @@ class Fixture {
 }
 class ExtraFixture {}
 
+class ExtraFixtureWithParameter {
+  constructor (public options: { a: number }) {}
+}
+
+class ExtraFixtureWithLotsOfParameters {
+  constructor (a1: 1, a2: 2, a3: 3, a4: 4, a5: 5, a6: 6, a7: 7, a8: 8, a9: 9, a10: 10, a11: 11) {}
+}
+
 const FixtureAnnotation = createAnnotationFactory(Fixture)
 const MiddlewareAnnotation = createAnnotationFactory(MiddlewareFixture)
 const ExtraAnnotation = createAnnotationFactory(ExtraFixture)
+const ExtraAnnotationWithAParameter = createAnnotationFactory(ExtraFixtureWithParameter)
+const ExtraAnnotationWithALotsOfParameters = createAnnotationFactory(ExtraFixtureWithLotsOfParameters)
 
 @MiddlewareAnnotation()
 @ExtraAnnotation()
@@ -40,6 +50,13 @@ class Three extends Two {
   three () {}
   threeb() {}
 }
+
+@ExtraAnnotationWithAParameter({ a: 42 })
+@ExtraAnnotationWithALotsOfParameters(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+class Four {
+  asdf() {}
+}
+
 
 describe('reflect-annotations', () => {
   describe('reflectClassProperties', () => {
@@ -110,6 +127,17 @@ describe('reflect-annotations', () => {
         ExtraFixture.toString(),
         Fixture.toString()
       ])
+    })
+
+    it('should allow annotations with parameters', () => {
+      const classProperties = reflectAnnotations(Four)
+      const annotations = classProperties[0].classAnnotations
+
+      expect(annotations.map(x => x.constructor.toString())).to.eql([
+        ExtraFixtureWithParameter.toString(),
+        ExtraFixtureWithLotsOfParameters.toString()
+      ])
+      expect(annotations[0].options.a).to.eql(42)
     })
   })
 })

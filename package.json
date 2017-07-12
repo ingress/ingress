@@ -1,6 +1,6 @@
 {
   "name": "reflect-annotations",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Set and inspect annotation metadata on JavaScript classes and methods",
   "repository": {
     "type": "git",
