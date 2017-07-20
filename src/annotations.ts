@@ -46,7 +46,7 @@ export class RouteAnnotation {
 export type Annotation = ClassDecorator & MethodDecorator
 
 export interface Path {
-  (urlDefinition: string, ...methods: Array<Path|string>): Annotation
+  (urlDefinition?: string, ...methods: Array<Path|string>): Annotation
 }
 
 export interface Route extends Path {
