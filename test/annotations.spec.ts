@@ -1,4 +1,4 @@
-import { RouteAnnotation, Route} from '../src/annotations'
+import { RouteAnnotation, Route } from '../src/annotations'
 import { expect } from 'chai'
 
 describe('Route annotations', () => {

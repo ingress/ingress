@@ -65,6 +65,11 @@ describe('Routing', () => {
       d (...args: any[]) {
         return this.spy(...args)
       }
+
+      @Route.Get()
+      e (...args: any[]) {
+        return this.spy(...args)
+      }
     }
 
     @Controller
@@ -124,6 +129,12 @@ describe('Routing', () => {
     const res2 = await postAsync('/api/route', {})
     expect(res1 === res2).to.be.true
     expect(res1).to.equal(expectedResponse)
+  })
+
+  it('should allow empty paths', async () => {
+    expectedResponse = Math.random().toString()
+    const response = await getAsync('/api/test/route')
+    expect(response).to.equal(expectedResponse)
   })
 
   it('should resolve a controller for each request', async () => {
