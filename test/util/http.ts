@@ -24,7 +24,7 @@ function parseResponse (response: any): Promise<string> {
   })
 }
 
-export function postAsync (path: string, data: any) {
+export function postAsync (path: string, data: any, headers: any = {}) {
   const url = parse(path),
     postData = data ? JSON.stringify(data) : '',
     options = {
@@ -34,7 +34,8 @@ export function postAsync (path: string, data: any) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(postData)
+        'Content-Length': Buffer.byteLength(postData),
+        ...headers
       }
     }
 

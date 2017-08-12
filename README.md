@@ -8,14 +8,14 @@ Define routes using the `@Route` decorator, and plain javascript classes.
 ## Route Definition
 
 ```javascript
-import { Route } from '@ingress/router'
+import { Route, Param } from '@ingress/router'
 
 @Route('prefix')
 export class MyController {
 
   @Route.Get('/echo/:echo')
-  someRouteHandler ({ params }) {
-    return 'Echoing ' + params.echo
+  someRouteHandler (@Param.Path('echo') echo) {
+    return 'Echoing ' + echo
   }
 }
 // GET /prefix/echo/something ===> something
