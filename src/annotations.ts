@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 
 const ANNOTATIONS = 'annotations',
+  PARAMETER_ANNOTATIONS = 'parameter-annotations',
   bind = Function.bind
 
 export interface Constructor<T> { new (...args: any[]): T }
@@ -20,10 +21,18 @@ export function getAnnotations (target: any, key?: string | symbol): Array<any> 
 }
 
 export function setAnnotations (target: any, key?: string | symbol , annotations?: Array<any>) {
-  Reflect.defineMetadata(ANNOTATIONS, annotations || [], target, key)
+  Reflect.defineMetadata(ANNOTATIONS, annotations || [], target, key!)
 }
 
-export type Annotation = ClassDecorator & MethodDecorator
+export function getParameterAnnotations (target: any, key: string | symbol): Array<any> {
+  return Reflect.getMetadata(PARAMETER_ANNOTATIONS, target, key) || []
+}
+
+export function setParameterAnnotations (target: any, key: string | symbol, annotations: Array<any>) {
+  Reflect.defineMetadata(PARAMETER_ANNOTATIONS, annotations, target, key)
+}
+
+export type Annotation = ClassDecorator & MethodDecorator & ParameterDecorator
 
 export function createAnnotationFactory <T>(Type: Constructor0<T>): () => Annotation
 export function createAnnotationFactory <T, A1>(Type: Constructor1<T, A1>): (a1: A1) => Annotation
@@ -39,10 +48,16 @@ export function createAnnotationFactory <T> (Type: Constructor<T>): (...args: an
 export function createAnnotationFactory <T>(Type: Constructor<T>) {
   return function (...args: any[]): Annotation {
     const annotationInstance = new Type(...args)
-    return (target: any, key?: string) => {
-      const annotations = getAnnotations(target, key)
-      annotations.push(annotationInstance)
-      setAnnotations(target, key, annotations)
+    return (target: any, key?: string | symbol, descriptorOrParamIndex?: PropertyDescriptor | number) => {
+      if (key && typeof descriptorOrParamIndex === "number") {
+        const annotations = getParameterAnnotations(target, key)
+        annotations[descriptorOrParamIndex] = annotationInstance
+        setParameterAnnotations(target, key, annotations)
+      } else {
+        const annotations = getAnnotations(target, key)
+        annotations.push(annotationInstance)
+        setAnnotations(target, key, annotations)
+      }
     }
   }
 }
