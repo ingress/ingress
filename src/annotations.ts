@@ -1,4 +1,5 @@
 import { createAnnotationFactory } from 'reflect-annotations'
+import { RouterContext } from './context'
 
 const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
   result = (x: string) => '/' + trim(x),
@@ -65,3 +66,44 @@ export const Route = <Route>methods.reduce((set, method) => {
   set[method].toString = () => method
   return set
 }, <any>createAnnotationFactory(RouteAnnotation))
+
+export interface ParamAnnotation {
+  extractValue(context: RouterContext<any>): any
+}
+
+class BodyParamAnnotation implements ParamAnnotation {
+  extractValue(context: RouterContext<any>) {
+    return context.req.body
+  }
+}
+
+class PathParamAnnotation implements ParamAnnotation {
+  constructor(private paramName: string) {}
+
+  extractValue(context: RouterContext<any>) {
+    return context.req.params[this.paramName]
+  }
+}
+
+class QueryParamAnnotation implements ParamAnnotation {
+  constructor(private paramName: string) {}
+
+  extractValue(context: RouterContext<any>) {
+    return context.req.query[this.paramName]
+  }
+}
+
+class HeaderParamAnnotation implements ParamAnnotation {
+  constructor(private paramName: string) {}
+
+  extractValue(context: RouterContext<any>) {
+    return context.req.headers[this.paramName]
+  }
+}
+
+export const Param = {
+  Body: createAnnotationFactory(BodyParamAnnotation),
+  Path: createAnnotationFactory(PathParamAnnotation),
+  Query: createAnnotationFactory(QueryParamAnnotation),
+  Header: createAnnotationFactory(HeaderParamAnnotation)
+}

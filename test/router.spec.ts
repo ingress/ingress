@@ -7,11 +7,12 @@ import {
   Route,
   Router,
   BaseRouterContext,
-  ParseBody
+  ParseBody,
+  Param
 } from '../src'
 
 const getAsync = (url:string) => get(`http://localhost:8888${url}`),
-  postAsync = (url: string, payload: any) => post(`http://localhost:8888${url}`, payload)
+  postAsync = (url: string, payload: any, headers?: any) => post(`http://localhost:8888${url}`, payload, headers)
 let expectedBody: any, expectedQuery: any, expectedParams: any, expectedResponse: any, router: any = null
 
 class MyContext extends BaseRouterContext<MyContext> {}
@@ -90,6 +91,34 @@ describe('Routing', () => {
         return null
       }
     }
+
+    @Controller('param-lookup')
+    class ParamLookup {
+      @Route.Post('body-lookup')
+      bodyParamLookup (@Param.Body() data: any) {
+        return data
+      }
+
+      @Route.Get('path-param-lookup/:id')
+      pathParamLookup (@Param.Path('id') id: string) {
+        return id
+      }
+
+      @Route.Get('query-param-lookup')
+      queryParamLookup (@Param.Query('value') value: string) {
+        return value
+      }
+
+      @Route.Post('header-lookup')
+      headerLookup (@Param.Body() body: string, @Param.Header('some-header') value: number) {
+        return body + ' ' + value
+      }
+
+      @Route.Get('default-lookup/:a/:b')
+      defaultRequestLookup ({ params: { a } }: any, @Param.Path('b') b: string) {
+        return a + ' ' + b
+      }
+    }
     server.use(router)
     return server.listen(8888)
   })
@@ -146,7 +175,7 @@ describe('Routing', () => {
   })
 
   it('should parse the body, query and route parameters', async () => {
-    expectedQuery = { a: 'b', b: 'c'}
+    expectedQuery = { a: 'b', b: 'c' }
     expectedParams = { a: '1', b: '2', c: '3' }
     expectedBody = { hello: 'world' }
 
@@ -161,6 +190,38 @@ describe('Routing', () => {
   it('should allow a custom body parser', () => {
     return postAsync('/api/test-buffer', { 'data': 'asdf' }).then(() => {
       sinon.assert.calledOnce(routeSpy)
+    })
+  })
+
+  describe('parameter lookup', () => {
+    it('should look up a body param', () => {
+      return postAsync('/api/param-lookup/body-lookup', 'content').then((res) => {
+        expect(res).to.eql('content')
+      })
+    })
+
+    it('should look up a path param', () => {
+      return getAsync('/api/param-lookup/path-param-lookup/42').then((res) => {
+        expect(res).to.eql('42')
+      })
+    })
+
+    it('should look up a query param', () => {
+      return getAsync('/api/param-lookup/query-param-lookup?value=42').then((res) => {
+        expect(res).to.eql('42')
+      })
+    })
+
+    it('should look up a header', () => {
+      return postAsync('/api/param-lookup/header-lookup', 'body-contents', { 'some-header': '42' }).then((res) => {
+        expect(res).to.eql('body-contents 42')
+      })
+    })
+
+    it('should supply the request by default', () => {
+      return getAsync('/api/param-lookup/default-lookup/asdf/foo').then((res) => {
+        expect(res).to.eql('asdf foo')
+      })
     })
   })
 })

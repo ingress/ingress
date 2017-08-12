@@ -10,6 +10,7 @@
   "scripts": {
     "build": "rm -rf lib && tsc --declaration",
     "test": "npm run lint && cross-env TS_NODE_IGNORE_WARNINGS=2304 mocha",
+    "mocha": "mocha",
     "prepublish": "npm run build && npm test",
     "lint": "tslint 'src/**/*.ts'"
   },
@@ -45,7 +46,7 @@
   },
   "dependencies": {
     "app-builder": "^5.1.0",
-    "reflect-annotations": "^2.0.0",
+    "reflect-annotations": "^2.2.0",
     "route-recognizer": "^0.2.9",
     "subtext": "^4.4.0"
   }
