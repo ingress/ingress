@@ -57,6 +57,16 @@ class Four {
   asdf() {}
 }
 
+class Five {
+  @MiddlewareAnnotation()
+  methodWithAParameter(@FixtureAnnotation() param: any) {
+
+  }
+
+  anotherMethodWithAParameter(@MiddlewareAnnotation() param: any, noAnnotation: any, @FixtureAnnotation() param2: any) {
+
+  }
+}
 
 describe('reflect-annotations', () => {
   describe('reflectClassProperties', () => {
@@ -138,6 +148,21 @@ describe('reflect-annotations', () => {
         ExtraFixtureWithLotsOfParameters.toString()
       ])
       expect(annotations[0].options.a).to.eql(42)
+    })
+
+    it('should allow parameter annotions', () => {
+      const classProperties = reflectAnnotations(Five)
+      expect(classProperties[0].methodAnnotations.map(x => x.constructor.toString())).to.eql([
+        MiddlewareFixture.toString()
+      ])
+      expect(classProperties[0].parameterAnnotations.map(x => x.constructor.toString())).to.eql([
+        Fixture.toString()
+      ])
+      expect(classProperties[1].parameterAnnotations.map(x => x && x.constructor.toString())).to.eql([
+        MiddlewareFixture.toString(),
+        undefined,
+        Fixture.toString()
+      ])
     })
   })
 })
