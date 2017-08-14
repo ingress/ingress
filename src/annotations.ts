@@ -5,7 +5,7 @@ const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
   result = (x: string) => '/' + trim(x),
   upper = (x: any) => x.toString().toUpperCase()
 
-export class RouteAnnotation {
+class RouteAnnotation {
 
   public path: string
   public methods: string[]
@@ -61,7 +61,7 @@ export interface Route extends Path {
 
 const methods = ['Get','Post','Put','Delete','Head','Patch']
 
-export const Route = <Route>methods.reduce((set, method) => {
+const Route = <Route>methods.reduce((set, method) => {
   set[method] = (path: string) => set(path, method)
   set[method].toString = () => method
   return set
@@ -101,9 +101,36 @@ class HeaderParamAnnotation implements ParamAnnotation {
   }
 }
 
-export const Param = {
-  Body: createAnnotationFactory(BodyParamAnnotation),
-  Path: createAnnotationFactory(PathParamAnnotation),
-  Query: createAnnotationFactory(QueryParamAnnotation),
-  Header: createAnnotationFactory(HeaderParamAnnotation)
+const
+  Body = createAnnotationFactory(BodyParamAnnotation),
+  Path = createAnnotationFactory(PathParamAnnotation),
+  Query = createAnnotationFactory(QueryParamAnnotation),
+  Header = createAnnotationFactory(HeaderParamAnnotation),
+  Param = {
+    Body,
+    Path,
+    Query,
+    Header
+  },
+  Get = Route.Get,
+  Put = Route.Put,
+  Post = Route.Post,
+  Delete = Route.Delete,
+  Head = Route.Head,
+  Patch = Route.Patch
+
+export {
+  Body,
+  Path,
+  Query,
+  Header,
+  Param,
+  Get,
+  Put,
+  Post,
+  Delete,
+  Head,
+  Patch,
+  Route,
+  RouteAnnotation
 }
