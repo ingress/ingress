@@ -68,6 +68,13 @@ class Five {
   }
 }
 
+class Six {
+  @MiddlewareAnnotation()
+  methodWithTypes(@FixtureAnnotation() param: string, foo: any, otherParam: number): string { return 'hello' }
+
+  methodWithNoAnnotations(param: string, foo: any, otherParam: number): string { return 'hello' }
+}
+
 describe('reflect-annotations', () => {
   describe('reflectClassProperties', () => {
     it('should reflect on a class', () => {
@@ -150,7 +157,7 @@ describe('reflect-annotations', () => {
       expect(annotations[0].options.a).to.eql(42)
     })
 
-    it('should allow parameter annotions', () => {
+    it('should collect parameter annotions', () => {
       const classProperties = reflectAnnotations(Five)
       expect(classProperties[0].methodAnnotations.map(x => x.constructor.toString())).to.eql([
         MiddlewareFixture.toString()
@@ -164,5 +171,14 @@ describe('reflect-annotations', () => {
         Fixture.toString()
       ])
     })
+  })
+
+  it('should collect types', () => {
+    const [annotatedMethod, unannotatedMethod] = reflectAnnotations(Six)
+    expect(annotatedMethod.types.parameters).to.eql([String, Object, Number])
+    expect(annotatedMethod.types.return).to.eql(String)
+
+    expect(unannotatedMethod.types.parameters).to.be.undefined
+    expect(unannotatedMethod.types.return).to.be.undefined
   })
 })

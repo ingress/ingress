@@ -2,6 +2,8 @@ import 'reflect-metadata'
 
 const ANNOTATIONS = 'annotations',
   PARAMETER_ANNOTATIONS = 'parameter-annotations',
+  PARAMETER_TYPES = 'design:paramtypes',
+  RETURN_TYPE = 'design:returntype',
   bind = Function.bind
 
 export interface Constructor<T> { new (...args: any[]): T }
@@ -25,11 +27,20 @@ export function setAnnotations (target: any, key?: string | symbol , annotations
 }
 
 export function getParameterAnnotations (target: any, key: string | symbol): Array<any> {
-  return Reflect.getMetadata(PARAMETER_ANNOTATIONS, target, key) || []
+  const annotations = Reflect.getMetadata(PARAMETER_ANNOTATIONS, target, key)
+  return annotations ? Array.from(annotations) : []
 }
 
 export function setParameterAnnotations (target: any, key: string | symbol, annotations: Array<any>) {
   Reflect.defineMetadata(PARAMETER_ANNOTATIONS, annotations, target, key)
+}
+
+export function getParameterTypes (target: any, key: string | symbol): Array<any> | undefined {
+  return Reflect.getMetadata(PARAMETER_TYPES, target, key)
+}
+
+export function getReturnType (target: any, key: string | symbol): Array<any> | undefined {
+  return Reflect.getMetadata(RETURN_TYPE, target, key)
 }
 
 export type Annotation = ClassDecorator & MethodDecorator & ParameterDecorator
