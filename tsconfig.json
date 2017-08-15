@@ -6,7 +6,8 @@
     "emitDecoratorMetadata": true,
     "strict": true,
     "removeComments": true,
-    "outDir": "lib"
+    "outDir": "lib",
+    "lib": [ "es2015" ]
   },
   "compileOnSave": true,
   "include": [
