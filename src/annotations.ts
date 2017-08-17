@@ -13,7 +13,7 @@ class RouteAnnotation {
   public ignoreParentPrefix: boolean
   public ignoreAllPrefix: boolean
 
-  constructor (path: string, ...methods: Array<Path | string>) {
+  constructor (path: string, ...methods: Array<PathFactory | string>) {
     path = path || ''
     this.ignoreAllPrefix = path.startsWith('$')
     this.ignoreParentPrefix = path.startsWith('~')
@@ -46,22 +46,22 @@ class RouteAnnotation {
 
 export type Annotation = ClassDecorator & MethodDecorator
 
-export interface Path {
-  (urlDefinition?: string, ...methods: Array<Path|string>): Annotation
+export interface PathFactory {
+  (urlDefinition?: string, ...methods: Array<PathFactory|string>): Annotation
 }
 
-export interface Route extends Path {
-  Get: Path
-  Post: Path
-  Put: Path
-  Delete: Path
-  Head: Path
-  Patch: Path
+export interface Route extends PathFactory {
+  Get: PathFactory
+  Post: PathFactory
+  Put: PathFactory
+  Delete: PathFactory
+  Head: PathFactory
+  Patch: PathFactory
 }
 
 const methods = ['Get','Post','Put','Delete','Head','Patch']
 
-const Route = <Route>methods.reduce((set, method) => {
+export const Route = <Route>methods.reduce((set, method) => {
   set[method] = (path: string) => set(path, method)
   set[method].toString = () => method
   return set
@@ -121,7 +121,6 @@ const
 
 export {
   Body,
-  Path,
   Query,
   Header,
   Param,
@@ -131,6 +130,5 @@ export {
   Delete,
   Head,
   Patch,
-  Route,
   RouteAnnotation
 }
