@@ -17,6 +17,12 @@ let expectedBody: any, expectedQuery: any, expectedParams: any, expectedResponse
 
 class MyContext extends BaseRouterContext<MyContext> {}
 
+class MyCustomType {
+  constructor(public value: number) { }
+}
+
+class MyUnknownType { }
+
 describe('Routing', () => {
   let server: Server<MyContext>,
     router: Router<MyContext>,
@@ -29,7 +35,13 @@ describe('Routing', () => {
       .use(new DefaultMiddleware<MyContext>({ onError: errorStub = sinon.stub() }))
     router = new Router<MyContext>({
       baseUrl: 'api',
-      resolveController: (_:any, C: any) => new C(routeSpy = sinon.spy(() => expectedResponse))
+      resolveController: (_:any, C: any) => new C(routeSpy = sinon.spy(() => expectedResponse)),
+      typeConverters: [
+        {
+          type: MyCustomType,
+          convert: value => new MyCustomType(+value)
+        }
+      ]
     })
     orderedSpys = Array.from(Array(3)).map(x => sinon.spy())
 
@@ -119,12 +131,44 @@ describe('Routing', () => {
         return a + ' ' + b
       }
     }
+
+    @Controller('type-conversion')
+    class TypeConversion {
+      @Route.Post('booleans/:b1')
+      booleanConversion(@Param.Path('b1') path: boolean, @Param.Body() body: boolean, @Param.Header('bool-header') header: boolean) {
+        return JSON.stringify([path, body, header])
+      }
+
+      @Route.Post('numbers/:n1')
+      numberConversion(@Param.Path('n1') path: number, @Param.Body() body: number, @Param.Header('num-header') header: number) {
+        return JSON.stringify([path, body, header])
+      }
+
+      @Route.Post('strings/:s1')
+      stringConversion(@Param.Path('s1') path: string, @Param.Body() body: string, @Param.Header('string-header') header: string) {
+        return JSON.stringify([path, body, header])
+      }
+
+      @Route.Get('custom/:value')
+      customTypeConversion(@Param.Path('value') custom: MyCustomType) {
+        return JSON.stringify(custom.value)
+      }
+    }
+
     server.use(router)
     return server.listen(8888)
   })
 
   afterEach(() => {
-    sinon.assert.notCalled(errorStub)
+    try {
+      sinon.assert.notCalled(errorStub)
+    } catch (err) {
+      const lastError = errorStub.lastCall.args[0]
+      if(lastError && lastError.error) {
+        throw lastError.error
+      }
+      throw err
+    }
     return server.close()
   })
 
@@ -222,6 +266,80 @@ describe('Routing', () => {
       return getAsync('/api/param-lookup/default-lookup/asdf/foo').then((res) => {
         expect(res).to.eql('asdf foo')
       })
+    })
+  })
+  describe('type conversion', () => {
+    it('should convert a Boolean parameter', async() => {
+      await postAsync('/api/type-conversion/booleans/true', 'true', { 'bool-header' : 'true' }).then((res) => {
+        expect(res).to.eql(JSON.stringify([true, true, true]))
+      })
+
+      await postAsync('/api/type-conversion/booleans/blah', false, { 'bool-header' : 'false' }).then((res) => {
+        expect(res).to.eql(JSON.stringify([false, false, false]))
+      })
+    })
+
+    it('should convert a Number parameter', async() => {
+      await postAsync('/api/type-conversion/numbers/1', '2', { 'num-header' : '3' }).then((res) => {
+        expect(res).to.eql(JSON.stringify([1, 2, 3]))
+      })
+
+      await postAsync('/api/type-conversion/numbers/foo', '2', { 'num-header' : '3' }).then((res) => {
+        sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert "foo" to number' } }))
+        errorStub.reset()
+      })
+
+      await postAsync('/api/type-conversion/numbers/4', null, { 'num-header' : '3' }).then((res) => {
+        sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert null to number' } }))
+        errorStub.reset()
+      })
+
+      await postAsync('/api/type-conversion/numbers/4', '2', {}).then((res) => {
+        sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to number' } }))
+        errorStub.reset()
+      })
+    })
+
+    it('should convert a String parameter', async() => {
+      await postAsync('/api/type-conversion/strings/one', 2, { 'string-header' : 'three' }).then((res) => {
+        expect(res).to.eql(JSON.stringify(['one', '2', 'three']))
+      })
+
+      await postAsync('/api/type-conversion/strings/one', null, { 'string-header' : 'three' }).then((res) => {
+        sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert null to string' } }))
+        errorStub.reset()
+      })
+
+      await postAsync('/api/type-conversion/strings/one', 2, {}).then((res) => {
+        sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to string' } }))
+        errorStub.reset()
+      })
+    })
+
+    it('should allow a custom type converter', () => {
+      return getAsync('/api/type-conversion/custom/32').then((res) => {
+        expect(res).to.eql(JSON.stringify(32))
+      })
+    })
+
+    it('should throw an error if a type converter cannot be found for a type', () => {
+      const badRouter = new Router<MyContext>({}),
+        { Controller: ExpectToFail } = badRouter
+
+      @ExpectToFail
+      class UnknownCustomType {
+        @Route.Get('custom-unknown/:value')
+        failedTypeConversion(@Param.Path('value') value: MyUnknownType) {
+          return JSON.stringify([value])
+        }
+      }
+
+      try {
+        new Server().use(badRouter.middleware)
+        expect.fail()
+      } catch (err) {
+        expect(err.message).to.eql('no type converter found for type: MyUnknownType')
+      }
     })
   })
 })

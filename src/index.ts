@@ -21,13 +21,43 @@ export interface RouterOptions<T> {
   isRoutable?: (routeDefinition: RouteMetadata) => boolean
   getMethods?: (routeDefinition: RouteMetadata) => string[]
   getPath?: (baseUrl: string, routeDefinition: RouteMetadata) => string
+  typeConverters?: TypeConverter<any>[]
 }
 
 export interface Middleware<T extends RouterContext<T>> {
   (context: T, next: GenericMiddleware<T>): any
 }
 
-const defaultOptions = {
+export interface TypeConverter<T> {
+  type: Type<T>
+  convert(value: any): T
+}
+
+const defaultTypeConverters: TypeConverter<any>[] = [{
+  type: Number,
+  convert: (value) => {
+    if (value === null || isNaN(value)) {
+      throw new Error(`cannot convert ${JSON.stringify(value)} to number`)
+    }
+    return +value
+  }
+},{
+  type: String,
+  convert: (value) => {
+    if (value === null || value === undefined) {
+      throw new Error(`cannot convert ${JSON.stringify(value)} to string`)
+    }
+    return value.toString()
+  }
+},{
+  type: Boolean,
+  convert (value) {
+    return Boolean(value && value.toString().toLowerCase() === 'true')
+  }
+}]
+
+const defaultOptions: RouterOptions<any> = {
+  typeConverters: [],
   resolveController (ctx: any, ctrl: Type<any>) {
     if (ctx.scope && typeof ctx.scope.get === 'function') {
       this.resolveController = (context: any, controller: Type<any>) => context.scope.get(controller)
@@ -47,10 +77,12 @@ export class Router<T extends RouterContext<T>> {
 
   public handlers: Handler<T>[]
   public Controller: ControllerDecorator = this._controllerCollector.collect
+  public readonly typeConverters: TypeConverter<any>[]
 
   constructor (options: RouterOptions<T> = {}) {
     this._options = Object.assign({}, defaultOptions, options)
     this.routers = {}
+    this.typeConverters = this._options.typeConverters!.concat(defaultTypeConverters)
   }
 
   _initialize () {
@@ -69,7 +101,7 @@ export class Router<T extends RouterContext<T>> {
         .filter(isRoutable || isExplictlyRoutable))
       , [])
       .map((route: RouteMetadata) => {
-        const handler = createHandler<T>(route, baseUrl, getPath, getMethods)
+        const handler = createHandler<T>(route, baseUrl, getPath, getMethods, this.typeConverters)
         handler.httpMethods.forEach(method => {
           const recognizer = this.routers[method] = this.routers[method]
             || new RouteRecognizer<Handler<T>>()

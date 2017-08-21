@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "app-builder": "^5.1.0",
-    "reflect-annotations": "^2.2.0",
+    "reflect-annotations": "^2.3.0",
     "route-recognizer": "^0.2.9",
     "subtext": "^4.4.0"
   }
