@@ -121,7 +121,7 @@ export class Handler<T extends RouterContext<T>> {
     }
     return (context) => {
       const value = paramResolver(context)
-      return typeConverter.convert(value)
+      return typeConverter.convert(value, paramType)
     }
   }
 
