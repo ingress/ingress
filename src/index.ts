@@ -30,12 +30,12 @@ export interface Middleware<T extends RouterContext<T>> {
 
 export interface ExactTypeConverter<T> {
   type: Type<T>
-  convert(value: any): T
+  convert(value: any, paramType: Function): T
 }
 
 export interface PredicateTypeConverter<T> {
   typePredicate: (type: Function) => boolean
-  convert(value: any): T
+  convert(value: any, paramType: Function): T
 }
 
 export type TypeConverter<T> = ExactTypeConverter<T> | PredicateTypeConverter<T>
