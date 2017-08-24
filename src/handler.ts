@@ -4,7 +4,7 @@ import { parseJsonBody } from './body-parser'
 import { RouteAnnotation, ParamAnnotation } from './annotations'
 import { RouterContext } from './context'
 import { Type } from './type'
-import { TypeConverter } from './index'
+import { TypeConverter, ExactTypeConverter } from './index'
 
 export type RouteMetadata = AnnotatedPropertyDescription & { controller: Type<any> }
 
@@ -73,6 +73,10 @@ export interface ParamResolver {
   (context: RouterContext<any>): any
 }
 
+function isExactTypeConverter<T> (converter: TypeConverter<T>): converter is ExactTypeConverter<T> {
+  return 'type' in converter
+}
+
 export class Handler<T extends RouterContext<T>> {
   public handler: Handler<T>
   public controllerMethod: string
@@ -111,7 +115,7 @@ export class Handler<T extends RouterContext<T>> {
     if (!paramType || paramType === Object) {
       return paramResolver
     }
-    const typeConverter = paramType && this.typeConverters.find(c => c.type === paramType)
+    const typeConverter = paramType && this.typeConverters.find(c => isExactTypeConverter(c) ? c.type === paramType : c.typePredicate(paramType))
     if (!typeConverter) {
       throw new Error(`no type converter found for type: ${paramType.name || paramType}`)
     }
