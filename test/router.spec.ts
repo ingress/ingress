@@ -21,6 +21,14 @@ class MyCustomType {
   constructor(public value: number) { }
 }
 
+class MyCustomPredicateType {
+  value: string
+
+  constructor(value: number) {
+    this.value = 'predicate ' + value
+  }
+}
+
 class MyUnknownType { }
 
 describe('Routing', () => {
@@ -40,6 +48,10 @@ describe('Routing', () => {
         {
           type: MyCustomType,
           convert: value => new MyCustomType(+value)
+        },
+        {
+          typePredicate: t => t === MyCustomPredicateType,
+          convert: value => new MyCustomPredicateType(+value)
         }
       ]
     })
@@ -151,6 +163,11 @@ describe('Routing', () => {
 
       @Route.Get('custom/:value')
       customTypeConversion(@Param.Path('value') custom: MyCustomType) {
+        return JSON.stringify(custom.value)
+      }
+
+      @Route.Get('custom-predicate/:value')
+      customPredicateTypeConversion(@Param.Path('value') custom: MyCustomPredicateType) {
         return JSON.stringify(custom.value)
       }
     }
@@ -319,6 +336,12 @@ describe('Routing', () => {
     it('should allow a custom type converter', () => {
       return getAsync('/api/type-conversion/custom/32').then((res) => {
         expect(res).to.eql(JSON.stringify(32))
+      })
+    })
+
+    it('should allow a custom type converter based on type predicate', () => {
+      return getAsync('/api/type-conversion/custom-predicate/64').then((res) => {
+        expect(res).to.eql(JSON.stringify('predicate 64'))
       })
     })
 
