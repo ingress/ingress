@@ -28,10 +28,17 @@ export interface Middleware<T extends RouterContext<T>> {
   (context: T, next: GenericMiddleware<T>): any
 }
 
-export interface TypeConverter<T> {
+export interface ExactTypeConverter<T> {
   type: Type<T>
   convert(value: any): T
 }
+
+export interface PredicateTypeConverter<T> {
+  typePredicate: (type: Function) => boolean
+  convert(value: any): T
+}
+
+export type TypeConverter<T> = ExactTypeConverter<T> | PredicateTypeConverter<T>
 
 const defaultTypeConverters: TypeConverter<any>[] = [{
   type: Number,
