@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
+    "removeComments": true,
+    "outDir": "lib",
+    "lib": [ "es2015" ]
+  },
+  "compileOnSave": true,
+  "include": [
+    "./src/**/*",
+    "./node_modules/@types/**/*"
+  ]
+}

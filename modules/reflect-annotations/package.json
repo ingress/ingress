@@ -1,0 +1,45 @@
+{
+  "name": "reflect-annotations",
+  "version": "2.3.0",
+  "description": "Set and inspect annotation metadata on JavaScript classes and methods",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/calebboyd/reflect-annotations"
+  },
+  "main": "./lib/index.js",
+  "typings": "./lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "engines": {
+    "node": ">=4.0.0"
+  },
+  "scripts": {
+    "build": "tsc --declaration",
+    "prepublish": "npm test",
+    "test": "npm run build && cross-env TS_NODE_PROJECT=test mocha"
+  },
+  "keywords": [
+    "annotations",
+    "decorators",
+    "class decorators",
+    "class annotations",
+    "annotation",
+    "decorator",
+    "class reflection",
+    "reflection"
+  ],
+  "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
+  "license": "MIT",
+  "peerDependencies": {},
+  "devDependencies": {
+    "@types/chai": "4.0.1",
+    "@types/mocha": "2.2.41",
+    "chai": "4.1.0",
+    "cross-env": "5.0.1",
+    "mocha": "3.4.2",
+    "reflect-metadata": "0.1.10",
+    "ts-node": "3.2.0",
+    "typescript": "2.4.1"
+  }
+}
