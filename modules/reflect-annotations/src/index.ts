@@ -66,7 +66,10 @@ export function reflectAnnotations (source: Function, options: { declaredOrder: 
   return classMetadata.properties
     .reduce<AnnotatedPropertyDescription[]>((properties, propertyName) => {
       properties.push(classMetadata.constructors
-        .reduceRight<AnnotatedPropertyDescription>(collectPropertyAnnotations, new PropertyDescription(propertyName, options.declaredOrder))
+        .reduceRight<AnnotatedPropertyDescription>(
+          collectPropertyAnnotations,
+          new PropertyDescription(propertyName, options.declaredOrder)
+        )
       )
       return properties
     }, [])

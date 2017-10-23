@@ -1,6 +1,6 @@
 ## reflect-annotations
 
-Annotations are namespaced [metadata](https://www.npmjs.com/package/reflect-metadata) fields used for defining non-destructive runtime metadata on classes and methods.
+Annotations are namespaced [metadata](https://www.npmjs.com/package/reflect-metadata) fields used for defining non-destructive runtime metadata on classes, methods and parameters.
 
 ### Example
 ```javascript
@@ -43,7 +43,11 @@ console.log(reflectAnnotations(MyClass, { declaredOrder: false }))
 //}]
 ```
 
-In the above example a decorator is created when `Example` is invoked at parse time. The decorator adds an `ExampleAnnotation` _instance_ to the target's list of annotations. The decorator is non-destructive, meaning it doesn't alter the property descriptor or target. It only appends annotation metadata. By default annotations are processed in "declared order" this is the order that they're declared (top to bottom) The opposite of this order would be "parsed order" which is the order that the javascript engine executes them. The order they're recieved in can be adjusted by passing the above option as an optional second argument.
+In the above example a decorator is created when `Example` is invoked at parse time. The decorator adds an `ExampleAnnotation` _instance_ to the target's list of annotations. These "Annotations" are non destructive metadata.
+
+By default annotations are processed in "declared order" this is the order that they're declared (top to bottom) The opposite of this order would be "parsed order" which is the order that the javascript engine executes them.
+
+The order they're recorded in can be adjusted by passing the `{ declaredOrder: false }` as a second optional options argument.
 
 ### Requirements
 - [reflect-metadata](https://www.npmjs.com/package/reflect-metadata) polyfill

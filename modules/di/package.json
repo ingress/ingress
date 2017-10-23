@@ -9,13 +9,14 @@
   ],
   "scripts": {
     "build": "rm -rf lib && tsc --declaration",
-    "test": "npm run lint && cross-env TS_NODE_IGNORE_WARNINGS=2307 ts-node test/index.spec.ts",
-    "prepublish": "npm run build && npm test",
+    "test": "ts-node test/index.test.ts",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run test",
     "lint": "tslint 'src/**/*.ts'"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ingress/di.git"
+    "url": "https://github.com/ingress/ingress.git"
   },
   "keywords": [
     "server di",
@@ -26,21 +27,18 @@
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ingress/di/issues"
+    "url": "https://github.com/ingress/ingress/issues"
   },
   "homepage": "https://github.com/ingress/di#readme",
   "peerDependencies": {
-    "reflect-metadata": "^0.1.9"
+    "reflect-metadata": "^0.1.10"
   },
   "devDependencies": {
-    "@types/node": "^7.0.1",
-    "cross-env": "^3.1.4",
-    "reflect-metadata": "^0.1.9",
-    "ts-node": "^1.7.3",
-    "tslint": "^4.3.1",
-    "tslint-eslint-rules": "^3.2.3"
+    "reflect-metadata": "^0.1.10",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.5.3"
   },
   "dependencies": {
-    "angular.di": "^2.4.1"
+    "injection-js": "^2.1.0"
   }
 }
