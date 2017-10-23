@@ -32,22 +32,19 @@
   "license": "MIT",
   "devDependencies": {
     "@types/bluebird": "^3.5.2",
-    "@types/chai": "^3.4.35",
-    "@types/mocha": "^2.2.40",
-    "@types/node": "^7.0.12",
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.43",
     "@types/on-finished": "^2.2.29",
     "@types/sinon": "^2.1.0",
     "bluebird": "^3.5.0",
-    "chai": "^3.5.0",
+    "chai": "^4.1.2",
     "cross-env": "^4.0.0",
-    "mocha": "^3.2.0",
+    "mocha": "^4.0.1",
     "reflect-metadata": "^0.1.10",
     "rimraf": "^2.6.1",
     "sinon": "^2.1.0",
-    "ts-node": "^3.0.2",
-    "tslint": "^4.5.1",
-    "tslint-eslint-rules": "^3.5.1",
-    "typescript": "^2.2.2"
+    "ts-node": "^3.3.0",
+    "typescript": "^2.5.3"
   },
   "peerDependencies": {
     "reflect-metadata": "^0.1.10"
@@ -55,6 +52,7 @@
   "dependencies": {
     "app-builder": "^5.1.0",
     "destroy": "^1.0.4",
-    "on-finished": "^2.3.0"
+    "on-finished": "^2.3.0",
+    "reflect-metadata": "^0.1.10"
   }
 }

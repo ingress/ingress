@@ -4,8 +4,8 @@ function uniqueNotConstructor (names: Array<string>, name: string) {
 }
 
 export function reflectClassProperties (source: Function) {
-  const properties: Array<string> = [],
-    constructors: Array<Function> = []
+  const properties: string[] = [],
+    constructors: Function[] = []
 
   let current = source
 

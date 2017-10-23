@@ -1,8 +1,6 @@
 import 'reflect-metadata'
 import * as assert from 'assert'
-import { Container, Injector } from '../src'
-
-import { ReflectiveInjector } from 'angular.di'
+import { Container, Injector, ReflectiveInjector } from '../src'
 
 const Injectable = (): ClassDecorator => () => void 'decorator that will cause tsc to emit type metadata'
 
@@ -37,7 +35,7 @@ class TestD {
 
 const context1 = new Context(),
   context2 = new Context(),
-  middleware = container.middleware()
+  middleware = container.middleware
 
 let called = false,
   expectedSingleton: any,

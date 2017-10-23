@@ -1,16 +1,16 @@
 import {
   ReflectiveInjector,
   Injector,
+  InjectionToken,
   Provider,
   ResolvedReflectiveProvider,
   ResolvedReflectiveFactory,
   ReflectiveKey
-} from 'angular.di'
+} from 'injection-js'
 
 import {
   Type,
-  DependencyCollectorFactory,
-  DependencyCollector
+  DependencyCollectorList
 } from './collector'
 
 export {
@@ -30,15 +30,15 @@ export interface ContainerOptions {
 }
 
 const EMPTY_DEPS: Array<any> = [],
-  ContextToken = Symbol.for('ingress.context')
+  ContextToken = new InjectionToken('ingress.context')
 
-export class Container<T extends ContainerContext> implements Injector {
+export class Container<T extends ContainerContext = ContainerContext> implements Injector {
   private rootInjector: ReflectiveInjector
   private resolvedChildProviders: ResolvedReflectiveProvider[]
   private ResolvedContextProvider: Type<ResolvedReflectiveProvider>
 
-  private _singletonCollector = new DependencyCollector()
-  private _perRequestCollector = new DependencyCollector()
+  private _singletonCollector = new DependencyCollectorList()
+  private _perRequestCollector = new DependencyCollectorList()
 
   public providers: Provider []
   public perRequestProviders: Provider []
@@ -79,14 +79,14 @@ export class Container<T extends ContainerContext> implements Injector {
   }
 
   private _initialize () {
-    this.providers = this.providers.concat(this._singletonCollector.collected)
-    this.perRequestProviders = this.perRequestProviders.concat(this._perRequestCollector.collected)
+    this.providers = this.providers.concat(this._singletonCollector.items)
+    this.perRequestProviders = this.perRequestProviders.concat(this._perRequestCollector.items)
 
     this.rootInjector = ReflectiveInjector.resolveAndCreate(this.providers)
     this.resolvedChildProviders = ReflectiveInjector.resolve(this.perRequestProviders)
   }
 
-  middleware () {
+  get middleware () {
     this._initialize()
     return (context: T, next: () => any) => {
       context.scope = this.createChild(new this.ResolvedContextProvider(context))

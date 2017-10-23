@@ -28,7 +28,6 @@
     "@ingress/core": "^1.0.0-beta.9",
     "@types/chai": "^3.4.35",
     "@types/mocha": "^2.2.40",
-    "@types/node": "^7.0.12",
     "@types/route-recognizer": "0.0.27",
     "@types/sinon": "^2.1.0",
     "chai": "^3.5.0",
