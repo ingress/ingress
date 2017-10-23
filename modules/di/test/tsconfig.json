@@ -9,7 +9,6 @@
     "removeComments": true
   },
   "include": [
-    "../src/**/*",
-    "**/*.ts"
+    "../src/**/*"
   ]
 }

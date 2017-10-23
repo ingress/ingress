@@ -31,15 +31,17 @@
   ],
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
-  "peerDependencies": {},
+  "peerDependencies": {
+    "reflect-metadata": "0.1.10"
+  },
   "devDependencies": {
-    "@types/chai": "4.0.1",
-    "@types/mocha": "2.2.41",
-    "chai": "4.1.0",
-    "cross-env": "5.0.1",
-    "mocha": "3.4.2",
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.43",
+    "chai": "^4.1.2",
+    "cross-env": "^5.1.0",
+    "mocha": "^4.0.1",
     "reflect-metadata": "0.1.10",
-    "ts-node": "3.2.0",
-    "typescript": "2.4.1"
+    "ts-node": "^3.3.0",
+    "typescript": "^2.5.3"
   }
 }

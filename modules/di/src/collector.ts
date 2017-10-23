@@ -3,25 +3,20 @@ export interface Type<T> {
   new(...args: any[]): T
 }
 
-export interface DependencyCollectorFactory {
+export interface DependencyCollector {
   (): ClassDecorator
+  (target: any): void
 }
 
-export type DependencyCollectorDecorator = DependencyCollectorFactory & ClassDecorator
-
-export class DependencyCollector {
-  public collected: Array<Type<any>> = []
-  public collect: DependencyCollectorDecorator
-  private _collector: ClassDecorator
+export class DependencyCollectorList {
+  public items: Array<Type<any>> = []
+  public collect: DependencyCollector
   constructor () {
-    this._collector = (target: any) => {
-      this.collected.push(target)
-    }
-    this.collect = (target?: any) => {
+    this.collect = (target?: any): any => {
       if (!target) {
-        return this._collector
+        return this.collect
       }
-      return this._collector(target) as ClassDecorator
+      this.items.push(target)
     }
   }
 }
