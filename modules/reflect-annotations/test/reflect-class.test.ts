@@ -115,7 +115,7 @@ describe('reflect-annotations', () => {
 
     it('should return method annotations in the declared order', () => {
       const classProperties = reflectAnnotations(One)
-      const methodOne = classProperties.find(x => x.name === 'one')
+      const methodOne = classProperties.find(x => x.name === 'one')!
 
       expect(methodOne.methodAnnotations.map(x => x.constructor.toString())).to.eql([
         Fixture.toString(),
@@ -126,7 +126,7 @@ describe('reflect-annotations', () => {
 
     it('should return method annotations in the parsed order', () => {
       const classProperties = reflectAnnotations(One, { declaredOrder: false })
-      const methodOne = classProperties.find(x => x.name === 'one')
+      const methodOne = classProperties.find(x => x.name === 'one')!
 
       expect(methodOne.methodAnnotations.map(x => x.constructor.toString())).to.eql([
         MiddlewareFixture.toString(),

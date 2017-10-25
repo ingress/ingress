@@ -1,13 +1,5 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "lib": ["es2015"],
-    "module": "commonjs",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "noImplicitAny": true,
-    "removeComments": true
-  },
+  "extends": "../../../ts-base",
   "include": [
     "../src/**/*",
     "**/*.ts"
