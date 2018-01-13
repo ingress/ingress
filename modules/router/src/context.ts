@@ -5,8 +5,8 @@ import { Type } from './type'
 
 export interface RoutedRequest<T> extends IncomingMessage {
   context: T
-  body: any,
-  query: { [key: string]: any },
+  body: any
+  query: { [key: string]: any }
   params: { [key: string]: any }
 }
 
@@ -15,8 +15,8 @@ export interface Response<T> extends ServerResponse {
 }
 
 export interface CurrentRoute<T extends RouterContext<T>> {
-  controllerInstance: any,
-  parserResult: any,
+  controllerInstance: any
+  parserResult: any
   handler: Handler<T>
 }
 

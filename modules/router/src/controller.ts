@@ -15,7 +15,7 @@ export class ControllerCollector {
   public collected: Array<Type<any>> = []
   public collect: ControllerDecorator
   private _collector: ClassDecorator
-  constructor () {
+  constructor() {
     this._collector = (target: any) => {
       this.collected.push(target)
     }
@@ -23,7 +23,7 @@ export class ControllerCollector {
       if (!options) {
         return this._collector
       }
-      const routePrefix: string = typeof options === 'string' && options || options.routePrefix
+      const routePrefix: string = (typeof options === 'string' && options) || options.routePrefix
       if (routePrefix) {
         return ((target: any) => {
           Route(routePrefix)(target)

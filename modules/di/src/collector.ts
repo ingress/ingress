@@ -1,6 +1,6 @@
 export const Type = Function
 export interface Type<T> {
-  new(...args: any[]): T
+  new (...args: any[]): T
 }
 
 export interface DependencyCollector {
@@ -11,7 +11,7 @@ export interface DependencyCollector {
 export class DependencyCollectorList {
   public items: Array<Type<any>> = []
   public collect: DependencyCollector
-  constructor () {
+  constructor() {
     this.collect = (target?: any): any => {
       if (!target) {
         return this.collect

@@ -3,22 +3,21 @@ import { createAnnotationFactory } from 'reflect-annotations'
 import * as sinon from 'sinon'
 import { getAsync as get, postAsync as post } from './util/http'
 import { expect } from 'chai'
-import {
-  Route,
-  Router,
-  BaseRouterContext,
-  ParseBody,
-  Param
-} from '../src'
+import { Route, Router, BaseRouterContext, ParseBody, Param } from '../src'
 
-const getAsync = (url:string) => get(`http://localhost:8888${url}`),
-  postAsync = (url: string, payload: any, headers?: any) => post(`http://localhost:8888${url}`, payload, headers)
-let expectedBody: any, expectedQuery: any, expectedParams: any, expectedResponse: any, router: any = null
+const getAsync = (url: string) => get(`http://localhost:8888${url}`),
+  postAsync = (url: string, payload: any, headers?: any) =>
+    post(`http://localhost:8888${url}`, payload, headers)
+let expectedBody: any,
+  expectedQuery: any,
+  expectedParams: any,
+  expectedResponse: any,
+  router: any = null
 
 class MyContext extends BaseRouterContext<MyContext> {}
 
 class MyCustomType {
-  constructor(public value: number) { }
+  constructor(public value: number) {}
 }
 
 class MyCustomPredicateType {
@@ -29,7 +28,7 @@ class MyCustomPredicateType {
   }
 }
 
-class MyUnknownType { }
+class MyUnknownType {}
 
 describe('Routing', () => {
   let server: Server<MyContext>,
@@ -39,11 +38,12 @@ describe('Routing', () => {
     errorStub: sinon.SinonStub
 
   beforeEach(() => {
-    server = new Server<MyContext>()
-      .use(new DefaultMiddleware<MyContext>({ onError: errorStub = sinon.stub() }))
+    server = new Server<MyContext>().use(
+      new DefaultMiddleware<MyContext>({ onError: (errorStub = sinon.stub()) })
+    )
     router = new Router<MyContext>({
       baseUrl: 'api',
-      resolveController: (_:any, C: any) => new C(routeSpy = sinon.spy(() => expectedResponse)),
+      resolveController: (_: any, C: any) => new C((routeSpy = sinon.spy(() => expectedResponse))),
       typeConverters: [
         {
           type: MyCustomType,
@@ -58,28 +58,30 @@ describe('Routing', () => {
     orderedSpys = Array.from(Array(3)).map(x => sinon.spy())
 
     const [One, Two, Three] = orderedSpys.map(x => {
-      return createAnnotationFactory(class {
-        middleware (_:any, next: any) {
-          return next(x())
+      return createAnnotationFactory(
+        class {
+          middleware(_: any, next: any) {
+            return next(x())
+          }
         }
-      })
+      )
     })
 
     const { Controller } = router
 
     @Controller('test')
     class TestController {
-      constructor (public spy: Function) {}
+      constructor(public spy: Function) {}
       @Route.Get('route')
-      a (...args: any[]) {
+      a(...args: any[]) {
         return this.spy(...args)
       }
       @Route.Get('$/route')
-      b (...args: any[]) {
+      b(...args: any[]) {
         return this.spy(...args)
       }
       @Route('~/route', Route.Get, Route.Post)
-      c (...args: any[]) {
+      c(...args: any[]) {
         return this.spy(...args)
       }
 
@@ -87,21 +89,21 @@ describe('Routing', () => {
       @One()
       @Two()
       @Three()
-      d (...args: any[]) {
+      d(...args: any[]) {
         return this.spy(...args)
       }
 
       @Route.Get()
-      e (...args: any[]) {
+      e(...args: any[]) {
         return this.spy(...args)
       }
     }
 
     @Controller
     class TestController2 {
-      constructor (public spy: Function) {}
+      constructor(public spy: Function) {}
       @Route.Post('/abc/:a/:b/:c')
-      postAsdf ({ body, query, params }: any) {
+      postAsdf({ body, query, params }: any) {
         expect(body).to.eql(expectedBody)
         expect(query).to.eql(expectedQuery)
         expect(params).to.eql(expectedParams)
@@ -109,7 +111,7 @@ describe('Routing', () => {
       }
       @ParseBody({ parse: false, output: 'data' })
       @Route.Post('test-buffer')
-      postTestBuffer ({ body }: any): any {
+      postTestBuffer({ body }: any): any {
         this.spy()
         expect(Buffer.isBuffer(body)).to.be.true
         return null
@@ -119,27 +121,27 @@ describe('Routing', () => {
     @Controller('param-lookup')
     class ParamLookup {
       @Route.Post('body-lookup')
-      bodyParamLookup (@Param.Body() data: any) {
+      bodyParamLookup(@Param.Body() data: any) {
         return data
       }
 
       @Route.Get('path-param-lookup/:id')
-      pathParamLookup (@Param.Path('id') id: string) {
+      pathParamLookup(@Param.Path('id') id: string) {
         return id
       }
 
       @Route.Get('query-param-lookup')
-      queryParamLookup (@Param.Query('value') value: string) {
+      queryParamLookup(@Param.Query('value') value: string) {
         return value
       }
 
       @Route.Post('header-lookup')
-      headerLookup (@Param.Body() body: string, @Param.Header('some-header') value: number) {
+      headerLookup(@Param.Body() body: string, @Param.Header('some-header') value: number) {
         return body + ' ' + value
       }
 
       @Route.Get('default-lookup/:a/:b')
-      defaultRequestLookup ({ params: { a } }: any, @Param.Path('b') b: string) {
+      defaultRequestLookup({ params: { a } }: any, @Param.Path('b') b: string) {
         return a + ' ' + b
       }
     }
@@ -147,17 +149,29 @@ describe('Routing', () => {
     @Controller('type-conversion')
     class TypeConversion {
       @Route.Post('booleans/:b1')
-      booleanConversion(@Param.Path('b1') path: boolean, @Param.Body() body: boolean, @Param.Header('bool-header') header: boolean) {
+      booleanConversion(
+        @Param.Path('b1') path: boolean,
+        @Param.Body() body: boolean,
+        @Param.Header('bool-header') header: boolean
+      ) {
         return JSON.stringify([path, body, header])
       }
 
       @Route.Post('numbers/:n1')
-      numberConversion(@Param.Path('n1') path: number, @Param.Body() body: number, @Param.Header('num-header') header: number) {
+      numberConversion(
+        @Param.Path('n1') path: number,
+        @Param.Body() body: number,
+        @Param.Header('num-header') header: number
+      ) {
         return JSON.stringify([path, body, header])
       }
 
       @Route.Post('strings/:s1')
-      stringConversion(@Param.Path('s1') path: string, @Param.Body() body: string, @Param.Header('string-header') header: string) {
+      stringConversion(
+        @Param.Path('s1') path: string,
+        @Param.Body() body: string,
+        @Param.Header('string-header') header: string
+      ) {
         return JSON.stringify([path, body, header])
       }
 
@@ -181,7 +195,7 @@ describe('Routing', () => {
       sinon.assert.notCalled(errorStub)
     } catch (err) {
       const lastError = errorStub.lastCall.args[0]
-      if(lastError && lastError.error) {
+      if (lastError && lastError.error) {
         throw lastError.error
       }
       throw err
@@ -249,98 +263,123 @@ describe('Routing', () => {
   })
 
   it('should allow a custom body parser', () => {
-    return postAsync('/api/test-buffer', { 'data': 'asdf' }).then(() => {
+    return postAsync('/api/test-buffer', { data: 'asdf' }).then(() => {
       sinon.assert.calledOnce(routeSpy)
     })
   })
 
   describe('parameter lookup', () => {
     it('should look up a body param', () => {
-      return postAsync('/api/param-lookup/body-lookup', 'content').then((res) => {
+      return postAsync('/api/param-lookup/body-lookup', 'content').then(res => {
         expect(res).to.eql('content')
       })
     })
 
     it('should look up a path param', () => {
-      return getAsync('/api/param-lookup/path-param-lookup/42').then((res) => {
+      return getAsync('/api/param-lookup/path-param-lookup/42').then(res => {
         expect(res).to.eql('42')
       })
     })
 
     it('should look up a query param', () => {
-      return getAsync('/api/param-lookup/query-param-lookup?value=42').then((res) => {
+      return getAsync('/api/param-lookup/query-param-lookup?value=42').then(res => {
         expect(res).to.eql('42')
       })
     })
 
     it('should look up a header', () => {
-      return postAsync('/api/param-lookup/header-lookup', 'body-contents', { 'some-header': '42' }).then((res) => {
+      return postAsync('/api/param-lookup/header-lookup', 'body-contents', {
+        'some-header': '42'
+      }).then(res => {
         expect(res).to.eql('body-contents 42')
       })
     })
 
     it('should supply the request by default', () => {
-      return getAsync('/api/param-lookup/default-lookup/asdf/foo').then((res) => {
+      return getAsync('/api/param-lookup/default-lookup/asdf/foo').then(res => {
         expect(res).to.eql('asdf foo')
       })
     })
   })
   describe('type conversion', () => {
-    it('should convert a Boolean parameter', async() => {
-      await postAsync('/api/type-conversion/booleans/true', 'true', { 'bool-header' : 'true' }).then((res) => {
-        expect(res).to.eql(JSON.stringify([true, true, true]))
-      })
+    it('should convert a Boolean parameter', async () => {
+      await postAsync('/api/type-conversion/booleans/true', 'true', { 'bool-header': 'true' }).then(
+        res => {
+          expect(res).to.eql(JSON.stringify([true, true, true]))
+        }
+      )
 
-      await postAsync('/api/type-conversion/booleans/blah', false, { 'bool-header' : 'false' }).then((res) => {
-        expect(res).to.eql(JSON.stringify([false, false, false]))
-      })
+      await postAsync('/api/type-conversion/booleans/blah', false, { 'bool-header': 'false' }).then(
+        res => {
+          expect(res).to.eql(JSON.stringify([false, false, false]))
+        }
+      )
     })
 
-    it('should convert a Number parameter', async() => {
-      await postAsync('/api/type-conversion/numbers/1', '2', { 'num-header' : '3' }).then((res) => {
+    it('should convert a Number parameter', async () => {
+      await postAsync('/api/type-conversion/numbers/1', '2', { 'num-header': '3' }).then(res => {
         expect(res).to.eql(JSON.stringify([1, 2, 3]))
       })
 
-      await postAsync('/api/type-conversion/numbers/foo', '2', { 'num-header' : '3' }).then((res) => {
-        sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert "foo" to number' } }))
+      await postAsync('/api/type-conversion/numbers/foo', '2', { 'num-header': '3' }).then(res => {
+        sinon.assert.calledWith(
+          errorStub,
+          sinon.match({ error: { message: 'cannot convert "foo" to number' } })
+        )
         errorStub.reset()
       })
 
-      await postAsync('/api/type-conversion/numbers/4', null, { 'num-header' : '3' }).then((res) => {
-        sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert null to number' } }))
+      await postAsync('/api/type-conversion/numbers/4', null, { 'num-header': '3' }).then(res => {
+        sinon.assert.calledWith(
+          errorStub,
+          sinon.match({ error: { message: 'cannot convert null to number' } })
+        )
         errorStub.reset()
       })
 
-      await postAsync('/api/type-conversion/numbers/4', '2', {}).then((res) => {
-        sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to number' } }))
+      await postAsync('/api/type-conversion/numbers/4', '2', {}).then(res => {
+        sinon.assert.calledWith(
+          errorStub,
+          sinon.match({ error: { message: 'cannot convert undefined to number' } })
+        )
         errorStub.reset()
       })
     })
 
-    it('should convert a String parameter', async() => {
-      await postAsync('/api/type-conversion/strings/one', 2, { 'string-header' : 'three' }).then((res) => {
-        expect(res).to.eql(JSON.stringify(['one', '2', 'three']))
-      })
+    it('should convert a String parameter', async () => {
+      await postAsync('/api/type-conversion/strings/one', 2, { 'string-header': 'three' }).then(
+        res => {
+          expect(res).to.eql(JSON.stringify(['one', '2', 'three']))
+        }
+      )
 
-      await postAsync('/api/type-conversion/strings/one', null, { 'string-header' : 'three' }).then((res) => {
-        sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert null to string' } }))
-        errorStub.reset()
-      })
+      await postAsync('/api/type-conversion/strings/one', null, { 'string-header': 'three' }).then(
+        res => {
+          sinon.assert.calledWith(
+            errorStub,
+            sinon.match({ error: { message: 'cannot convert null to string' } })
+          )
+          errorStub.reset()
+        }
+      )
 
-      await postAsync('/api/type-conversion/strings/one', 2, {}).then((res) => {
-        sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to string' } }))
+      await postAsync('/api/type-conversion/strings/one', 2, {}).then(res => {
+        sinon.assert.calledWith(
+          errorStub,
+          sinon.match({ error: { message: 'cannot convert undefined to string' } })
+        )
         errorStub.reset()
       })
     })
 
     it('should allow a custom type converter', () => {
-      return getAsync('/api/type-conversion/custom/32').then((res) => {
+      return getAsync('/api/type-conversion/custom/32').then(res => {
         expect(res).to.eql(JSON.stringify(32))
       })
     })
 
     it('should allow a custom type converter based on type predicate', () => {
-      return getAsync('/api/type-conversion/custom-predicate/64').then((res) => {
+      return getAsync('/api/type-conversion/custom-predicate/64').then(res => {
         expect(res).to.eql(JSON.stringify('predicate 64'))
       })
     })

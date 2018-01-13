@@ -2,12 +2,7 @@ import { reflectAnnotations, AnnotatedPropertyDescription } from 'reflect-annota
 import RouteRecognizer = require('route-recognizer')
 import { Middleware as GenericMiddleware } from 'app-builder'
 import { IncomingMessage, ServerResponse } from 'http'
-import {
-  createHandler,
-  Handler,
-  isRoutable as isExplictlyRoutable,
-  RouteMetadata
-} from './handler'
+import { createHandler, Handler, isRoutable as isExplictlyRoutable, RouteMetadata } from './handler'
 import { parse as parseUrl, Url } from 'url'
 import { parse as parseQuery } from 'querystring'
 import { Type } from './type'
@@ -15,8 +10,8 @@ import { ControllerCollector, ControllerDecorator } from './controller'
 import { RouterContext } from './context'
 
 export interface RouterOptions<T> {
-  controllers?: Array<Type<any>>,
-  resolveController?<C> (context: T, controller: Type<C>): C
+  controllers?: Array<Type<any>>
+  resolveController?<C>(context: T, controller: Type<C>): C
   baseUrl?: string
   isRoutable?: (routeDefinition: RouteMetadata) => boolean
   getMethods?: (routeDefinition: RouteMetadata) => string[]
@@ -40,34 +35,39 @@ export interface PredicateTypeConverter<T> {
 
 export type TypeConverter<T> = ExactTypeConverter<T> | PredicateTypeConverter<T>
 
-const defaultTypeConverters: TypeConverter<any>[] = [{
-  type: Number,
-  convert: (value) => {
-    if (value === null || isNaN(value)) {
-      throw new Error(`cannot convert ${JSON.stringify(value)} to number`)
+const defaultTypeConverters: TypeConverter<any>[] = [
+  {
+    type: Number,
+    convert: value => {
+      if (value === null || isNaN(value)) {
+        throw new Error(`cannot convert ${JSON.stringify(value)} to number`)
+      }
+      return +value
     }
-    return +value
-  }
-},{
-  type: String,
-  convert: (value) => {
-    if (value === null || value === undefined) {
-      throw new Error(`cannot convert ${JSON.stringify(value)} to string`)
+  },
+  {
+    type: String,
+    convert: value => {
+      if (value === null || value === undefined) {
+        throw new Error(`cannot convert ${JSON.stringify(value)} to string`)
+      }
+      return value.toString()
     }
-    return value.toString()
+  },
+  {
+    type: Boolean,
+    convert(value) {
+      return Boolean(value && value.toString().toLowerCase() === 'true')
+    }
   }
-},{
-  type: Boolean,
-  convert (value) {
-    return Boolean(value && value.toString().toLowerCase() === 'true')
-  }
-}]
+]
 
 const defaultOptions: RouterOptions<any> = {
   typeConverters: [],
-  resolveController (ctx: any, ctrl: Type<any>) {
+  resolveController(ctx: any, ctrl: Type<any>) {
     if (ctx.scope && typeof ctx.scope.get === 'function') {
-      this.resolveController = (context: any, controller: Type<any>) => context.scope.get(controller)
+      this.resolveController = (context: any, controller: Type<any>) =>
+        context.scope.get(controller)
       return this.resolveController(ctx, ctrl)
     }
     this.resolveController = (_: any, controller: Type<any>) => new controller()
@@ -76,7 +76,6 @@ const defaultOptions: RouterOptions<any> = {
 }
 
 export class Router<T extends RouterContext<T>> {
-
   private routers: { [key: string]: RouteRecognizer<Handler<T>> }
   private _options: RouterOptions<T>
   private _initialized = false
@@ -86,13 +85,13 @@ export class Router<T extends RouterContext<T>> {
   public Controller: ControllerDecorator = this._controllerCollector.collect
   public readonly typeConverters: TypeConverter<any>[]
 
-  constructor (options: RouterOptions<T> = {}) {
+  constructor(options: RouterOptions<T> = {}) {
     this._options = Object.assign({}, defaultOptions, options)
     this.routers = {}
     this.typeConverters = this._options.typeConverters!.concat(defaultTypeConverters)
   }
 
-  _initialize () {
+  _initialize() {
     if (this._initialized) {
       return
     }
@@ -102,34 +101,37 @@ export class Router<T extends RouterContext<T>> {
       controllers = this._controllerCollector.collected.concat(this._options.controllers || [])
 
     this.handlers = controllers
-      .reduce((routes: AnnotatedPropertyDescription[], controller) => routes
-        .concat(...reflectAnnotations(controller)
-        .map(x => Object.assign(x, { controller }))
-        .filter(isRoutable || isExplictlyRoutable))
-      , [])
+      .reduce(
+        (routes: AnnotatedPropertyDescription[], controller) =>
+          routes.concat(
+            ...reflectAnnotations(controller)
+              .map(x => Object.assign(x, { controller }))
+              .filter(isRoutable || isExplictlyRoutable)
+          ),
+        []
+      )
       .map((route: RouteMetadata) => {
         const handler = createHandler<T>(route, baseUrl, getPath, getMethods, this.typeConverters)
         handler.httpMethods.forEach(method => {
-          const recognizer = this.routers[method] = this.routers[method]
-            || new RouteRecognizer<Handler<T>>()
+          const recognizer = (this.routers[method] =
+            this.routers[method] || new RouteRecognizer<Handler<T>>())
           recognizer.add([handler])
         })
         return handler
       })
   }
 
-  _match (method: string, pathname: string) {
+  _match(method: string, pathname: string) {
     const router = this.routers[method],
-      route = (router && router.recognize(pathname) || [])[0]
-    return <{ handler: Handler<T>, params: {[key: string]: string} }> route
+      route = ((router && router.recognize(pathname)) || [])[0]
+    return <{ handler: Handler<T>; params: { [key: string]: string } }>route
   }
 
-  get middleware (): Middleware <T> {
+  get middleware(): Middleware<T> {
     this._initialize()
     return (context, next) => {
-      const
-        req = context.req,
-        url = context.url = parseUrl(req.url || ''),
+      const req = context.req,
+        url = (context.url = parseUrl(req.url || '')),
         route = req.method && url.pathname && this._match(req.method, url.pathname),
         handler = route && route.handler
 
@@ -138,11 +140,11 @@ export class Router<T extends RouterContext<T>> {
         return next()
       }
       if (this._options.resolveController) {
-          context.route = {
-            handler,
-            controllerInstance: this._options.resolveController(context, handler.controller),
-            parserResult: null
-          }
+        context.route = {
+          handler,
+          controllerInstance: this._options.resolveController(context, handler.controller),
+          parserResult: null
+        }
       }
       context.res.statusCode = 200
       context.req.query = url.search ? parseQuery(url.search.slice(1)) : {}
@@ -156,9 +158,5 @@ export class Router<T extends RouterContext<T>> {
 export * from './annotations'
 export { createAnnotationFactory } from 'reflect-annotations'
 export * from './context'
-export {
-  isRoutable,
-  getMethods,
-  getPath
-} from './handler'
+export { isRoutable, getMethods, getPath } from './handler'
 export { ParseBody } from './body-parser'

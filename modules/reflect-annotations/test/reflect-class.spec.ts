@@ -4,7 +4,7 @@ import { reflectAnnotations } from '../src/index'
 import { expect } from 'chai'
 
 class MiddlewareFixture {
-  middleware (ctx: any, next: Function) {
+  middleware(ctx: any, next: Function) {
     ctx.fixture = true
     return next()
   }
@@ -15,18 +15,20 @@ class Fixture {
 class ExtraFixture {}
 
 class ExtraFixtureWithParameter {
-  constructor (public options: { a: number }) {}
+  constructor(public options: { a: number }) {}
 }
 
 class ExtraFixtureWithLotsOfParameters {
-  constructor (a1: 1, a2: 2, a3: 3, a4: 4, a5: 5, a6: 6, a7: 7, a8: 8, a9: 9, a10: 10, a11: 11) {}
+  constructor(a1: 1, a2: 2, a3: 3, a4: 4, a5: 5, a6: 6, a7: 7, a8: 8, a9: 9, a10: 10, a11: 11) {}
 }
 
 const FixtureAnnotation = createAnnotationFactory(Fixture)
 const MiddlewareAnnotation = createAnnotationFactory(MiddlewareFixture)
 const ExtraAnnotation = createAnnotationFactory(ExtraFixture)
 const ExtraAnnotationWithAParameter = createAnnotationFactory(ExtraFixtureWithParameter)
-const ExtraAnnotationWithALotsOfParameters = createAnnotationFactory(ExtraFixtureWithLotsOfParameters)
+const ExtraAnnotationWithALotsOfParameters = createAnnotationFactory(
+  ExtraFixtureWithLotsOfParameters
+)
 
 @MiddlewareAnnotation()
 @ExtraAnnotation()
@@ -35,8 +37,8 @@ class One {
   @FixtureAnnotation()
   @ExtraAnnotation()
   @MiddlewareAnnotation()
-  one () {}
-  onea(){}
+  one() {}
+  onea() {}
 }
 
 class Two extends One {
@@ -47,7 +49,7 @@ class Two extends One {
 }
 
 class Three extends Two {
-  three () {}
+  three() {}
   threeb() {}
 }
 
@@ -59,20 +61,24 @@ class Four {
 
 class Five {
   @MiddlewareAnnotation()
-  methodWithAParameter(@FixtureAnnotation() param: any) {
+  methodWithAParameter(@FixtureAnnotation() param: any) {}
 
-  }
-
-  anotherMethodWithAParameter(@MiddlewareAnnotation() param: any, noAnnotation: any, @FixtureAnnotation() param2: any) {
-
-  }
+  anotherMethodWithAParameter(
+    @MiddlewareAnnotation() param: any,
+    noAnnotation: any,
+    @FixtureAnnotation() param2: any
+  ) {}
 }
 
 class Six {
   @MiddlewareAnnotation()
-  methodWithTypes(@FixtureAnnotation() param: string, foo: any, otherParam: number): string { return 'hello' }
+  methodWithTypes(@FixtureAnnotation() param: string, foo: any, otherParam: number): string {
+    return 'hello'
+  }
 
-  methodWithNoAnnotations(param: string, foo: any, otherParam: number): string { return 'hello' }
+  methodWithNoAnnotations(param: string, foo: any, otherParam: number): string {
+    return 'hello'
+  }
 }
 
 describe('reflect-annotations', () => {
@@ -87,7 +93,9 @@ describe('reflect-annotations', () => {
     it('should handle odd hierarchies?', () => {
       const data = reflectClassProperties(Three)
       expect(data.source).to.equal(Three)
-      expect(data.properties.sort()).to.eql(['three', 'threeb' , 'two', 'towa', 'twob', 'one', 'onea'].sort())
+      expect(data.properties.sort()).to.eql(
+        ['three', 'threeb', 'two', 'towa', 'twob', 'one', 'onea'].sort()
+      )
       expect(data.constructors).to.eql([Three, Two, One])
     })
   })
@@ -165,11 +173,9 @@ describe('reflect-annotations', () => {
       expect(classProperties[0].parameterAnnotations.map(x => x.constructor.toString())).to.eql([
         Fixture.toString()
       ])
-      expect(classProperties[1].parameterAnnotations.map(x => x && x.constructor.toString())).to.eql([
-        MiddlewareFixture.toString(),
-        undefined,
-        Fixture.toString()
-      ])
+      expect(
+        classProperties[1].parameterAnnotations.map(x => x && x.constructor.toString())
+      ).to.eql([MiddlewareFixture.toString(), undefined, Fixture.toString()])
     })
   })
 

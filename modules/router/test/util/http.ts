@@ -1,17 +1,17 @@
 import { get, request } from 'http'
 import { parse } from 'url'
 
-export function getAsync (url: string) {
+export function getAsync(url: string) {
   return new Promise<string>((resolve, reject) => {
     get(url, x => parseResponse(x).then(resolve, reject))
   })
 }
 
-function parseResponse (response: any): Promise<string> {
+function parseResponse(response: any): Promise<string> {
   return new Promise((resolve, reject) => {
     var res = '',
-      consume = (chunk: Buffer) => res += chunk
-    function destroy (error?: Error) {
+      consume = (chunk: Buffer) => (res += chunk)
+    function destroy(error?: Error) {
       error && reject(error)
       response.removeListener('data', consume)
       response.removeListener('error', destroy)
@@ -24,7 +24,7 @@ function parseResponse (response: any): Promise<string> {
   })
 }
 
-export function postAsync (path: string, data: any, headers: any = {}) {
+export function postAsync(path: string, data: any, headers: any = {}) {
   const url = parse(path),
     postData = data ? JSON.stringify(data) : '',
     options = {
