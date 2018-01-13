@@ -1,21 +1,20 @@
 {
   "name": "@ingress/core",
-  "version": "1.0.0-beta.9",
+  "version": "1.0.0-beta.10",
   "description": "http server abstraction",
-  "main": "lib/src/index.js",
+  "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ingress/core"
+    "url": "https://github.com/ingress/ingress"
   },
-  "typings": "lib/src/index.d.ts",
+  "typings": "lib/index.d.ts",
   "files": [
-    "lib/src"
+    "lib"
   ],
   "scripts": {
     "prepublish": "npm test",
     "build": "rm -rf lib && tsc --declaration",
-    "lint": "tslint 'src/**/*.ts'",
-    "test": "npm run build && npm run lint && cross-env TS_NODE_IGNORE_WARNINGS=2304 mocha"
+    "test": "npm run build && mocha"
   },
   "engines": {
     "node": ">=4.0.0"
@@ -34,25 +33,24 @@
     "@types/bluebird": "^3.5.2",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.43",
+    "@types/node": "^8.5.8",
     "@types/on-finished": "^2.2.29",
-    "@types/sinon": "^2.1.0",
+    "@types/sinon": "^4.1.3",
     "bluebird": "^3.5.0",
     "chai": "^4.1.2",
-    "cross-env": "^4.0.0",
+    "cross-env": "^5.1.3",
     "mocha": "^4.0.1",
-    "reflect-metadata": "^0.1.10",
     "rimraf": "^2.6.1",
-    "sinon": "^2.1.0",
-    "ts-node": "^3.3.0",
-    "typescript": "^2.5.3"
+    "sinon": "^4.1.4",
+    "ts-node": "^4.1.0",
+    "typescript": "^2.6.2"
   },
   "peerDependencies": {
     "reflect-metadata": "^0.1.10"
   },
   "dependencies": {
-    "app-builder": "^5.1.0",
+    "app-builder": "^5.2.0",
     "destroy": "^1.0.4",
-    "on-finished": "^2.3.0",
-    "reflect-metadata": "^0.1.10"
+    "on-finished": "^2.3.0"
   }
 }

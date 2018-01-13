@@ -2,32 +2,36 @@ import { expect } from 'chai'
 import { Buffer } from 'buffer'
 import * as fs from 'fs'
 import { get, request, ServerResponse, IncomingMessage } from 'http'
-import { Server, DefaultContext, DefaultMiddleware }  from '../src'
+import { Server, DefaultContext, DefaultMiddleware } from '../src'
 import { StatusCode } from '../src/status-code'
 
-const port = 8888;
+const port = 8888
 
-function makeRequest (path: string, method: string = 'GET', body?: string): Promise<IncomingMessage> {
-  return new Promise((res,rej) => {
-    const req = request({ port, path, method}, res).on('error', rej)
+function makeRequest(
+  path: string,
+  method: string = 'GET',
+  body?: string
+): Promise<IncomingMessage> {
+  return new Promise((res, rej) => {
+    const req = request({ port, path, method }, res).on('error', rej)
     req.end(body)
   })
 }
 
-function getResponse (res: IncomingMessage) {
-  return new Promise(function (resolve, reject) {
+function getResponse(res: IncomingMessage) {
+  return new Promise(function(resolve, reject) {
     let data = ''
-    res.on('data', (chunk: Buffer) => data += chunk)
+    res.on('data', (chunk: Buffer) => (data += chunk))
     res.on('end', () => resolve(data))
   })
 }
 
 describe('Server', () => {
-
   let server: Server<DefaultContext>
   beforeEach(() => {
     server = new Server<DefaultContext>({
-      contextFactory: ({ req, res }: { req: IncomingMessage, res: ServerResponse }) => new DefaultContext(req, res)
+      contextFactory: ({ req, res }: { req: IncomingMessage; res: ServerResponse }) =>
+        new DefaultContext(req, res)
     })
     server.use((ctx, next) => next())
   })
@@ -56,7 +60,7 @@ describe('Server', () => {
     it('calls close on underlying webserver implementation', () => {
       let called = false
       const close = server.webserver.close
-      server.webserver.close = function (res: any){
+      server.webserver.close = function(res: any) {
         called = true
         res()
         return close.call(this)
@@ -67,7 +71,6 @@ describe('Server', () => {
   })
 
   describe('DefaultMiddleware', () => {
-
     beforeEach(() => {
       server.use(new DefaultMiddleware<DefaultContext>())
     })
@@ -75,7 +78,7 @@ describe('Server', () => {
     it('should respond with json, when set on context body', async () => {
       let length: number | null = null
       server.use((ctx, next) => {
-        ctx.body = {plain:'object'}
+        ctx.body = { plain: 'object' }
         length = JSON.stringify(ctx.body).length
         return next()
       })
@@ -88,7 +91,7 @@ describe('Server', () => {
     it('should respond with octet-stream, when buffer is set on context body', async () => {
       let length: number | null = null
       server.use((ctx, next) => {
-        ctx.body = new Buffer(JSON.stringify({plain:'object'}))
+        ctx.body = new Buffer(JSON.stringify({ plain: 'object' }))
         length = ctx.body.length
         return next()
       })
@@ -101,7 +104,7 @@ describe('Server', () => {
     it('should respond with html, when set on context body', async () => {
       let length: number | null = null
       server.use((ctx, next) => {
-        ctx.body = '<div>I\'m HTML!</div>'
+        ctx.body = "<div>I'm HTML!</div>"
         length = ctx.body.length
         return next()
       })
@@ -110,7 +113,7 @@ describe('Server', () => {
       expect(+res.headers['content-length']).to.equal(length)
       expect(res.headers['content-type']).to.equal('text/html')
     })
-Object
+    Object
     it('should respond with text, when set on context body', async () => {
       let length: number | null = null
       server.use((ctx, next) => {
@@ -193,7 +196,7 @@ Object
 
       server.use((ctx, next) => {
         ctx.res.statusCode = 200
-        expectedLength = Buffer.byteLength(JSON.stringify({test:'obj'}))
+        expectedLength = Buffer.byteLength(JSON.stringify({ test: 'obj' }))
         ctx.body = { test: 'obj' }
         return next()
       })
@@ -220,4 +223,3 @@ Object
     })
   })
 })
-
