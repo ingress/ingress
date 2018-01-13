@@ -6,33 +6,32 @@ const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
   upper = (x: any) => x.toString().toUpperCase()
 
 class RouteAnnotation {
-
   public path: string
   public methods: string[]
   public resolvedPaths: string[]
   public ignoreParentPrefix: boolean
   public ignoreAllPrefix: boolean
 
-  constructor (path: string, ...methods: Array<PathFactory | string>) {
+  constructor(path: string, ...methods: Array<PathFactory | string>) {
     path = path || ''
     this.ignoreAllPrefix = path.startsWith('$')
     this.ignoreParentPrefix = path.startsWith('~')
-    this.path = trim(path.replace(/^\$|^~/, '')),
-    this.methods = Array.from(new Set(methods.map(upper)))
+    ;(this.path = trim(path.replace(/^\$|^~/, ''))),
+      (this.methods = Array.from(new Set(methods.map(upper))))
   }
 
-  get isHttpMethodAnnotation () {
+  get isHttpMethodAnnotation() {
     return Boolean(this.methods.length)
   }
 
-  get isRouteAnnotation () {
+  get isRouteAnnotation() {
     return true
   }
 
-  resolvePath (prefix:string, suffix?: RouteAnnotation) {
+  resolvePath(prefix: string, suffix?: RouteAnnotation) {
     prefix = trim(prefix)
     if (!suffix) {
-      return result(this.ignoreAllPrefix ? this.path : (prefix + '/' + this.path))
+      return result(this.ignoreAllPrefix ? this.path : prefix + '/' + this.path)
     }
     if (suffix.ignoreAllPrefix) {
       return result(suffix.path)
@@ -47,7 +46,7 @@ class RouteAnnotation {
 export type Annotation = ClassDecorator & MethodDecorator
 
 export interface PathFactory {
-  (urlDefinition?: string, ...methods: Array<PathFactory|string>): Annotation
+  (urlDefinition?: string, ...methods: Array<PathFactory | string>): Annotation
 }
 
 export interface Route extends PathFactory {
@@ -59,13 +58,16 @@ export interface Route extends PathFactory {
   Patch: PathFactory
 }
 
-const methods = ['Get','Post','Put','Delete','Head','Patch']
+const methods = ['Get', 'Post', 'Put', 'Delete', 'Head', 'Patch']
 
-export const Route = <Route>methods.reduce((set, method) => {
-  set[method] = (path: string) => set(path, method)
-  set[method].toString = () => method
-  return set
-}, <any>createAnnotationFactory(RouteAnnotation))
+export const Route = <Route>methods.reduce(
+  (set, method) => {
+    set[method] = (path: string) => set(path, method)
+    set[method].toString = () => method
+    return set
+  },
+  <any>createAnnotationFactory(RouteAnnotation)
+)
 
 export interface ParamAnnotation {
   extractValue?(context: RouterContext<any>): any
@@ -102,8 +104,7 @@ class HeaderParamAnnotation implements ParamAnnotation {
   }
 }
 
-const
-  Body = createAnnotationFactory(BodyParamAnnotation),
+const Body = createAnnotationFactory(BodyParamAnnotation),
   Path = createAnnotationFactory(PathParamAnnotation),
   Query = createAnnotationFactory(QueryParamAnnotation),
   Header = createAnnotationFactory(HeaderParamAnnotation),
@@ -120,16 +121,4 @@ const
   Head = Route.Head,
   Patch = Route.Patch
 
-export {
-  Body,
-  Query,
-  Header,
-  Param,
-  Get,
-  Put,
-  Post,
-  Delete,
-  Head,
-  Patch,
-  RouteAnnotation
-}
+export { Body, Query, Header, Param, Get, Put, Post, Delete, Head, Patch, RouteAnnotation }

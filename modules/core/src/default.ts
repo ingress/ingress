@@ -6,37 +6,37 @@ import { Stream } from 'stream'
 import destroy = require('destroy')
 import onFinished = require('on-finished')
 
-const
-  looksLikeHtmlRE = /^\s*</,
-  logError = <T extends { error: Error }>(context: T) => console.error(context.error),
+const looksLikeHtmlRE = /^\s*</,
+  logError = <T extends CoreContext<T>>(context: T) => console.error(context.error),
   isString = (str: any): str is string => typeof str === 'string' || str instanceof String,
-  isStreamLike = (body: Body): body is Stream => Boolean(body && typeof (body as Stream).pipe === 'function' || body instanceof Stream),
+  isStreamLike = (body: Body): body is Stream =>
+    Boolean((body && typeof (body as Stream).pipe === 'function') || body instanceof Stream),
   ensureErrorHandler = (stream: Stream, handler: (error: Error) => any) => {
-    stream.listeners('error').indexOf(handler) === -1
-      && stream.on('error', handler)
+    stream.listeners('error').indexOf(handler) === -1 && stream.on('error', handler)
   }
 
 export * from './status-code'
 
+export interface DefaultOptions<T> {
+  onError(context: T): Promise<any> | any
+}
+
 export class DefaultMiddleware<T extends CoreContext<T>> {
+  private onError: (context: T) => Promise<any> | any
 
-  private onError: (context: T) => any
-
-  constructor ({ onError }: {
-    onError: (context: T) => any
-  } = { onError: logError }) {
-    this.onError = onError
+  constructor(options: DefaultOptions<T> = { onError: logError }) {
+    this.onError = options.onError
   }
 
-  private _contentLength (res: ServerResponse, length: number) {
+  private _contentLength(res: ServerResponse, length: number) {
     res.setHeader('Content-Length', length.toString())
   }
 
-  private _contentType (res: ServerResponse, value: string) {
+  private _contentType(res: ServerResponse, value: string) {
     res.setHeader('Content-Type', value)
   }
 
-  private _statusResponse (status: number, message: string, res: ServerResponse, body?: Body) {
+  private _statusResponse(status: number, message: string, res: ServerResponse, body?: Body) {
     res.statusCode = status || 404
     res.statusMessage = message = message || StatusCode[res.statusCode] || ''
     body = body || message
@@ -45,13 +45,13 @@ export class DefaultMiddleware<T extends CoreContext<T>> {
     res.end(body)
   }
 
-  private _handleResponse (ctx: CoreContext<T>, handleError: (error:Error) => any) {
+  private _handleResponse(ctx: CoreContext<T>, handleError: (error: Error) => any) {
     const res = <any>ctx.res,
       hasContentType = Boolean(res._headers && res._headers['content-type'])
 
     let body = ctx.body
 
-    if (res.headersSent || res.socket && !res.socket.writable) {
+    if (res.headersSent || (res.socket && !res.socket.writable)) {
       return
     }
 
@@ -69,13 +69,16 @@ export class DefaultMiddleware<T extends CoreContext<T>> {
     }
 
     if (ctx.req.method === 'HEAD') {
-      !isString(body) && !Buffer.isBuffer(body) && !isStreamLike(body)
-        && this._contentLength(res, Buffer.byteLength(JSON.stringify(body)))
+      !isString(body) &&
+        !Buffer.isBuffer(body) &&
+        !isStreamLike(body) &&
+        this._contentLength(res, Buffer.byteLength(JSON.stringify(body)))
       return res.end()
     }
 
     if (isString(body)) {
-      !hasContentType && this._contentType(res, 'text/' + (looksLikeHtmlRE.test(body) ? 'html' : 'plain'))
+      !hasContentType &&
+        this._contentType(res, 'text/' + (looksLikeHtmlRE.test(body) ? 'html' : 'plain'))
       this._contentLength(res, Buffer.byteLength(body))
       return res.end(body)
     }
@@ -99,11 +102,10 @@ export class DefaultMiddleware<T extends CoreContext<T>> {
     res.end(body)
   }
 
-  get middleware () {
+  get middleware() {
     const onError = this.onError
     return (context: T, next: () => Promise<void>) => {
-      const
-        handleError = (error?: Error) => {
+      const handleError = (error: Error | null) => {
           if (error) {
             context.error = error
             return onError(context)
@@ -115,7 +117,9 @@ export class DefaultMiddleware<T extends CoreContext<T>> {
       context.handleResponse = handleResponse
       context.res.statusCode = 404
       onFinished(context.req, handleError)
-      return next().catch(handleError).then(handleResponse)
+      return next()
+        .catch(handleError)
+        .then(handleResponse)
     }
   }
 }

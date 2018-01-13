@@ -1,13 +1,13 @@
 {
   "name": "reflect-annotations",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Set and inspect annotation metadata on JavaScript classes and methods",
   "repository": {
     "type": "git",
-    "url": "https://github.com/calebboyd/reflect-annotations"
+    "url": "https://github.com/ingress/ingress"
   },
-  "main": "./lib/index.js",
-  "typings": "./lib/index.d.ts",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
   "files": [
     "lib"
   ],
@@ -17,7 +17,8 @@
   "scripts": {
     "build": "tsc --declaration",
     "prepublish": "npm test",
-    "test": "npm run build && cross-env TS_NODE_PROJECT=test mocha"
+    "pretest": "npm run build",
+    "test": "mocha"
   },
   "keywords": [
     "annotations",
@@ -36,12 +37,12 @@
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
-    "@types/mocha": "^2.2.43",
+    "@types/mocha": "^2.2.46",
     "chai": "^4.1.2",
     "cross-env": "^5.1.0",
     "mocha": "^4.0.1",
     "reflect-metadata": "0.1.10",
-    "ts-node": "^3.3.0",
-    "typescript": "^2.5.3"
+    "ts-node": "^4.1.0",
+    "typescript": "^2.6.2"
   }
 }

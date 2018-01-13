@@ -1,11 +1,11 @@
 import { STATUS_CODES } from 'http'
 
-function camelize (val: string) {
+function camelize(val: string) {
   return val
     .split(/\s|-/)
-    .map(a=> a[0].toUpperCase() + a.slice(1).toLowerCase())
+    .map(a => a[0].toUpperCase() + a.slice(1).toLowerCase())
     .join('')
-    .replace(/'/g,'')
+    .replace(/'/g, '')
 }
 
 //node -e "var c; Object.keys(c=require('http').STATUS_CODES).forEach(x => console.log(c[x].split(/\s|-/).map(a=>a[0].toUpperCase()+a.slice(1).toLowerCase()).join('').replace(/'/g,'')))"
@@ -74,13 +74,16 @@ export interface StatusCodes {
   NotExtended: number
   NetworkAuthenticationRequired: number
   Empty: { [code: number]: number }
-  [code: number] : string
+  [code: number]: string
 }
 
-export const StatusCode = Object.keys(STATUS_CODES).reduce((codes, code) => {
-  codes[code] = STATUS_CODES[code]
-  codes[camelize(codes[code])] = Number(code)
-  return codes
-}, {
-  Empty: { 204: true, 205: true, 304: true }
-} as any) as StatusCodes
+export const StatusCode = Object.keys(STATUS_CODES).reduce(
+  (codes, code) => {
+    codes[code] = STATUS_CODES[code]
+    codes[camelize(codes[code])] = Number(code)
+    return codes
+  },
+  {
+    Empty: { 204: true, 205: true, 304: true }
+  } as any
+) as StatusCodes

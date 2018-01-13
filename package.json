@@ -1,6 +1,26 @@
 {
-  "private": true,
-  "workspaces": [
-    "modules/*"
-  ]
+  "name": "ingress",
+  "version": "1.0.0",
+  "description": "install: `npm i @ingress/core`",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ingress/ingress.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ingress/ingress/issues"
+  },
+  "homepage": "https://github.com/ingress/ingress#readme",
+  "devDependencies": {
+    "prettier": "^1.10.2",
+    "tslint": "^5.9.1",
+    "tslint-config-prettier": "^1.6.0",
+    "tslint-plugin-prettier": "^1.3.0",
+    "typescript": "^2.6.2"
+  }
 }
