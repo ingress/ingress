@@ -1,6 +1,6 @@
-import { compose, Middleware } from 'app-builder'
+import { compose, Middleware, ComposedMiddleware } from 'app-builder'
 import { AnnotatedPropertyDescription } from 'reflect-annotations'
-import { parseJsonBody } from './body-parser'
+import { parseJsonBody } from './json-body-parser'
 import { RouteAnnotation, ParamAnnotation } from './annotations'
 import { RouterContext } from './context'
 import { Type } from './type'
@@ -85,7 +85,7 @@ export class Handler<T extends RouterContext<T>> {
   public handler: Handler<T>
   public controllerMethod: string
   public controller: Type<any>
-  public invokeAsync: Middleware<T>
+  public invokeAsync: ComposedMiddleware<T>
   private paramAnnotations: any[]
   private paramResolvers: ParamResolver[]
 

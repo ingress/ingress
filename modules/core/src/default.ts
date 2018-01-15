@@ -5,9 +5,13 @@ import { Buffer } from 'buffer'
 import { Stream } from 'stream'
 import destroy = require('destroy')
 import onFinished = require('on-finished')
+import { Addon } from './index'
 
 const looksLikeHtmlRE = /^\s*</,
-  logError = <T extends CoreContext<T>>(context: T) => console.error(context.error),
+  logError = <T extends CoreContext<T>>(context: T) => {
+    console.error(context.error)
+  },
+  isDefined = (x: any) => x !== null && x !== void 0,
   isString = (str: any): str is string => typeof str === 'string' || str instanceof String,
   isStreamLike = (body: Body): body is Stream =>
     Boolean((body && typeof (body as Stream).pipe === 'function') || body instanceof Stream),
@@ -21,7 +25,7 @@ export interface DefaultOptions<T> {
   onError(context: T): Promise<any> | any
 }
 
-export class DefaultMiddleware<T extends CoreContext<T>> {
+export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
   private onError: (context: T) => Promise<any> | any
 
   constructor(options: DefaultOptions<T> = { onError: logError }) {
@@ -38,8 +42,8 @@ export class DefaultMiddleware<T extends CoreContext<T>> {
 
   private _statusResponse(status: number, message: string, res: ServerResponse, body?: Body) {
     res.statusCode = status || 404
-    res.statusMessage = message = message || StatusCode[res.statusCode] || ''
-    body = body || message
+    res.statusMessage = message = message || StatusCode[res.statusCode]
+    body = isDefined(body) ? body : message
     this._contentType(res, 'text/plain')
     this._contentLength(res, Buffer.byteLength(body as string))
     res.end(body)
@@ -104,7 +108,7 @@ export class DefaultMiddleware<T extends CoreContext<T>> {
 
   get middleware() {
     const onError = this.onError
-    return (context: T, next: () => Promise<void>) => {
+    return (context: T, next: () => Promise<any>) => {
       const handleError = (error: Error | null) => {
           if (error) {
             context.error = error
