@@ -1,11 +1,11 @@
 {
   "name": "@ingress/di",
-  "version": "1.0.0-beta.6",
+  "version": "1.0.0-beta.7",
   "description": "Server-side dependency injection for ingress",
-  "main": "lib/src/index.js",
-  "typings": "lib/src/index.d.ts",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
   "files": [
-    "lib/src"
+    "lib"
   ],
   "scripts": {
     "build": "rm -rf lib && tsc --declaration",
@@ -36,6 +36,6 @@
     "typescript": "^2.6.2"
   },
   "dependencies": {
-    "injection-js": "^2.1.0"
+    "injection-js": "^2.2.1"
   }
 }
