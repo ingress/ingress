@@ -1,6 +1,6 @@
 import { reflectAnnotations, AnnotatedPropertyDescription } from 'reflect-annotations'
 import RouteRecognizer = require('route-recognizer')
-import { Middleware as GenericMiddleware } from 'app-builder'
+import { Middleware } from 'app-builder'
 import { IncomingMessage, ServerResponse } from 'http'
 import { createHandler, Handler, isRoutable as isExplictlyRoutable, RouteMetadata } from './handler'
 import { parse as parseUrl, Url } from 'url'
@@ -17,10 +17,6 @@ export interface RouterOptions<T> {
   getMethods?: (routeDefinition: RouteMetadata) => string[]
   getPath?: (baseUrl: string, routeDefinition: RouteMetadata) => string
   typeConverters?: TypeConverter<any>[]
-}
-
-export interface Middleware<T extends RouterContext<T>> {
-  (context: T, next: GenericMiddleware<T>): any
 }
 
 export interface ExactTypeConverter<T> {
@@ -110,7 +106,7 @@ export class Router<T extends RouterContext<T>> {
           ),
         []
       )
-      .map((route: RouteMetadata) => {
+      .map((route: any) => {
         const handler = createHandler<T>(route, baseUrl, getPath, getMethods, this.typeConverters)
         handler.httpMethods.forEach(method => {
           const recognizer = (this.routers[method] =
@@ -159,4 +155,3 @@ export * from './annotations'
 export { createAnnotationFactory } from 'reflect-annotations'
 export * from './context'
 export { isRoutable, getMethods, getPath } from './handler'
-export { ParseBody } from './body-parser'

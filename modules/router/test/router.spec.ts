@@ -109,13 +109,6 @@ describe('Routing', () => {
         expect(params).to.eql(expectedParams)
         return expectedResponse
       }
-      @ParseBody({ parse: false, output: 'data' })
-      @Route.Post('test-buffer')
-      postTestBuffer({ body }: any): any {
-        this.spy()
-        expect(Buffer.isBuffer(body)).to.be.true
-        return null
-      }
     }
 
     @Controller('param-lookup')
@@ -262,12 +255,6 @@ describe('Routing', () => {
     expect(await getAsync('/api/missing')).to.equal('Not Found')
   })
 
-  it('should allow a custom body parser', () => {
-    return postAsync('/api/test-buffer', { data: 'asdf' }).then(() => {
-      sinon.assert.calledOnce(routeSpy)
-    })
-  })
-
   describe('parameter lookup', () => {
     it('should look up a body param', () => {
       return postAsync('/api/param-lookup/body-lookup', 'content').then(res => {
@@ -322,25 +309,18 @@ describe('Routing', () => {
       })
 
       await postAsync('/api/type-conversion/numbers/foo', '2', { 'num-header': '3' }).then(res => {
-        sinon.assert.calledWith(
-          errorStub,
-          sinon.match({ error: { message: 'cannot convert "foo" to number' } })
-        )
+        expect(errorStub.firstCall.args[0].error.message).to.equal('cannot convert "foo" to number')
         errorStub.reset()
       })
 
       await postAsync('/api/type-conversion/numbers/4', null, { 'num-header': '3' }).then(res => {
-        sinon.assert.calledWith(
-          errorStub,
-          sinon.match({ error: { message: 'cannot convert null to number' } })
-        )
+        expect(errorStub.firstCall.args[0].error.message).to.equal('cannot convert null to number')
         errorStub.reset()
       })
 
       await postAsync('/api/type-conversion/numbers/4', '2', {}).then(res => {
-        sinon.assert.calledWith(
-          errorStub,
-          sinon.match({ error: { message: 'cannot convert undefined to number' } })
+        expect(errorStub.firstCall.args[0].error.message).to.equal(
+          'cannot convert undefined to number'
         )
         errorStub.reset()
       })
@@ -355,18 +335,16 @@ describe('Routing', () => {
 
       await postAsync('/api/type-conversion/strings/one', null, { 'string-header': 'three' }).then(
         res => {
-          sinon.assert.calledWith(
-            errorStub,
-            sinon.match({ error: { message: 'cannot convert null to string' } })
+          expect(errorStub.firstCall.args[0].error.message).to.equal(
+            'cannot convert null to string'
           )
           errorStub.reset()
         }
       )
 
       await postAsync('/api/type-conversion/strings/one', 2, {}).then(res => {
-        sinon.assert.calledWith(
-          errorStub,
-          sinon.match({ error: { message: 'cannot convert undefined to string' } })
+        expect(errorStub.firstCall.args[0].error.message).to.equal(
+          'cannot convert undefined to string'
         )
         errorStub.reset()
       })
@@ -385,7 +363,7 @@ describe('Routing', () => {
     })
 
     it('should throw an error if a type converter cannot be found for a type', () => {
-      const badRouter = new Router<MyContext>({}),
+      const badRouter = new Router<MyContext>(),
         { Controller: ExpectToFail } = badRouter
 
       @ExpectToFail
@@ -397,7 +375,7 @@ describe('Routing', () => {
       }
 
       try {
-        new Server().use(badRouter.middleware)
+        new Server<MyContext>().use(badRouter.middleware)
         expect.fail()
       } catch (err) {
         expect(err.message).to.eql('no type converter found for type: MyUnknownType')

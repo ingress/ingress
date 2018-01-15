@@ -26,7 +26,7 @@ function parseResponse(response: any): Promise<string> {
 
 export function postAsync(path: string, data: any, headers: any = {}) {
   const url = parse(path),
-    postData = data ? JSON.stringify(data) : '',
+    postData = data !== void 0 ? JSON.stringify(data) : '',
     options = {
       host: url.hostname,
       port: parseInt(url.port as string, 10),
@@ -41,7 +41,6 @@ export function postAsync(path: string, data: any, headers: any = {}) {
 
   return new Promise((resolve, reject) => {
     const req = request(options, x => parseResponse(x).then(resolve, reject))
-    req.write(postData)
-    req.end()
+    req.end(postData)
   })
 }

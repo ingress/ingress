@@ -70,10 +70,6 @@ app
  - It can accept additional `Route` methods, or strings, as rest parameters.
    - `@Route('/some/route', Route.Post, 'Put')`
 
-### **ParseBody**: (subtextOptions) => MethodDecorator
-
- - Create a body parser decorator based on [subtext](https://github.com/hapijs/subtext)
-
 ---
 
 ### Defining middleware

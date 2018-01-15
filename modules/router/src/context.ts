@@ -27,8 +27,8 @@ export interface RouterContext<T extends RouterContext<T>> {
   res: Response<T>
   error: Error | null | undefined
   body: any
-  handleError?: ((error?: Error) => any) | any
-  handleResponse?: () => any
+  handleError: (error: Error | null) => Promise<any> | any
+  handleResponse: () => any
 }
 
 export abstract class BaseRouterContext<T extends RouterContext<T>> implements RouterContext<T> {
@@ -38,6 +38,6 @@ export abstract class BaseRouterContext<T extends RouterContext<T>> implements R
   public res: Response<T>
   public error: Error | null | undefined
   public body: any
-  public handleError?: ((error?: Error) => any) | any
-  public handleResponse?: () => any
+  public handleError: (error: Error | null) => Promise<any> | any
+  public handleResponse: () => any
 }

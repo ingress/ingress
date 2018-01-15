@@ -1,7 +1,7 @@
 {
   "rulesDirectory": ["tslint-plugin-prettier", "tslint-config-prettier"],
   "linterOptions": {
-    "exclude": ["**/node_modules/**/*"]
+    "exclude": ["**/{node_modules,lib}/**/*"]
   },
   "rules": {
     "prettier": [true, { "semi": false, "printWidth": 100, "singleQuote": true }]
