@@ -16,8 +16,8 @@ class RouteAnnotation {
     path = path || ''
     this.ignoreAllPrefix = path.startsWith('$')
     this.ignoreParentPrefix = path.startsWith('~')
-    ;(this.path = trim(path.replace(/^\$|^~/, ''))),
-      (this.methods = Array.from(new Set(methods.map(upper))))
+    this.path = trim(path.replace(/^\$|^~/, ''))
+    this.methods = Array.from(new Set(methods.map(upper)))
   }
 
   get isHttpMethodAnnotation() {

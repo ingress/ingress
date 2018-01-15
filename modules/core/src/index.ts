@@ -1,22 +1,8 @@
-import { AppBuilder } from 'app-builder'
+import { AppBuilder, Middleware } from 'app-builder'
 import createContext, { CoreContext } from './context'
 import { DefaultMiddleware } from './default'
-import { Middleware, MiddlewareOptions } from './middleware'
 import { Server as HttpServer, createServer, IncomingMessage, ServerResponse } from 'http'
 import { PromiseConfig } from './promise'
-
-export interface Addon<T extends CoreContext<T>> extends MiddlewareOptions<T> {
-  register?(server: Server<T>): Promise<any> | undefined
-}
-
-export interface MiddlewareAddon<T extends CoreContext<T>> extends Middleware<T>, Addon<T> {}
-
-export type Usable<T extends CoreContext<T>> = Addon<T> | MiddlewareAddon<T>
-
-export interface ServerOptions<T> {
-  server?: HttpServer
-  contextFactory?: ({ req, res }: { req: IncomingMessage; res: ServerResponse }) => T
-}
 
 export default function ingress<T extends CoreContext<T>>(options?: ServerOptions<T>) {
   return new Server<T>(options)
@@ -70,6 +56,18 @@ export class Server<T extends CoreContext<T>> {
   close() {
     return new PromiseConfig.constructor(res => this.webserver.close(res))
   }
+}
+
+export interface Addon<T extends CoreContext<T>> {
+  register?(server: Server<T>): Promise<any> | any
+  middleware?: Middleware<T>
+}
+export interface MiddlewareAddon<T extends CoreContext<T>> extends Middleware<T>, Addon<T> {}
+export type Usable<T extends CoreContext<T>> = Addon<T> | MiddlewareAddon<T>
+
+export interface ServerOptions<T> {
+  server?: HttpServer
+  contextFactory?: ({ req, res }: { req: IncomingMessage; res: ServerResponse }) => T
 }
 
 export { createContext, DefaultMiddleware }

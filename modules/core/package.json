@@ -12,7 +12,7 @@
     "lib"
   ],
   "scripts": {
-    "prepublish": "npm test",
+    "prepublishOnly": "npm run build && npm test",
     "build": "rm -rf lib && tsc --declaration",
     "test": "npm run build && mocha"
   },
