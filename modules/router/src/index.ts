@@ -154,4 +154,5 @@ export class Router<T extends RouterContext<T>> {
 export * from './annotations'
 export { createAnnotationFactory } from 'reflect-annotations'
 export * from './context'
+export * from './controller'
 export { isRoutable, getMethods, getPath } from './handler'
