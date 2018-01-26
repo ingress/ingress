@@ -10,6 +10,7 @@ import {
 
 import { Type, DependencyCollectorList, DependencyCollector } from './collector'
 
+export * from './collector'
 export { ReflectiveInjector, Injector, Provider }
 
 export interface ContainerContext {
