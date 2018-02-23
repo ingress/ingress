@@ -1,6 +1,6 @@
 {
   "name": "reflect-annotations",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "Set and inspect annotation metadata on JavaScript classes and methods",
   "repository": {
     "type": "git",
@@ -32,7 +32,7 @@
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
   "peerDependencies": {
-    "reflect-metadata": "0.1.10"
+    "reflect-metadata": "^0.1.10"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
