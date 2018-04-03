@@ -12,6 +12,7 @@ const looksLikeHtmlRE = /^\s*</,
     console.error(context.error)
   },
   isDefined = (x: any) => x !== null && x !== void 0,
+  isStatusCode = (x: any) => typeof x === 'number' && x <= 500,
   isString = (str: any): str is string => typeof str === 'string' || str instanceof String,
   isStreamLike = (body: Body): body is Stream =>
     Boolean((body && typeof (body as Stream).pipe === 'function') || body instanceof Stream),
@@ -43,9 +44,9 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
   private _statusResponse(status: number, message: string, res: ServerResponse, body?: Body) {
     res.statusCode = status || 404
     res.statusMessage = message = message || StatusCode[res.statusCode]
-    body = isDefined(body) ? body : message
+    body = isString(body) ? body : message
     this._contentType(res, 'text/plain')
-    this._contentLength(res, Buffer.byteLength(body as string))
+    this._contentLength(res, Buffer.byteLength(body))
     res.end(body)
   }
 
@@ -60,7 +61,8 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
     }
 
     if (ctx.error) {
-      return this._statusResponse((<any>ctx.error).code || 500, res.statusMessage, res, body)
+      const code = (ctx.error as any).code
+      return this._statusResponse(isStatusCode(code) ? code : 500, res.statusMessage, res, body)
     }
 
     if (StatusCode.Empty[res.statusCode]) {
