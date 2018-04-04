@@ -1,0 +1,6 @@
+{
+  "extends": "../../ts-base",
+  "include": [
+    "*.ts"
+  ]
+}
