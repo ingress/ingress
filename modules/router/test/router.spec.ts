@@ -73,6 +73,7 @@ describe('Routing', () => {
     class TestController {
       constructor(public spy: Function) {}
       @Route.Get('route')
+      @Route.Get('alternate-route')
       a(...args: any[]) {
         return this.spy(...args)
       }
@@ -199,7 +200,9 @@ describe('Routing', () => {
   it('should route', async () => {
     expectedResponse = 'Hello World'
     const response = await getAsync('/api/test/route')
+    const response2 = await getAsync('/api/test/alternate-route')
     expect(response).to.equal(expectedResponse)
+    expect(response2).to.equal(expectedResponse)
     sinon.assert.calledOnce(routeSpy)
   })
 

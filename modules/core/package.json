@@ -49,6 +49,7 @@
     "reflect-metadata": "^0.1.10"
   },
   "dependencies": {
+    "@ingress/http-status": "^1.0.0",
     "app-builder": "^5.2.0",
     "destroy": "^1.0.4",
     "on-finished": "^2.3.0"
