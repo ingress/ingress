@@ -72,6 +72,6 @@ export interface ServerOptions<T> {
 
 export { createContext, DefaultMiddleware }
 
-export { StatusCode } from './status-code'
+export { StatusCode } from '@ingress/http-status'
 export * from './context'
 export { PromiseConfig } from './promise'

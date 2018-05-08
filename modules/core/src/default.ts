@@ -1,5 +1,5 @@
-import { CoreContext, Body } from './context'
-import { StatusCode } from './status-code'
+import { CoreContext, DefaultContext, Body } from './context'
+import { StatusCode } from '@ingress/http-status'
 import { ServerResponse } from 'http'
 import { Buffer } from 'buffer'
 import { Stream } from 'stream'
@@ -7,20 +7,30 @@ import destroy = require('destroy')
 import onFinished = require('on-finished')
 import { Addon } from './index'
 
+const internalError = new Error('Internal Server Error')
+;(internalError as any).code = 500
+
 const looksLikeHtmlRE = /^\s*</,
   logError = <T extends CoreContext<T>>(context: T) => {
     console.error(context.error)
   },
-  isDefined = (x: any) => x !== null && x !== void 0,
   isStatusCode = (x: any) => typeof x === 'number' && x <= 500,
   isString = (str: any): str is string => typeof str === 'string' || str instanceof String,
   isStreamLike = (body: Body): body is Stream =>
     Boolean((body && typeof (body as Stream).pipe === 'function') || body instanceof Stream),
   ensureErrorHandler = (stream: Stream, handler: (error: Error) => any) => {
     stream.listeners('error').indexOf(handler) === -1 && stream.on('error', handler)
+  },
+  isWritable = (res: any) => {
+    return !Boolean(res.headersSent || (res.socket && !res.socket.writable))
+  },
+  clearHeaders = (res: ServerResponse) => {
+    if ('function' === typeof res.getHeaderNames) {
+      res.getHeaderNames().forEach((x: string) => res.removeHeader(x))
+    } else {
+      ;(res as any)._headers = {}
+    }
   }
-
-export * from './status-code'
 
 export interface DefaultOptions<T> {
   onError(context: T): Promise<any> | any
@@ -50,13 +60,13 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
     res.end(body)
   }
 
-  private _handleResponse(ctx: CoreContext<T>, handleError: (error: Error) => any) {
+  private _handleResponse(ctx: CoreContext<T>) {
     const res = <any>ctx.res,
       hasContentType = Boolean(res._headers && res._headers['content-type'])
 
     let body = ctx.body
 
-    if (res.headersSent || (res.socket && !res.socket.writable)) {
+    if (!isWritable(res)) {
       return
     }
 
@@ -98,7 +108,7 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
     if (isStreamLike(body)) {
       !hasContentType && this._contentType(res, 'application/octet-stream')
       onFinished(res, () => destroy(body))
-      ensureErrorHandler(body as Stream, handleError)
+      ensureErrorHandler(body as Stream, ctx.handleError!)
       return (body as Stream).pipe(res)
     }
 
@@ -111,21 +121,24 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
   get middleware() {
     const onError = this.onError
     return (context: T, next: () => Promise<any>) => {
-      const handleError = (error: Error | null) => {
-          if (error) {
-            context.error = error
-            return onError(context)
-          }
-        },
-        handleResponse = () => this._handleResponse(context, handleError)
-
-      context.handleError = handleError
-      context.handleResponse = handleResponse
+      context.handleError = (error: Error | null) => {
+        if (error) {
+          const { res } = context
+          context.error = error
+          isWritable(res) && clearHeaders(res)
+          return onError(context)
+        }
+      }
+      const respond = (context.handleResponse = this._handleResponse.bind(this, context))
       context.res.statusCode = 404
-      onFinished(context.req, handleError)
+      onFinished(context.req, (error: Error | null) => {
+        if (error) {
+          Promise.resolve(context.handleError!(error)).then(respond)
+        }
+      })
       return next()
-        .catch(handleError)
-        .then(handleResponse)
+        .catch(context.handleError)
+        .then(respond)
     }
   }
 }
