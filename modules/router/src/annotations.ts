@@ -8,7 +8,6 @@ const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
 class RouteAnnotation {
   public path: string
   public methods: string[]
-  public resolvedPaths: string[]
   public ignoreParentPrefix: boolean
   public ignoreAllPrefix: boolean
 

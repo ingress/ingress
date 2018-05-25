@@ -53,7 +53,7 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
 
   private _statusResponse(status: number, message: string, res: ServerResponse, body?: Body) {
     res.statusCode = status || 404
-    res.statusMessage = message = message || StatusCode[res.statusCode]
+    res.statusMessage = message = message || StatusCode[res.statusCode] || StatusCode[500]
     body = isString(body) ? body : message
     this._contentType(res, 'text/plain')
     this._contentLength(res, Buffer.byteLength(body))
@@ -75,7 +75,7 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
       return this._statusResponse(isStatusCode(code) ? code : 500, res.statusMessage, res, body)
     }
 
-    if (StatusCode.Empty[res.statusCode]) {
+    if (res.statusCode in StatusCode.Empty) {
       res._headers = {}
       return res.end()
     }

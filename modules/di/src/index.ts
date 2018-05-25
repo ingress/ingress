@@ -27,15 +27,15 @@ const EMPTY_DEPS: Array<any> = [],
   ContextToken = new InjectionToken('ingress.context')
 
 export class Container<T extends ContainerContext = ContainerContext> implements Injector {
-  private rootInjector: ReflectiveInjector
-  private resolvedChildProviders: ResolvedReflectiveProvider[]
+  private rootInjector: ReflectiveInjector | undefined
+  private resolvedChildProviders: ResolvedReflectiveProvider[] = []
   private ResolvedContextProvider: Type<ResolvedReflectiveProvider>
 
   private _singletonCollector = new DependencyCollectorList()
   private _perRequestCollector = new DependencyCollectorList()
 
-  public providers: Provider[]
-  public perRequestProviders: Provider[]
+  public providers: Provider[] = []
+  public perRequestProviders: Provider[] = []
   public Singleton = this._singletonCollector.collect
   public PerRequestLifetime = this._perRequestCollector.collect
 
@@ -49,7 +49,7 @@ export class Container<T extends ContainerContext = ContainerContext> implements
     this.ResolvedContextProvider = class<T> implements ResolvedReflectiveProvider {
       public key = key
       public resolvedFactories: ResolvedReflectiveFactory[]
-      public multiProvider: boolean
+      public multiProvider: boolean = false
       constructor(value: T) {
         this.resolvedFactories = [
           {
@@ -67,11 +67,11 @@ export class Container<T extends ContainerContext = ContainerContext> implements
   }
 
   get(token: any, notFoundValue?: any) {
-    return this.rootInjector.get(token, notFoundValue)
+    return this.rootInjector!.get(token, notFoundValue)
   }
 
   createChild(...providers: Array<ResolvedReflectiveProvider>) {
-    return this.rootInjector.createChildFromResolved(this.resolvedChildProviders.concat(providers))
+    return this.rootInjector!.createChildFromResolved(this.resolvedChildProviders.concat(providers))
   }
 
   private _initialize() {

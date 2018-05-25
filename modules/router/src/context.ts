@@ -32,12 +32,12 @@ export interface RouterContext<T extends RouterContext<T>> {
 }
 
 export abstract class BaseRouterContext<T extends RouterContext<T>> implements RouterContext<T> {
-  public url: Url
-  public route: CurrentRoute<T>
-  public req: RoutedRequest<T>
-  public res: Response<T>
-  public error: Error | null | undefined
-  public body: any
-  public handleError: (error: Error | null) => Promise<any> | any
-  public handleResponse: () => any
+  public abstract url: Url
+  public abstract route: CurrentRoute<T>
+  public abstract req: RoutedRequest<T>
+  public abstract res: Response<T>
+  public abstract error: Error | null | undefined
+  public abstract body: any
+  public abstract handleError: (error: Error | null) => Promise<any> | any
+  public abstract handleResponse: () => any
 }
