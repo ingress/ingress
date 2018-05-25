@@ -15,7 +15,7 @@
   "author": "Caleb Boyd <caleb.boyd@hotmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^9.6.1",
-    "typescript": "^2.8.1"
+    "@types/node": "^10.1.2",
+    "typescript": "^2.8.3"
   }
 }

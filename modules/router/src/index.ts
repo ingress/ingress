@@ -1,5 +1,4 @@
 import { reflectAnnotations, AnnotatedPropertyDescription } from 'reflect-annotations'
-import RouteRecognizer = require('route-recognizer')
 import { Middleware } from 'app-builder'
 import { IncomingMessage, ServerResponse } from 'http'
 import { createHandler, Handler, isRoutable as isExplictlyRoutable, RouteMetadata } from './handler'
@@ -8,6 +7,7 @@ import { parse as parseQuery } from 'querystring'
 import { Type } from './type'
 import { ControllerCollector, ControllerDecorator } from './controller'
 import { RouterContext } from './context'
+import RouteRecognizer = require('route-recognizer')
 
 export interface RouterOptions<T> {
   controllers?: Array<Type<any>>
@@ -77,7 +77,7 @@ export class Router<T extends RouterContext<T>> {
   private _initialized = false
   private _controllerCollector = new ControllerCollector()
 
-  public handlers: Handler<T>[]
+  public handlers: Handler<T>[] = []
   public Controller: ControllerDecorator = this._controllerCollector.collect
   public readonly typeConverters: TypeConverter<any>[]
 
@@ -96,25 +96,27 @@ export class Router<T extends RouterContext<T>> {
     const { isRoutable, baseUrl, getPath, getMethods } = this._options,
       controllers = this._controllerCollector.collected.concat(this._options.controllers || [])
 
-    this.handlers = controllers
-      .reduce(
-        (routes: AnnotatedPropertyDescription[], controller) =>
-          routes.concat(
-            ...reflectAnnotations(controller)
-              .map(x => Object.assign(x, { controller }))
-              .filter(isRoutable || isExplictlyRoutable)
-          ),
-        []
-      )
-      .map((route: any) => {
-        const handler = createHandler<T>(route, baseUrl, getPath, getMethods, this.typeConverters)
-        handler.httpMethods.forEach(method => {
-          const recognizer = (this.routers[method] =
-            this.routers[method] || new RouteRecognizer<Handler<T>>())
-          recognizer.add([handler])
+    this.handlers.push(
+      ...controllers
+        .reduce(
+          (routes: AnnotatedPropertyDescription[], controller) =>
+            routes.concat(
+              ...reflectAnnotations(controller)
+                .map(x => Object.assign(x, { controller }))
+                .filter(isRoutable || isExplictlyRoutable)
+            ),
+          []
+        )
+        .map((route: any) => {
+          const handler = createHandler<T>(route, baseUrl, getPath, getMethods, this.typeConverters)
+          handler.httpMethods.forEach(method => {
+            const recognizer = (this.routers[method] =
+              this.routers[method] || new RouteRecognizer<Handler<T>>())
+            recognizer.add([handler])
+          })
+          return handler
         })
-        return handler
-      })
+    )
   }
 
   _match(method: string, pathname: string) {

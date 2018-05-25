@@ -3,7 +3,7 @@ import { Buffer } from 'buffer'
 import * as fs from 'fs'
 import { get, request, ServerResponse, IncomingMessage } from 'http'
 import { Server, DefaultContext, DefaultMiddleware } from '../src'
-import { StatusCode } from '../src/status-code'
+import { StatusCode } from '@ingress/http-status'
 
 const port = 8888
 
@@ -84,7 +84,7 @@ describe('Server', () => {
       })
       await server.listen(port)
       const res = await makeRequest('/')
-      expect(+res.headers['content-length']).to.equal(length)
+      expect(+res.headers['content-length']!).to.equal(length)
       expect(res.headers['content-type']).to.equal('application/json')
     })
 
@@ -97,7 +97,7 @@ describe('Server', () => {
       })
       await server.listen(port)
       const res = await makeRequest('/')
-      expect(+res.headers['content-length']).to.equal(length)
+      expect(+res.headers['content-length']!).to.equal(length)
       expect(res.headers['content-type']).to.equal('application/octet-stream')
     })
 
@@ -110,7 +110,7 @@ describe('Server', () => {
       })
       await server.listen(port)
       const res = await makeRequest('/')
-      expect(+res.headers['content-length']).to.equal(length)
+      expect(+res.headers['content-length']!).to.equal(length)
       expect(res.headers['content-type']).to.equal('text/html')
     })
     Object
@@ -123,7 +123,7 @@ describe('Server', () => {
       })
       await server.listen(port)
       const res = await makeRequest('/')
-      expect(+res.headers['content-length']).to.equal(length)
+      expect(+res.headers['content-length']!).to.equal(length)
       expect(res.headers['content-type']).to.equal('text/plain')
     })
 
@@ -137,7 +137,7 @@ describe('Server', () => {
       })
       await server.listen(port)
       const res = await makeRequest('/')
-      expect(+res.headers['content-length']).to.equal(length)
+      expect(+res.headers['content-length']!).to.equal(length)
       expect(res.headers['content-type']).to.be.undefined
     })
 
@@ -203,7 +203,7 @@ describe('Server', () => {
       await server.listen(port)
       const res = await makeRequest('/', 'HEAD')
       expect(await getResponse(res)).to.equal(expectedBody)
-      expect(+res.headers['content-length']).to.equal(expectedLength)
+      expect(+res.headers['content-length']!).to.equal(expectedLength)
       expect(res.statusCode).to.equal(200)
     })
 
