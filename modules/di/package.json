@@ -28,12 +28,13 @@
     "url": "https://github.com/ingress/ingress/issues"
   },
   "peerDependencies": {
-    "reflect-metadata": "^0.1.10"
+    "reflect-metadata": "^0.1.12"
   },
   "devDependencies": {
-    "reflect-metadata": "^0.1.10",
-    "ts-node": "^4.1.0",
-    "typescript": "^2.6.2"
+    "@types/node": "^10.1.2",
+    "reflect-metadata": "^0.1.12",
+    "ts-node": "^6.0.5",
+    "typescript": "^2.8.3"
   },
   "dependencies": {
     "injection-js": "^2.2.1"

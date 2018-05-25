@@ -15,7 +15,7 @@ class TestA {
 }
 
 class Context {
-  scope: Injector
+  scope: Injector = ReflectiveInjector.resolveAndCreate([])
 }
 
 var container = new Container({
