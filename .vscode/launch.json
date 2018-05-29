@@ -1,0 +1,37 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Router - All",
+      "program": "${workspaceRoot}/modules/router/node_modules/mocha/bin/_mocha",
+      "args": [
+          "--require", "./modules/router/node_modules/ts-node/register",
+          "--check-leaks",
+          "--timeout", "4000",
+          "--colors",
+          "${workspaceRoot}/modules/router/test/**/*.spec.ts",
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector"
+  },
+  {
+    "type": "node",
+    "request": "launch",
+    "name": "Core - All",
+    "program": "${workspaceRoot}/modules/core/node_modules/mocha/bin/_mocha",
+    "args": [
+        "--require", "./modules/core/node_modules/ts-node/register",
+        "--check-leaks",
+        "--timeout", "4000",
+        "--colors",
+        "${workspaceRoot}/modules/core/test/**/*.spec.ts",
+    ],
+    "console": "integratedTerminal",
+    "internalConsoleOptions": "neverOpen",
+    "protocol": "inspector"
+},
+  ]
+}

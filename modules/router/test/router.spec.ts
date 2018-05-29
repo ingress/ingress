@@ -3,7 +3,7 @@ import { createAnnotationFactory } from 'reflect-annotations'
 import * as sinon from 'sinon'
 import { getAsync as get, postAsync as post } from './util/http'
 import { expect } from 'chai'
-import { Route, Router, BaseRouterContext, ParseBody, Param } from '../src'
+import { Route, Router, BaseRouterContext, Param } from '../src'
 
 const getAsync = (url: string) => get(`http://localhost:8888${url}`),
   postAsync = (url: string, payload: any, headers?: any) =>
