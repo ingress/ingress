@@ -2,16 +2,12 @@ import { Url } from 'url'
 import { IncomingMessage, ServerResponse } from 'http'
 import { Handler } from './handler'
 import { Type } from './type'
+import { CoreContext, BaseContext, Response, Request } from '@ingress/core'
 
-export interface RoutedRequest<T> extends IncomingMessage {
-  context: T
+export interface RoutedRequest<T> extends Request<T> {
   body: any
   query: { [key: string]: any }
   params: { [key: string]: any }
-}
-
-export interface Response<T> extends ServerResponse {
-  context: T
 }
 
 export interface CurrentRoute<T extends RouterContext<T>> {
@@ -20,24 +16,19 @@ export interface CurrentRoute<T extends RouterContext<T>> {
   handler: Handler<T>
 }
 
-export interface RouterContext<T extends RouterContext<T>> {
+export interface RouterContext<T extends RouterContext<T>> extends CoreContext<T> {
   url: Url
   route: CurrentRoute<T>
   req: RoutedRequest<T>
-  res: Response<T>
-  error: Error | null | undefined
+  body: any
+}
+
+export abstract class BaseRouterContext<T extends RouterContext<T>> extends BaseContext<T>
+  implements RouterContext<T> {
+  url: Url
+  route: CurrentRoute<T>
+  req: RoutedRequest<T>
   body: any
   handleError: (error: Error | null) => Promise<any> | any
   handleResponse: () => any
-}
-
-export abstract class BaseRouterContext<T extends RouterContext<T>> implements RouterContext<T> {
-  public abstract url: Url
-  public abstract route: CurrentRoute<T>
-  public abstract req: RoutedRequest<T>
-  public abstract res: Response<T>
-  public abstract error: Error | null | undefined
-  public abstract body: any
-  public abstract handleError: (error: Error | null) => Promise<any> | any
-  public abstract handleResponse: () => any
 }

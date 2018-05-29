@@ -21,14 +21,16 @@ export interface CoreContext<T extends CoreContext<T>> {
   res: Response<T>
   error: Error | null | undefined
   body: Body
-  handleError?: (error: Error | null) => Promise<any> | any
-  handleResponse?: () => any
+  handleError(error: Error | null): Promise<any> | any
+  handleResponse(): any
 }
 
 export abstract class BaseContext<T extends CoreContext<T>> implements CoreContext<T> {
+  abstract handleError: (error: Error | null) => any
+  abstract handleResponse: () => any
   public req: Request<T>
   public res: Response<T>
-  public error: Error | null
+  public error: Error | null | undefined
   public body: Body
   constructor(req: IncomingMessage, res: ServerResponse) {
     this.req = req as Request<T>
@@ -38,4 +40,11 @@ export abstract class BaseContext<T extends CoreContext<T>> implements CoreConte
   }
 }
 
-export class DefaultContext extends BaseContext<DefaultContext> {}
+export class DefaultContext extends BaseContext<DefaultContext> {
+  handleError = (error: Error | null) => {
+    throw new Error('Not Ipmlemented')
+  }
+  handleResponse = () => {
+    throw new Error('Not Implemented')
+  }
+}
