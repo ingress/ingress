@@ -17,7 +17,9 @@ export class ParseJsonBodyAnnotation {
   get middleware() {
     const options = this.options
     return (context: RouterContext<any>, next: () => Promise<any>) => {
-      const { req: { headers, method } } = context
+      const {
+        req: { headers, method }
+      } = context
 
       if (method === 'GET' || method === 'HEAD') return next()
 

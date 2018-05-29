@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/ingress/ingress#readme",
   "devDependencies": {
+    "@types/mocha": "^5.2.0",
+    "mocha": "^5.2.0",
     "prettier": "^1.12.1",
     "tslint": "^5.10.0",
     "tslint-config-prettier": "^1.13.0",
