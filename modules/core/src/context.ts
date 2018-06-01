@@ -41,7 +41,7 @@ export abstract class BaseContext<T extends CoreContext<T>> implements CoreConte
 }
 
 export class DefaultContext extends BaseContext<DefaultContext> {
-  handleError = (error: Error | null) => {
+  handleError = (_: Error | null) => {
     throw new Error('Not Ipmlemented')
   }
   handleResponse = () => {

@@ -8,6 +8,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strictPropertyInitialization": false,
-    "removeComments": true
+    "removeComments": true,
+    "noUnusedParameters": true
   }
 }

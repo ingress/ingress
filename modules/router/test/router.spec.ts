@@ -30,6 +30,49 @@ class MyCustomPredicateType {
 
 class MyUnknownType {}
 
+describe('Errors in Configuration', () => {
+  let router: Router<MyContext>
+  let errorStub: sinon.SinonStub
+  let server: Server<MyContext>
+
+  beforeEach(() => {
+    server = new Server<MyContext>().use(
+      new DefaultMiddleware<MyContext>({ onError: (errorStub = sinon.stub()) })
+    )
+    router = new Router<MyContext>()
+  })
+
+  it('should error with parent/child methods defined', () => {
+    router.controllers.push(
+      (() => {
+        @Route.Get('hello')
+        class Test {
+          @Route.Post('world')
+          method() {}
+        }
+        return Test
+      })()
+    )
+    expect(() => server.use(router)).to.throw(
+      'Test.method must provide Http Methods on class OR method, but not both'
+    )
+  })
+
+  it('should error with no methods defined', () => {
+    router.controllers.push(
+      (() => {
+        @Route('hello')
+        class Asdf {
+          @Route('world')
+          method() {}
+        }
+        return Asdf
+      })()
+    )
+    expect(() => server.use(router)).to.throw('Asdf.method has no Http Method defined')
+  })
+})
+
 describe('Routing', () => {
   let server: Server<MyContext>,
     router: Router<MyContext>,
@@ -55,7 +98,7 @@ describe('Routing', () => {
         }
       ]
     })
-    orderedSpys = Array.from(Array(3)).map(x => sinon.spy())
+    orderedSpys = Array.from(Array(3)).map(() => sinon.spy())
 
     const [One, Two, Three] = orderedSpys.map(x => {
       return createAnnotationFactory(
@@ -311,17 +354,17 @@ describe('Routing', () => {
         expect(res).to.eql(JSON.stringify([1, 2, 3]))
       })
 
-      await postAsync('/api/type-conversion/numbers/foo', '2', { 'num-header': '3' }).then(res => {
+      await postAsync('/api/type-conversion/numbers/foo', '2', { 'num-header': '3' }).then(() => {
         expect(errorStub.firstCall.args[0].error.message).to.equal('cannot convert "foo" to number')
         errorStub.reset()
       })
 
-      await postAsync('/api/type-conversion/numbers/4', null, { 'num-header': '3' }).then(res => {
+      await postAsync('/api/type-conversion/numbers/4', null, { 'num-header': '3' }).then(() => {
         expect(errorStub.firstCall.args[0].error.message).to.equal('cannot convert null to number')
         errorStub.reset()
       })
 
-      await postAsync('/api/type-conversion/numbers/4', '2', {}).then(res => {
+      await postAsync('/api/type-conversion/numbers/4', '2', {}).then(() => {
         expect(errorStub.firstCall.args[0].error.message).to.equal(
           'cannot convert undefined to number'
         )
@@ -337,7 +380,7 @@ describe('Routing', () => {
       )
 
       await postAsync('/api/type-conversion/strings/one', null, { 'string-header': 'three' }).then(
-        res => {
+        () => {
           expect(errorStub.firstCall.args[0].error.message).to.equal(
             'cannot convert null to string'
           )
@@ -345,7 +388,7 @@ describe('Routing', () => {
         }
       )
 
-      await postAsync('/api/type-conversion/strings/one', 2, {}).then(res => {
+      await postAsync('/api/type-conversion/strings/one', 2, {}).then(() => {
         expect(errorStub.firstCall.args[0].error.message).to.equal(
           'cannot convert undefined to string'
         )

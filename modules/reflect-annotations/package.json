@@ -42,6 +42,6 @@
     "mocha": "^5.2.0",
     "reflect-metadata": "0.1.12",
     "ts-node": "^6.0.5",
-    "typescript": "^2.8.3"
+    "typescript": "^2.9.1"
   }
 }

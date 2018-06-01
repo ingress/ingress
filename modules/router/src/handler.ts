@@ -120,7 +120,7 @@ function resolveRouteMiddleware<T extends RouterContext<T>>(handler: {
   }
 }
 
-function convertType(
+export function convertType(
   paramResolver: ParamResolver,
   paramIndex: number,
   source: RouteMetadata,
@@ -145,7 +145,7 @@ function convertType(
   }
 }
 
-function withPath<T>(this: Handler<T>, path: string) {
+export function withPath<T>(this: Handler<T>, path: string) {
   return { ...this, path }
 }
 

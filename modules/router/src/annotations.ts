@@ -70,7 +70,7 @@ export const Route = <Route>methods.reduce(
 
 export interface ParamAnnotation {
   extractValue?(context: RouterContext<any>): any
-  convertType?<T>(value: any): any
+  convertType?(value: any): any
 }
 
 class BodyParamAnnotation implements ParamAnnotation {
