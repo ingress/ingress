@@ -1,6 +1,6 @@
 {
   "name": "@ingress/core",
-  "version": "1.0.0-beta.11",
+  "version": "1.0.0-beta.12",
   "description": "http server abstraction",
   "main": "lib/index.js",
   "repository": {
@@ -40,13 +40,14 @@
     "chai": "^4.1.2",
     "cross-env": "^5.1.6",
     "mocha": "^5.2.0",
+    "reflect-metadata": "^0.1.12",
     "rimraf": "^2.6.2",
     "sinon": "^5.0.10",
     "ts-node": "^6.0.5",
     "typescript": "^2.9.1"
   },
   "peerDependencies": {
-    "reflect-metadata": "^0.1.10"
+    "reflect-metadata": "^0.1.12"
   },
   "dependencies": {
     "@ingress/http-status": "^1.0.1",
