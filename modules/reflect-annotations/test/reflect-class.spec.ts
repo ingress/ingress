@@ -19,6 +19,7 @@ class ExtraFixtureWithParameter {
 }
 
 class ExtraFixtureWithLotsOfParameters {
+  //@ts-ignore
   constructor(a1: 1, a2: 2, a3: 3, a4: 4, a5: 5, a6: 6, a7: 7, a8: 8, a9: 9, a10: 10, a11: 11) {}
 }
 
@@ -61,21 +62,22 @@ class Four {
 
 class Five {
   @MiddlewareAnnotation()
-  methodWithAParameter(@FixtureAnnotation() param: any) {}
+  methodWithAParameter(@FixtureAnnotation() _param: any) {}
 
   anotherMethodWithAParameter(
-    @MiddlewareAnnotation() param: any,
-    noAnnotation: any,
-    @FixtureAnnotation() param2: any
+    @MiddlewareAnnotation() _param: any,
+    _noAnnotation: any,
+    @FixtureAnnotation() _param2: any
   ) {}
 }
 
 class Six {
   @MiddlewareAnnotation()
+  //@ts-ignore
   methodWithTypes(@FixtureAnnotation() param: string, foo: any, otherParam: number): string {
     return 'hello'
   }
-
+  //@ts-ignore
   methodWithNoAnnotations(param: string, foo: any, otherParam: number): string {
     return 'hello'
   }
