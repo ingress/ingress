@@ -5,6 +5,7 @@ import { RouteAnnotation, ParamAnnotation } from './annotations'
 import { RouterContext } from './context'
 import { Type } from './type'
 import { TypeConverter, ExactTypeConverter } from './index'
+import { createInflateRaw } from 'zlib'
 
 export type RouteMetadata = AnnotatedPropertyDescription & { controller: Type<any> }
 
@@ -12,26 +13,44 @@ const supportedHttpMethods: Array<string> = ['GET', 'POST', 'PUT', 'DELETE', 'HE
   isRouteAnnotation = (x: any) => x.isRouteAnnotation,
   pickRequest = (context: RouterContext<any>) => context.req
 
-export function getPath(baseUrl = '/', route: RouteMetadata): string {
-  const parent = route.classAnnotations.find(isRouteAnnotation) as RouteAnnotation | undefined,
-    child = route.methodAnnotations.find(isRouteAnnotation) as RouteAnnotation | undefined
+export type PathResolver = typeof getPaths
 
-  return (
-    (parent && parent.resolvePath(baseUrl, child)) ||
-    new RouteAnnotation(baseUrl).resolvePath('/', child)
-  )
-}
+export function getPaths(baseUrl = '/', route: RouteMetadata): { [method: string]: string[] } {
+  const parents = route.classAnnotations.filter(isRouteAnnotation) as RouteAnnotation[],
+    children = route.methodAnnotations.filter(isRouteAnnotation) as RouteAnnotation[],
+    paths: { [method: string]: string[] } = {}
 
-export function getMethods(route: RouteMetadata): string[] {
-  return Array.from(
-    new Set(
-      route.classAnnotations
-        .concat(route.methodAnnotations)
-        .filter(x => x.isHttpMethodAnnotation)
-        .map(x => <string[]>x.methods)
-        .reduce((a, c) => a.concat(c), [])
-    )
-  )
+  let resolveFrom = '/'
+
+  if (parents.length) {
+    resolveFrom = baseUrl
+  } else {
+    parents.push(new RouteAnnotation(baseUrl))
+  }
+
+  parents.forEach(parent => {
+    children.forEach(child => {
+      if (!child.methods.length && !parent.methods.length) {
+        throw new Error(`${route.controller.name}.${route.name} has no Http Method defined`)
+      }
+      if (child.methods.length && parent.methods.length) {
+        throw new Error(
+          `${route.controller.name}.${
+            route.name
+          } must provide Http Methods on class OR method, but not both`
+        )
+      }
+      const methods = parent.methods.length ? parent.methods : child.methods,
+        resolvedPath = parent.resolvePath(resolveFrom, child)
+
+      methods.forEach(m => {
+        paths[m] = paths[m] || []
+        paths[m].push(resolvedPath)
+      })
+    })
+  })
+
+  return paths
 }
 
 export function isRoutable(maybeRoute: AnnotatedPropertyDescription) {
@@ -81,89 +100,109 @@ function isExactTypeConverter<T>(converter: TypeConverter<T>): converter is Exac
   return 'type' in converter
 }
 
-export class Handler<T extends RouterContext<T>> {
-  public handler: Handler<T>
-  public controllerMethod: string
-  public controller: Type<any>
-  public invokeAsync: ComposedMiddleware<T>
-  private paramAnnotations: any[]
-  private paramResolvers: ParamResolver[]
+function resolveRouteMiddleware<T extends RouterContext<T>>(handler: {
+  controllerMethod: string
+  controller: Type<any>
+  paramResolvers: ParamResolver[]
+}) {
+  const routeName = handler.controllerMethod,
+    controllerMethod = handler.controller.prototype[routeName],
+    paramResolvers = handler.paramResolvers
 
-  constructor(
-    public source: RouteMetadata,
-    public baseUrl: string,
-    public path: string,
-    public httpMethods: string[],
-    public typeConverters: TypeConverter<any>[]
-  ) {
-    this.handler = this
-    this.controller = source.controller
-    this.controllerMethod = source.name
-
-    this.paramAnnotations = this.source.parameterAnnotations.length
-      ? this.source.parameterAnnotations
-      : [undefined]
-
-    this.paramResolvers = this.paramAnnotations
-      .map(extractParameter)
-      .map((x, i) => this.convertType(x, i))
-
-    this.invokeAsync = compose([
-      extractBodyParser(source),
-      ...extractMiddleware(source),
-      this._resolveRouteMiddleware()
-    ])
+  return (context: T, next: () => Promise<any>) => {
+    const params = resolveParameters(paramResolvers, context)
+    return Promise.resolve(controllerMethod.call(context.route.controllerInstance, ...params)).then(
+      x => {
+        context.body = x
+        return next()
+      }
+    )
   }
+}
 
-  convertType(paramResolver: ParamResolver, paramIndex: number): ParamResolver {
-    const paramType = this.source.types.parameters && this.source.types.parameters[paramIndex]
-    if (!paramType || paramType === Object) {
-      return paramResolver
-    }
-    const typeConverter =
-      paramType &&
-      this.typeConverters.find(
-        c => (isExactTypeConverter(c) ? c.type === paramType : c.typePredicate(paramType))
-      )
-    if (!typeConverter) {
-      throw new Error(`no type converter found for type: ${paramType.name || paramType}`)
-    }
-    return context => {
-      const value = paramResolver(context)
-      return typeConverter.convert(value, paramType)
-    }
+function convertType(
+  paramResolver: ParamResolver,
+  paramIndex: number,
+  source: RouteMetadata,
+  typeConverters: TypeConverter<any>[]
+): ParamResolver {
+  const paramType = source.types.parameters && source.types.parameters[paramIndex]
+  if (!paramType || paramType === Object) {
+    return paramResolver
   }
-
-  _resolveRouteMiddleware() {
-    const routeName = this.controllerMethod,
-      controllerMethod = this.controller.prototype[routeName],
-      paramResolvers = this.paramResolvers
-
-    return (context: T, next: () => Promise<any>) => {
-      const params = resolveParameters(paramResolvers, context)
-
-      return Promise.resolve(controllerMethod.apply(context.route.controllerInstance, params)).then(
-        x => {
-          context.body = x
-          return next()
-        }
-      )
-    }
+  const typeConverter =
+    paramType &&
+    typeConverters.find(
+      (c: TypeConverter<any>) =>
+        isExactTypeConverter(c) ? c.type === paramType : c.typePredicate(paramType)
+    )
+  if (!typeConverter) {
+    throw new Error(`no type converter found for type: ${paramType.name || paramType}`)
   }
+  return context => {
+    const value = paramResolver(context)
+    return typeConverter.convert(value, paramType)
+  }
+}
+
+function withPath<T>(this: Handler<T>, path: string) {
+  return { ...this, path }
+}
+
+export interface Handler<T> {
+  path: string
+  handler: Handler<T>
+  invokeAsync: (context: T, next: () => Promise<any>) => Promise<any>
+  withPath: typeof withPath
+  source: RouteMetadata
+  baseUrl: string
+  convertType: typeof convertType
+  paths: { [method: string]: string[] }
+  typeConverters: TypeConverter<any>[]
+  controller: Type<any>
+  controllerMethod: string
+  paramAnnotations: ParamAnnotation[]
+  paramResolvers: ParamResolver[]
 }
 
 export function createHandler<T extends RouterContext<T>>(
   source: RouteMetadata,
   baseUrl: string = '/',
-  derivePath: (baseUrl: string, route: RouteMetadata) => string = getPath,
-  deriveMethods: (route: RouteMetadata) => string[] = getMethods,
+  derivePaths: (baseUrl: string, route: RouteMetadata) => { [method: string]: string[] } = getPaths,
   typeConverters: TypeConverter<any>[]
 ) {
-  return new Handler<T>(
+  const paths = derivePaths(baseUrl, source),
+    paramAnnotations = source.parameterAnnotations.length
+      ? source.parameterAnnotations
+      : [undefined],
+    paramResolvers = paramAnnotations
+      .map(extractParameter)
+      .map((x, i) => convertType(x, i, source, typeConverters))
+
+  let handlerRef: any
+  const handler = {
+    path: '',
+    withPath,
     source,
     baseUrl,
-    derivePath(baseUrl, source),
-    deriveMethods(source),
-    typeConverters
-  )
+    convertType,
+    paths,
+    typeConverters,
+    controller: source.controller,
+    controllerMethod: source.name,
+    paramAnnotations,
+    paramResolvers,
+    invokeAsync: compose<T>([
+      extractBodyParser(source),
+      ...extractMiddleware<T>(source),
+      resolveRouteMiddleware({
+        controller: source.controller,
+        controllerMethod: source.name,
+        paramResolvers
+      })
+    ]),
+    handler: handlerRef as Handler<T> // hack for defining circular literal
+  }
+  handler.handler = handler
+  return handler
 }
