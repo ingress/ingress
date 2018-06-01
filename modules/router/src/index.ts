@@ -1,7 +1,13 @@
 import { reflectAnnotations, AnnotatedPropertyDescription } from 'reflect-annotations'
 import { Middleware } from 'app-builder'
 import { IncomingMessage, ServerResponse } from 'http'
-import { createHandler, Handler, isRoutable as isExplictlyRoutable, RouteMetadata } from './handler'
+import {
+  createHandler,
+  PathResolver,
+  Handler,
+  isRoutable as isExplictlyRoutable,
+  RouteMetadata
+} from './handler'
 import { parse as parseUrl, Url } from 'url'
 import { parse as parseQuery } from 'querystring'
 import { Type } from './type'
@@ -14,8 +20,7 @@ export interface RouterOptions<T> {
   resolveController?<C>(context: T, controller: Type<C>): C
   baseUrl?: string
   isRoutable?: (routeDefinition: RouteMetadata) => boolean
-  getMethods?: (routeDefinition: RouteMetadata) => string[]
-  getPath?: (baseUrl: string, routeDefinition: RouteMetadata) => string
+  getPaths?: PathResolver
   typeConverters?: TypeConverter<any>[]
 }
 
@@ -75,14 +80,16 @@ export class Router<T extends RouterContext<T>> {
   private routers: { [key: string]: RouteRecognizer<Handler<T>> }
   private _options: RouterOptions<T>
   private _initialized = false
-  private _controllerCollector = new ControllerCollector()
+  private controllerCollector = new ControllerCollector()
 
+  public controllers: Type<any>[] = this.controllerCollector.collected
   public handlers: Handler<T>[] = []
-  public Controller: ControllerDecorator = this._controllerCollector.collect
+  public Controller: ControllerDecorator = this.controllerCollector.collect
   public readonly typeConverters: TypeConverter<any>[]
 
   constructor(options: RouterOptions<T> = {}) {
     this._options = Object.assign({}, defaultOptions, options)
+    this.controllers.push(...(this._options.controllers || []))
     this.routers = {}
     this.typeConverters = this._options.typeConverters!.concat(defaultTypeConverters)
   }
@@ -93,26 +100,26 @@ export class Router<T extends RouterContext<T>> {
     }
     this._initialized = true
 
-    const { isRoutable, baseUrl, getPath, getMethods } = this._options,
-      controllers = this._controllerCollector.collected.concat(this._options.controllers || [])
+    const { isRoutable, baseUrl, getPaths } = this._options,
+      controllers = this.controllerCollector.collected.concat(this.controllers)
 
     this.handlers.push(
       ...controllers
-        .reduce(
-          (routes: AnnotatedPropertyDescription[], controller) =>
+        .reduce<AnnotatedPropertyDescription[]>(
+          (routes, controller) =>
             routes.concat(
-              ...reflectAnnotations(controller)
-                .map(x => Object.assign(x, { controller }))
-                .filter(isRoutable || isExplictlyRoutable)
+              ...reflectAnnotations(controller).map(x => Object.assign(x, { controller }))
             ),
           []
         )
         .map((route: any) => {
-          const handler = createHandler<T>(route, baseUrl, getPath, getMethods, this.typeConverters)
-          handler.httpMethods.forEach(method => {
+          const handler = createHandler<T>(route, baseUrl, getPaths, this.typeConverters)
+          Object.keys(handler.paths).forEach(method => {
             const recognizer = (this.routers[method] =
               this.routers[method] || new RouteRecognizer<Handler<T>>())
-            recognizer.add([handler])
+            handler.paths[method].forEach((path: string) => {
+              recognizer.add([handler.withPath(path)])
+            })
           })
           return handler
         })
@@ -157,4 +164,4 @@ export * from './annotations'
 export { createAnnotationFactory } from 'reflect-annotations'
 export * from './context'
 export * from './controller'
-export { isRoutable, getMethods, getPath } from './handler'
+export { isRoutable, getPaths } from './handler'
