@@ -19,7 +19,7 @@ function makeRequest(
 }
 
 function getResponse(res: IncomingMessage) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function(resolve) {
     let data = ''
     res.on('data', (chunk: Buffer) => (data += chunk))
     res.on('end', () => resolve(data))
@@ -33,7 +33,7 @@ describe('Server', () => {
       contextFactory: ({ req, res }: { req: IncomingMessage; res: ServerResponse }) =>
         new DefaultContext(req, res)
     })
-    server.use((ctx, next) => next())
+    server.use((_, next) => next())
   })
 
   afterEach(() => {
@@ -142,7 +142,7 @@ describe('Server', () => {
     })
 
     it('should respond 404 when no body is set', async () => {
-      server.use((ctx, next) => {
+      server.use((_, next) => {
         return next()
       })
       await server.listen(port)
