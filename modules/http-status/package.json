@@ -1,6 +1,6 @@
 {
   "name": "@ingress/http-status",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Ergonomic (typed) variant of node's http#STATUS_CODES constant",
   "main": "status-codes.js",
   "types": "status-codes.d.ts",
@@ -15,7 +15,7 @@
   "author": "Caleb Boyd <caleb.boyd@hotmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^10.1.4",
-    "typescript": "^2.8.4"
+    "@types/node": "^10.3.3",
+    "typescript": "^2.9.2"
   }
 }
