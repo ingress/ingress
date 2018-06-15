@@ -1,6 +1,6 @@
 {
   "name": "reflect-annotations",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "Set and inspect annotation metadata on JavaScript classes and methods",
   "repository": {
     "type": "git",
@@ -35,13 +35,13 @@
     "reflect-metadata": "0.1.12"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.3",
-    "@types/mocha": "^5.2.0",
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.2",
     "chai": "^4.1.2",
-    "cross-env": "^5.1.6",
+    "cross-env": "^5.2.0",
     "mocha": "^5.2.0",
     "reflect-metadata": "0.1.12",
-    "ts-node": "^6.0.5",
-    "typescript": "^2.9.1"
+    "ts-node": "^6.1.1",
+    "typescript": "^2.9.2"
   }
 }
