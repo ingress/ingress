@@ -1,4 +1,4 @@
-import { createAnnotationFactory } from 'reflect-annotations'
+import { createAnnotationFactory, Annotation } from 'reflect-annotations'
 import { RouterContext } from './context'
 
 const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
@@ -41,8 +41,6 @@ class RouteAnnotation {
     return result(prefix + '/' + this.path + '/' + suffix.path)
   }
 }
-
-export type Annotation = ClassDecorator & MethodDecorator
 
 export interface PathFactory {
   (urlDefinition?: string, ...methods: Array<PathFactory | string>): Annotation
@@ -120,4 +118,17 @@ const Body = createAnnotationFactory(BodyParamAnnotation),
   Head = Route.Head,
   Patch = Route.Patch
 
-export { Body, Query, Header, Param, Get, Put, Post, Delete, Head, Patch, RouteAnnotation }
+export {
+  Body,
+  Query,
+  Header,
+  Param,
+  Get,
+  Put,
+  Post,
+  Delete,
+  Head,
+  Patch,
+  RouteAnnotation,
+  Annotation
+}
