@@ -5,7 +5,8 @@ import {
   setParameterAnnotations,
   getParameterTypes,
   getReturnType,
-  createAnnotationFactory
+  createAnnotationFactory,
+  Annotation
 } from './annotations'
 import { reflectClassProperties } from './reflect-class'
 
@@ -17,7 +18,7 @@ export {
   createAnnotationFactory
 }
 
-export interface AnnotatedPropertyDescription {
+interface AnnotatedPropertyDescription {
   name: string
   classAnnotations: Array<any>
   methodAnnotations: Array<any>
@@ -60,7 +61,7 @@ function collectPropertyAnnotations(property: AnnotatedPropertyDescription, ctor
   return property
 }
 
-export function reflectAnnotations(
+function reflectAnnotations(
   source: Function,
   options: { declaredOrder: boolean } = { declaredOrder: true }
 ) {
@@ -81,3 +82,5 @@ export function reflectAnnotations(
 }
 
 export default reflectAnnotations
+
+export { reflectAnnotations, AnnotatedPropertyDescription, Annotation }
