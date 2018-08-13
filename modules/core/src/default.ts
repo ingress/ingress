@@ -3,9 +3,9 @@ import { StatusCode } from '@ingress/http-status'
 import { ServerResponse } from 'http'
 import { Buffer } from 'buffer'
 import { Stream } from 'stream'
-import destroy = require('destroy')
 import onFinished = require('on-finished')
 import { Addon } from './index'
+import destroy = require('destroy')
 
 const internalError = new Error('Internal Server Error')
 ;(internalError as any).code = 500
@@ -37,6 +37,7 @@ export interface DefaultOptions<T> {
 }
 
 export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
+  public inflight: number = 0
   private onError: (context: T) => Promise<any> | any
 
   constructor(options: DefaultOptions<T> = { onError: logError }) {
@@ -120,7 +121,9 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
 
   get middleware() {
     const onError = this.onError
+    const onResEnd = () => this.inflight--
     return (context: T, next: () => Promise<any>) => {
+      this.inflight++
       context.handleError = (error: Error | null) => {
         if (error) {
           const { res } = context
@@ -131,6 +134,7 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
       }
       const respond = (context.handleResponse = this._handleResponse.bind(this, context))
       context.res.statusCode = 404
+      onFinished(context.res, onResEnd)
       onFinished(context.req, (error: Error | null) => {
         if (error) {
           Promise.resolve(context.handleError!(error)).then(respond)
