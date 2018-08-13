@@ -1,30 +1,11 @@
 import { expect } from 'chai'
 import { Buffer } from 'buffer'
 import * as fs from 'fs'
-import { get, request, ServerResponse, IncomingMessage } from 'http'
+import { ServerResponse, IncomingMessage } from 'http'
+import { makeRequest, getResponse } from './http'
 import { Server, DefaultContext, DefaultMiddleware } from '../src'
-import { StatusCode } from '@ingress/http-status'
 
 const port = 8888
-
-function makeRequest(
-  path: string,
-  method: string = 'GET',
-  body?: string
-): Promise<IncomingMessage> {
-  return new Promise((res, rej) => {
-    const req = request({ port, path, method }, res).on('error', rej)
-    req.end(body)
-  })
-}
-
-function getResponse(res: IncomingMessage) {
-  return new Promise(function(resolve) {
-    let data = ''
-    res.on('data', (chunk: Buffer) => (data += chunk))
-    res.on('end', () => resolve(data))
-  })
-}
 
 describe('Server', () => {
   let server: Server<DefaultContext>
