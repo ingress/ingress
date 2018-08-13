@@ -10,14 +10,15 @@ export default function ingress<T extends CoreContext<T>>(options?: ServerOption
 
 export class Server<T extends CoreContext<T>> {
   private _appBuilder: AppBuilder<T>
-  private _starting: Array<undefined | Promise<any>>
+  private _registers: Array<undefined | Promise<any>>
   private _createContext: ({ req, res }: { req: IncomingMessage; res: ServerResponse }) => T
   public webserver: HttpServer
+  private teardown: () => any = () => {}
 
   constructor({ server = createServer(), contextFactory = createContext }: ServerOptions<T> = {}) {
     this._appBuilder = new AppBuilder<T>()
     this._createContext = contextFactory as any
-    this._starting = []
+    this._registers = []
     this.webserver = server
   }
 
@@ -28,7 +29,7 @@ export class Server<T extends CoreContext<T>> {
     }
 
     if (middleware.register) {
-      this._starting.push(middleware.register(this))
+      this._registers.push(middleware.register(this))
     }
 
     if ('function' === typeof middleware) {
@@ -45,11 +46,24 @@ export class Server<T extends CoreContext<T>> {
       requestHandler(this._createContext({ req, res }))
   }
 
+  setup() {
+    return PromiseConfig.constructor.all(this._registers).then((deregisters: any) => {
+      return (this.teardown = () => {
+        return PromiseConfig.constructor.all(
+          deregisters.map((x: any) => {
+            if (x && x.apply === 'function') {
+              return x.apply(null, [this])
+            }
+          })
+        )
+      })
+    })
+  }
+
   listen(...args: Array<any>) {
     this.webserver.on('request', this.build())
-    return PromiseConfig.constructor.all(this._starting).then(() => {
-      this._starting.length = 0
-      return new PromiseConfig.constructor(res => (<any>this.webserver).listen(...[...args, res]))
+    return this.setup().then(() => {
+      return new PromiseConfig.constructor(res => (<any>this.webserver).listen(...args, res))
     })
   }
 
