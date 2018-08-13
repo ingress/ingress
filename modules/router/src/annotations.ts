@@ -72,8 +72,10 @@ export interface ParamAnnotation {
 }
 
 class BodyParamAnnotation implements ParamAnnotation {
+  constructor(private key?: string) {}
+
   extractValue(context: RouterContext<any>) {
-    return context.req.body
+    return this.key ? context.req.body && context.req.body[this.key] : context.req.body
   }
 }
 
@@ -101,7 +103,7 @@ class HeaderParamAnnotation implements ParamAnnotation {
   }
 }
 
-const Body = createAnnotationFactory(BodyParamAnnotation),
+const Body: (key?: string) => Annotation = createAnnotationFactory(BodyParamAnnotation),
   Path = createAnnotationFactory(PathParamAnnotation),
   Query = createAnnotationFactory(QueryParamAnnotation),
   Header = createAnnotationFactory(HeaderParamAnnotation),
