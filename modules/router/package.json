@@ -1,6 +1,6 @@
 {
   "name": "@ingress/router",
-  "version": "1.0.0-rc.11",
+  "version": "1.0.0-rc.13",
   "description": "decorator based api router",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -23,22 +23,22 @@
   },
   "homepage": "https://github.com/ingress/ingress#readme",
   "devDependencies": {
-    "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.2",
-    "@types/node": "^10.3.3",
+    "@types/chai": "^4.1.5",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.11.1",
     "@types/route-recognizer": "0.0.27",
-    "@types/sinon": "^5.0.1",
-    "chai": "^4.1.2",
+    "@types/sinon": "^5.0.2",
+    "chai": "^4.2.0",
     "cross-env": "^5.2.0",
     "mocha": "^5.2.0",
     "reflect-metadata": "^0.1.12",
-    "sinon": "^6.0.0",
-    "ts-node": "^6.1.1",
-    "typescript": "^2.9.2"
+    "sinon": "^6.3.4",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.1.1",
+    "@ingress/core": "^1.0.0-beta.13"
   },
   "peerDependencies": {
-    "reflect-metadata": "^0.1.12",
-    "@ingress/core": "^1.0.0-beta.13"
+    "reflect-metadata": "^0.1.12"
   },
   "dependencies": {
     "app-builder": "^5.2.0",
