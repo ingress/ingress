@@ -114,6 +114,13 @@ describe('reflect-annotations', () => {
     })
   })
 
+  describe('createAnnotationFactory', () => {
+    it('should expose the annotationInstnace', () => {
+      const instance = FixtureAnnotation().annotationInstance
+      expect(instance).to.be.an.instanceof(Fixture)
+    })
+  })
+
   describe('reflectAnnotations', () => {
     it('should return all annotations', () => {
       const classProperties = reflectAnnotations(One)
