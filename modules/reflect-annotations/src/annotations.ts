@@ -69,39 +69,39 @@ export function getReturnType(target: any, key: string | symbol): Array<any> | u
   return Reflect.getMetadata(RETURN_TYPE, target, key)
 }
 
-export type Annotation = ClassDecorator &
+export type Annotation<T> = ClassDecorator &
   MethodDecorator &
-  ParameterDecorator & { annotationInstance: any }
+  ParameterDecorator & { annotationInstance: T }
 
-export function createAnnotationFactory<T>(Type: Constructor0<T>): () => Annotation
-export function createAnnotationFactory<T, A1>(Type: Constructor1<T, A1>): (a1: A1) => Annotation
+export function createAnnotationFactory<T>(Type: Constructor0<T>): () => Annotation<T>
+export function createAnnotationFactory<T, A1>(Type: Constructor1<T, A1>): (a1: A1) => Annotation<T>
 export function createAnnotationFactory<T, A1, A2>(
   Type: Constructor2<T, A1, A2>
-): (a1: A1, a2: A2) => Annotation
+): (a1: A1, a2: A2) => Annotation<T>
 export function createAnnotationFactory<T, A1, A2, A3>(
   Type: Constructor3<T, A1, A2, A3>
-): (a1: A1, a2: A2, a3: A3) => Annotation
+): (a1: A1, a2: A2, a3: A3) => Annotation<T>
 export function createAnnotationFactory<T, A1, A2, A3, A4>(
   Type: Constructor4<T, A1, A2, A3, A4>
-): (a1: A1, a2: A2, a3: A3, a4: A4) => Annotation
+): (a1: A1, a2: A2, a3: A3, a4: A4) => Annotation<T>
 export function createAnnotationFactory<T, A1, A2, A3, A4, A5>(
   Type: Constructor5<T, A1, A2, A3, A4, A5>
-): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5) => Annotation
+): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5) => Annotation<T>
 export function createAnnotationFactory<T, A1, A2, A3, A4, A5, A6>(
   Type: Constructor6<T, A1, A2, A3, A4, A5, A6>
-): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6) => Annotation
+): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6) => Annotation<T>
 export function createAnnotationFactory<T, A1, A2, A3, A4, A5, A6, A7>(
   Type: Constructor7<T, A1, A2, A3, A4, A5, A6, A7>
-): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7) => Annotation
+): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7) => Annotation<T>
 export function createAnnotationFactory<T, A1, A2, A3, A4, A5, A6, A7, A8>(
   Type: Constructor8<T, A1, A2, A3, A4, A5, A6, A7, A8>
-): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8) => Annotation
+): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8) => Annotation<T>
 export function createAnnotationFactory<T, A1, A2, A3, A4, A5, A6, A7, A8, A9>(
   Type: Constructor9<T, A1, A2, A3, A4, A5, A6, A7, A8, A9>
-): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9) => Annotation
-export function createAnnotationFactory<T>(Type: Constructor<T>): (...args: any[]) => Annotation
+): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9) => Annotation<T>
+export function createAnnotationFactory<T>(Type: Constructor<T>): (...args: any[]) => Annotation<T>
 export function createAnnotationFactory<T>(Type: Constructor<T>) {
-  return function(...args: any[]): Annotation {
+  return function(...args: any[]): Annotation<T> {
     const annotationInstance = new Type(...args)
     const annotation = (
       target: any,
