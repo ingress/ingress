@@ -69,7 +69,9 @@ export function getReturnType(target: any, key: string | symbol): Array<any> | u
   return Reflect.getMetadata(RETURN_TYPE, target, key)
 }
 
-export type Annotation = ClassDecorator & MethodDecorator & ParameterDecorator
+export type Annotation = ClassDecorator &
+  MethodDecorator &
+  ParameterDecorator & { annotationInstance: any }
 
 export function createAnnotationFactory<T>(Type: Constructor0<T>): () => Annotation
 export function createAnnotationFactory<T, A1>(Type: Constructor1<T, A1>): (a1: A1) => Annotation
@@ -101,7 +103,7 @@ export function createAnnotationFactory<T>(Type: Constructor<T>): (...args: any[
 export function createAnnotationFactory<T>(Type: Constructor<T>) {
   return function(...args: any[]): Annotation {
     const annotationInstance = new Type(...args)
-    return (
+    const annotation = (
       target: any,
       key?: string | symbol,
       descriptorOrParamIndex?: PropertyDescriptor | number
@@ -116,5 +118,7 @@ export function createAnnotationFactory<T>(Type: Constructor<T>) {
         setAnnotations(target, key, annotations)
       }
     }
+    annotation.annotationInstance = annotationInstance
+    return annotation
   }
 }
