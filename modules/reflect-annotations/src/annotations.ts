@@ -69,7 +69,7 @@ export function getReturnType(target: any, key: string | symbol): Array<any> | u
   return Reflect.getMetadata(RETURN_TYPE, target, key)
 }
 
-export type Annotation<T> = ClassDecorator &
+export type Annotation<T = any> = ClassDecorator &
   MethodDecorator &
   ParameterDecorator & { annotationInstance: T }
 
