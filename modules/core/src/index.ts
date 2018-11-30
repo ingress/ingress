@@ -1,5 +1,5 @@
 import { AppBuilder, Middleware } from 'app-builder'
-import createContext, { CoreContext } from './context'
+import createContext, { CoreContext, DefaultContext } from './context'
 import { DefaultMiddleware } from './default'
 import { Server as HttpServer, createServer, IncomingMessage, ServerResponse } from 'http'
 import { PromiseConfig } from './promise'
@@ -15,7 +15,10 @@ export class Server<T extends CoreContext<T>> {
   public webserver: HttpServer
   private teardown: () => any = () => {}
 
-  constructor({ server = createServer(), contextFactory = createContext }: ServerOptions<T> = {}) {
+  constructor({
+    server = createServer(),
+    contextFactory = createContext as any
+  }: ServerOptions<T> = {}) {
     this._appBuilder = new AppBuilder<T>()
     this._createContext = contextFactory as any
     this._registers = []

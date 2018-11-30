@@ -1,6 +1,4 @@
 import { IncomingMessage, ServerResponse } from 'http'
-import { Buffer } from 'buffer'
-import { Stream } from 'stream'
 
 export default function createContext({ req, res }: { req: IncomingMessage; res: ServerResponse }) {
   return new DefaultContext(req, res)
