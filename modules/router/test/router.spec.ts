@@ -37,7 +37,7 @@ describe('Errors in Configuration', () => {
 
   beforeEach(() => {
     server = new Server<MyContext>().use(
-      new DefaultMiddleware<MyContext>({ onError: (errorStub = sinon.stub()) })
+      new DefaultMiddleware<MyContext>({ onError: errorStub = sinon.stub() })
     )
     router = new Router<MyContext>()
   })
@@ -82,7 +82,7 @@ describe('Routing', () => {
 
   beforeEach(() => {
     server = new Server<MyContext>().use(
-      new DefaultMiddleware<MyContext>({ onError: (errorStub = sinon.stub()) })
+      new DefaultMiddleware<MyContext>({ onError: errorStub = sinon.stub() })
     )
     router = new Router<MyContext>({
       baseUrl: 'api',
@@ -160,6 +160,11 @@ describe('Routing', () => {
       @Route.Post('body-lookup')
       bodyParamLookup(@Param.Body() data: any) {
         return data
+      }
+
+      @Route.Post('body-lookup-map')
+      bodyParamLookupMap(@Param.Body((data: any) => data.foo.bar) baz: any) {
+        return baz
       }
 
       @Route.Post('body-key-lookup')
@@ -310,6 +315,12 @@ describe('Routing', () => {
     it('should look up a body param', () => {
       return postAsync('/api/param-lookup/body-lookup', 'content').then(res => {
         expect(res).to.eql('content')
+      })
+    })
+
+    it('should look up a body param', () => {
+      return postAsync('/api/param-lookup/body-lookup-map', { foo: { bar: 'baz' } }).then(res => {
+        expect(res).to.eql('baz')
       })
     })
 
