@@ -72,9 +72,12 @@ export interface ParamAnnotation {
 }
 
 class BodyParamAnnotation implements ParamAnnotation {
-  constructor(private key?: string) {}
+  constructor(private key?: string | ((body: any) => string)) {}
 
   extractValue(context: RouterContext<any>) {
+    if ('function' === typeof this.key) {
+      return this.key(context.req.body)
+    }
     return this.key ? context.req.body && context.req.body[this.key] : context.req.body
   }
 }
@@ -88,9 +91,12 @@ class PathParamAnnotation implements ParamAnnotation {
 }
 
 class QueryParamAnnotation implements ParamAnnotation {
-  constructor(private paramName: string) {}
+  constructor(private paramName: string | ((query: any) => string)) {}
 
   extractValue(context: RouterContext<any>) {
+    if ('function' === typeof this.paramName) {
+      return this.paramName(context.req.query)
+    }
     return context.req.query[this.paramName]
   }
 }
@@ -103,7 +109,9 @@ class HeaderParamAnnotation implements ParamAnnotation {
   }
 }
 
-const Body: (key?: string) => Annotation = createAnnotationFactory(BodyParamAnnotation),
+const Body: (key?: string | ((body: any) => string)) => Annotation = createAnnotationFactory(
+    BodyParamAnnotation
+  ),
   Path = createAnnotationFactory(PathParamAnnotation),
   Query = createAnnotationFactory(QueryParamAnnotation),
   Header = createAnnotationFactory(HeaderParamAnnotation),
