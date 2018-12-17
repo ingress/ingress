@@ -1,6 +1,6 @@
 {
   "name": "@ingress/router",
-  "version": "1.0.0-rc.16",
+  "version": "1.0.0-rc.17",
   "description": "decorator based api router",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
