@@ -72,7 +72,7 @@ export interface ParamAnnotation {
 }
 
 class BodyParamAnnotation implements ParamAnnotation {
-  constructor(private key?: string | ((body: any) => string)) {}
+  constructor(private key?: string | ((body: any) => any)) {}
 
   extractValue(context: RouterContext<any>) {
     if ('function' === typeof this.key) {
@@ -91,7 +91,7 @@ class PathParamAnnotation implements ParamAnnotation {
 }
 
 class QueryParamAnnotation implements ParamAnnotation {
-  constructor(private paramName: string | ((query: any) => string)) {}
+  constructor(private paramName: string | ((query: any) => any)) {}
 
   extractValue(context: RouterContext<any>) {
     if ('function' === typeof this.paramName) {
@@ -109,7 +109,7 @@ class HeaderParamAnnotation implements ParamAnnotation {
   }
 }
 
-const Body: (key?: string | ((body: any) => string)) => Annotation = createAnnotationFactory(
+const Body: (key?: string | ((body: any) => any)) => Annotation = createAnnotationFactory(
     BodyParamAnnotation
   ),
   Path = createAnnotationFactory(PathParamAnnotation),
