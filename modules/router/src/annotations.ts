@@ -83,9 +83,12 @@ class BodyParamAnnotation implements ParamAnnotation {
 }
 
 class PathParamAnnotation implements ParamAnnotation {
-  constructor(private paramName: string) {}
+  constructor(private paramName: string | ((query: any) => any)) {}
 
   extractValue(context: RouterContext<any>) {
+    if ('function' === typeof this.paramName) {
+      return this.paramName(context.req.params)
+    }
     return context.req.params[this.paramName]
   }
 }
