@@ -30,25 +30,25 @@
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
   "devDependencies": {
-    "@types/bluebird": "^3.5.24",
+    "@types/bluebird": "^3.5.25",
     "@types/chai": "^4.1.7",
     "@types/destroy": "^1.0.0",
     "@types/mocha": "^5.2.5",
-    "@types/node": "^10.12.11",
+    "@types/node": "^11.9.0",
     "@types/on-finished": "^2.3.1",
-    "@types/sinon": "^5.0.7",
+    "@types/sinon": "^7.0.5",
     "bluebird": "^3.5.3",
     "chai": "^4.2.0",
     "cross-env": "^5.2.0",
     "mocha": "^5.2.0",
-    "reflect-metadata": "^0.1.12",
-    "rimraf": "^2.6.2",
-    "sinon": "^7.1.1",
-    "ts-node": "^7.0.1",
-    "typescript": "^3.2.1"
+    "reflect-metadata": "^0.1.13",
+    "rimraf": "^2.6.3",
+    "sinon": "^7.2.3",
+    "ts-node": "^8.0.2",
+    "typescript": "^3.3.3"
   },
   "peerDependencies": {
-    "reflect-metadata": "^0.1.12"
+    "reflect-metadata": "^0.1.13"
   },
   "dependencies": {
     "@ingress/http-status": "^1.0.2",
