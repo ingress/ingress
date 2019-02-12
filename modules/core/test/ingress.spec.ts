@@ -72,7 +72,7 @@ describe('Server', () => {
     it('should respond with octet-stream, when buffer is set on context body', async () => {
       let length: number | null = null
       server.use((ctx, next) => {
-        ctx.body = new Buffer(JSON.stringify({ plain: 'object' }))
+        ctx.body = Buffer.from(JSON.stringify({ plain: 'object' }))
         length = ctx.body.length
         return next()
       })
