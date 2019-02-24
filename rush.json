@@ -1,0 +1,35 @@
+{
+  "projects": [
+    {
+      "packageName": "@ingress/di",
+      "projectFolder": "modules/di"
+    },
+    {
+      "packageName": "@ingress/http-status",
+      "projectFolder": "modules/http-status"
+    },
+    {
+      "packageName": "reflect-annotations",
+      "projectFolder": "modules/reflect-annotations"
+    },
+    {
+      "packageName": "@ingress/core",
+      "projectFolder": "modules/core"
+    },
+    {
+      "packageName": "@ingress/router",
+      "projectFolder": "modules/router"
+    }
+  ],
+  "eventHooks": {
+    "preRushInstall": [],
+    "postRushInstall": [],
+    "preRushBuild": [],
+    "postRushBuild": []
+  },
+  "rushVersion": "5.5.4",
+  "pnpmVersion": "2.15.1",
+  "pnpmOptions": {},
+  "nodeSupportedVersionRange": ">=8.9.4",
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json"
+}

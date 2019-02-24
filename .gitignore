@@ -3,3 +3,6 @@ lib
 .idea
 *.log
 .DS_Store
+# Rush files
+common/temp/**
+package-deps.json
