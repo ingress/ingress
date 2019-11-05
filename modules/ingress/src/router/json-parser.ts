@@ -1,6 +1,6 @@
 import { createAnnotationFactory } from 'reflect-annotations'
-import { RouterContext } from './context'
-import { StatusCode } from '@ingress/core'
+import { StatusCode } from '@ingress/http-status'
+import { Middleware, DefaultContext } from '../context'
 
 export interface ParseJsonBodyOptions {
   maxSize: number
@@ -12,9 +12,9 @@ export class ParseJsonBodyAnnotation {
   public isBodyParser = true
   constructor(public options: ParseJsonBodyOptions = { maxSize: 1e7 }) {}
 
-  get middleware() {
+  get middleware(): Middleware<DefaultContext> {
     const options = this.options
-    return (context: RouterContext<any>, next: () => Promise<any>) => {
+    return (context, next) => {
       const {
         req: { headers, method }
       } = context
@@ -49,12 +49,7 @@ function parseJson(body: string) {
   }
 }
 
-function parseJsonReq(
-  context: RouterContext<any>,
-  contentLength: number,
-  next: () => any,
-  options: ParseJsonBodyOptions
-) {
+function parseJsonReq(context: DefaultContext, contentLength: number, next: () => any, options: ParseJsonBodyOptions) {
   const { maxSize } = options
   const { req } = context
   let byteLength = 0
@@ -107,12 +102,12 @@ function parseJsonReq(
       return context.handleResponse()
     }
 
-    req.body = body
+    context.route.body = body
     deferred.resolve(next())
   }
   return deferred.promise
 }
 
 const ParseJsonBody = createAnnotationFactory(ParseJsonBodyAnnotation)
-const parseJsonBody = new ParseJsonBodyAnnotation().middleware
+const parseJsonBody = new ParseJsonBodyAnnotation()
 export { parseJsonBody, ParseJsonBody }

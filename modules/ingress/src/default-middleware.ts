@@ -1,17 +1,16 @@
-import { CoreContext, DefaultContext, Body } from './context'
 import { StatusCode } from '@ingress/http-status'
 import { ServerResponse } from 'http'
+import { Middleware, BaseAuthContext, BaseContext, DefaultContext, Body, Response, Request } from './context'
 import { Buffer } from 'buffer'
 import { Stream } from 'stream'
 import onFinished = require('on-finished')
-import { Addon } from './index'
 import destroy = require('destroy')
 
 const internalError = new Error('Internal Server Error')
 ;(internalError as any).code = 500
 
 const looksLikeHtmlRE = /^\s*</,
-  logError = <T extends CoreContext<T>>(context: T) => {
+  logError = (context: { error?: Error | null }) => {
     console.error(context.error)
   },
   isStatusCode = (x: any) => typeof x === 'number' && x <= 500,
@@ -25,22 +24,21 @@ const looksLikeHtmlRE = /^\s*</,
     return !Boolean(res.headersSent || (res.socket && !res.socket.writable))
   },
   clearHeaders = (res: ServerResponse) => {
-    if ('function' === typeof res.getHeaderNames) {
-      res.getHeaderNames().forEach((x: string) => res.removeHeader(x))
-    } else {
-      ;(res as any)._headers = {}
-    }
+    res.getHeaderNames().forEach((x: string) => res.removeHeader(x))
   }
 
-export interface DefaultOptions<T> {
-  onError(context: T): Promise<any> | any
+export interface DefaultOptions {
+  onError<T>(context: T): Promise<any> | any
 }
 
-export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
-  public inflight: number = 0
-  private onError: (context: T) => Promise<any> | any
+export class DefaultMiddleware<
+  T extends BaseContext<T, A> = DefaultContext,
+  A extends BaseAuthContext = BaseAuthContext
+> {
+  public inflight = 0
+  private onError: <T>(context: T) => Promise<any> | any
 
-  constructor(options: DefaultOptions<T> = { onError: logError }) {
+  constructor(options: DefaultOptions = { onError: logError }) {
     this.onError = options.onError
   }
 
@@ -61,9 +59,9 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
     res.end(body)
   }
 
-  private _handleResponse(ctx: CoreContext<T>) {
-    const res = <any>ctx.res,
-      hasContentType = Boolean(res._headers && res._headers['content-type'])
+  private _handleResponse(ctx: T) {
+    const res = ctx.res as any,
+      hasContentType = Boolean(res.getHeader('content-type'))
 
     let body = ctx.body
 
@@ -77,7 +75,7 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
     }
 
     if (res.statusCode in StatusCode.Empty) {
-      res._headers = {}
+      clearHeaders(res)
       return res.end()
     }
 
@@ -94,8 +92,7 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
     }
 
     if (isString(body)) {
-      !hasContentType &&
-        this._contentType(res, 'text/' + (looksLikeHtmlRE.test(body) ? 'html' : 'plain'))
+      !hasContentType && this._contentType(res, 'text/' + (looksLikeHtmlRE.test(body) ? 'html' : 'plain'))
       this._contentLength(res, Buffer.byteLength(body))
       return res.end(body)
     }
@@ -119,10 +116,26 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
     res.end(body)
   }
 
-  get middleware() {
-    const onError = this.onError
-    const onResEnd = () => this.inflight--
-    return (context: T, next: () => Promise<any>) => {
+  get middleware(): Middleware<T> {
+    const onError = this.onError,
+      onResEnd = (error: Error | null, res: any) => {
+        this.inflight--
+        res = res as Response<DefaultContext>
+        if (error) {
+          res.context.emit('error', { error, context: res.context })
+        }
+        res.context.emit('response-finished', { context: res.context })
+      },
+      onReqEnd = (error: Error | null, req: any) => {
+        req = req as Request<DefaultContext>
+        req.context.emit('request-finished', { context: req.context })
+        if (error) {
+          Promise.resolve(req.context.handleError(error)).then(req.context.handleResponse)
+        }
+      }
+
+    return (context, next) => {
+      context.emit('request-started', { context })
       this.inflight++
       context.handleError = (error: Error | null) => {
         if (error) {
@@ -132,17 +145,13 @@ export class DefaultMiddleware<T extends CoreContext<T>> implements Addon<T> {
           return onError(context)
         }
       }
-      const respond = (context.handleResponse = this._handleResponse.bind(this, context))
+      context.handleResponse = this._handleResponse.bind(this, context)
       context.res.statusCode = 404
       onFinished(context.res, onResEnd)
-      onFinished(context.req, (error: Error | null) => {
-        if (error) {
-          Promise.resolve(context.handleError!(error)).then(respond)
-        }
-      })
+      onFinished(context.req, onReqEnd)
       return next()
         .catch(context.handleError)
-        .then(respond)
+        .then(context.handleResponse)
     }
   }
 }

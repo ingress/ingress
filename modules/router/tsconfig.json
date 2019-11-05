@@ -1,8 +1,7 @@
 {
-  "extends": "../../tsconfig",
+  "extends": "../../common/config/tsconfig",
   "compilerOptions": {
-    "outDir": "lib",
-    "strictPropertyInitialization": false
+    "outDir": "lib"
   },
   "include": [
     "src/**/*"
