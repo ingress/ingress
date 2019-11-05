@@ -32,16 +32,16 @@
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
   "peerDependencies": {
-    "reflect-metadata": "0.1.13"
+    "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.7",
-    "@types/mocha": "^5.2.5",
+    "@types/chai": "^4.2.4",
+    "@types/mocha": "^5.2.7",
     "chai": "^4.2.0",
-    "cross-env": "^5.2.0",
-    "mocha": "^5.2.0",
-    "reflect-metadata": "0.1.13",
-    "ts-node": "^8.0.2",
-    "typescript": "^3.3.3"
+    "cross-env": "^6.0.3",
+    "mocha": "^6.2.2",
+    "reflect-metadata": "^0.1.13",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.4"
   }
 }

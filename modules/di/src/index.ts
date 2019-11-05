@@ -8,7 +8,7 @@ import {
   ReflectiveKey
 } from 'injection-js'
 
-import { Type, DependencyCollectorList, DependencyCollector } from './collector'
+import { Type, DependencyCollectorList } from './collector'
 
 export * from './collector'
 export { ReflectiveInjector, Injector, Provider }
@@ -66,7 +66,7 @@ export class Container<T extends ContainerContext = ContainerContext> implements
     }
   }
 
-  get(token: any, notFoundValue?: any) {
+  get<T>(token: T, notFoundValue?: any): T {
     return this.rootInjector!.get(token, notFoundValue)
   }
 

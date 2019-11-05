@@ -1,0 +1,55 @@
+{
+  "name": "ingress",
+  "version": "3.0.0-next.0",
+  "description": "A package for packages",
+  "main": "lib/ingress.js",
+  "files": [
+    "lib",
+    "!**/*.spec.js"
+  ],
+  "keywords": [],
+  "scripts": {
+    "lint": "eslint \"src/**/*\" --fix",
+    "prepublish": "npm run build",
+    "build": "npm run lint && tsc",
+    "watch:typescript": "TSC_NONPOLLING_WATCHER=true tsc -w",
+    "watch:test": "jest --watchAll",
+    "dev": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
+    "test": "jest --passWithNoTests"
+  },
+  "jest": {
+    "testRegex": ".*?(\\.spec).js",
+    "watchPathIgnorePatterns": [
+      "\\.ts$"
+    ]
+  },
+  "dependencies": {
+    "@ingress/di": "~1.0.0-beta.11",
+    "@ingress/http-status": "~1.0.2",
+    "app-builder": "^6.0.0",
+    "destroy": "~1.0.4",
+    "on-finished": "~2.3.0",
+    "reflect-annotations": "^2.4.1",
+    "rxjs": "~6.5.3",
+    "websocket": "~1.0.30"
+  },
+  "devDependencies": {
+    "@types/destroy": "~1.0.0",
+    "@types/jest": "^24.0.21",
+    "@types/node": "^12.12.3",
+    "@types/on-finished": "~2.3.1",
+    "@types/websocket": "~1.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.6.0",
+    "@typescript-eslint/parser": "^2.6.0",
+    "concurrently": "^5.0.0",
+    "cross-fetch": "~3.0.4",
+    "eslint": "^6.6.0",
+    "eslint-config-prettier": "~6.5.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-watch": "^6.0.1",
+    "get-port": "~5.0.0",
+    "jest": "^24.9.0",
+    "prettier": "^1.18.2",
+    "typescript": "^3.6.4"
+  }
+}
