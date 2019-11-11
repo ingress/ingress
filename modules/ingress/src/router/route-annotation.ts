@@ -1,5 +1,5 @@
 import { createAnnotationFactory, Annotation } from 'reflect-annotations'
-import { RouterContext } from './context'
+import { BaseContext } from '../context'
 
 const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
   result = (x: string) => '/' + trim(x),
@@ -57,64 +57,59 @@ export interface Route extends PathFactory {
 
 const methods = ['Get', 'Post', 'Put', 'Delete', 'Head', 'Patch']
 
-export const Route = <Route>methods.reduce(
-  (set, method) => {
-    set[method] = (path: string) => set(path, method)
-    set[method].toString = () => method
-    return set
-  },
-  <any>createAnnotationFactory(RouteAnnotation)
-)
+export const Route = methods.reduce((set, method) => {
+  set[method] = (path: string) => set(path, method)
+  set[method].toString = () => method
+  return set
+}, createAnnotationFactory(RouteAnnotation) as any) as Route
 
 export interface ParamAnnotation {
-  extractValue?(context: RouterContext<any>): any
+  extractValue?(context: BaseContext<any, any>): any
   convertType?(value: any): any
 }
 
 class BodyParamAnnotation implements ParamAnnotation {
   constructor(private key?: string | ((body: any) => any)) {}
 
-  extractValue(context: RouterContext<any>) {
+  extractValue(context: BaseContext<any, any>) {
     if ('function' === typeof this.key) {
-      return this.key(context.req.body)
+      return this.key(context.route.body)
     }
-    return this.key ? context.req.body && context.req.body[this.key] : context.req.body
+    return this.key ? context.route.body && context.route.body[this.key] : context.route.body
   }
 }
 
 class PathParamAnnotation implements ParamAnnotation {
   constructor(private paramName: string | ((query: any) => any)) {}
 
-  extractValue(context: RouterContext<any>) {
+  extractValue(context: BaseContext<any, any>) {
     if ('function' === typeof this.paramName) {
-      return this.paramName(context.req.params)
+      return this.paramName(context.route.params)
     }
-    return context.req.params[this.paramName]
+    return context.route.params[this.paramName]
   }
 }
 
 class QueryParamAnnotation implements ParamAnnotation {
   constructor(private paramName: string | ((query: any) => any)) {}
 
-  extractValue(context: RouterContext<any>) {
+  extractValue(context: BaseContext<any, any>) {
     if ('function' === typeof this.paramName) {
-      return this.paramName(context.req.query)
+      return this.paramName(context.route.query)
     }
-    return context.req.query[this.paramName]
+    return context.route.query[this.paramName]
   }
 }
 
 class HeaderParamAnnotation implements ParamAnnotation {
   constructor(private paramName: string) {}
 
-  extractValue(context: RouterContext<any>) {
+  extractValue(context: BaseContext<any, any>) {
     return context.req.headers[this.paramName]
   }
 }
 
-const Body: (key?: string | ((body: any) => any)) => Annotation = createAnnotationFactory(
-    BodyParamAnnotation
-  ),
+const Body: (key?: string | ((body: any) => any)) => Annotation = createAnnotationFactory(BodyParamAnnotation),
   Path = createAnnotationFactory(PathParamAnnotation),
   Query = createAnnotationFactory(QueryParamAnnotation),
   Header = createAnnotationFactory(HeaderParamAnnotation),
@@ -131,17 +126,4 @@ const Body: (key?: string | ((body: any) => any)) => Annotation = createAnnotati
   Head = Route.Head,
   Patch = Route.Patch
 
-export {
-  Body,
-  Query,
-  Header,
-  Param,
-  Get,
-  Put,
-  Post,
-  Delete,
-  Head,
-  Patch,
-  RouteAnnotation,
-  Annotation
-}
+export { Body, Query, Header, Param, Get, Put, Post, Delete, Head, Patch, RouteAnnotation, Annotation }

@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "3.0.0-next.0",
+  "version": "3.0.0-next.1",
   "description": "A package for packages",
   "main": "lib/ingress.js",
   "files": [
@@ -24,12 +24,14 @@
     ]
   },
   "dependencies": {
-    "@ingress/di": "~1.0.0-beta.11",
+    "@hapi/subtext": "~6.1.2",
+    "@ingress/di": "~1.0.0",
     "@ingress/http-status": "~1.0.2",
     "app-builder": "^6.0.0",
     "destroy": "~1.0.4",
     "on-finished": "~2.3.0",
-    "reflect-annotations": "^2.4.1",
+    "reflect-annotations": "~2.4.1",
+    "route-recognizer": "0.2.9",
     "rxjs": "~6.5.3",
     "websocket": "~1.0.30"
   },
@@ -38,6 +40,7 @@
     "@types/jest": "^24.0.21",
     "@types/node": "^12.12.3",
     "@types/on-finished": "~2.3.1",
+    "@types/route-recognizer": "0.0.27",
     "@types/websocket": "~1.0.0",
     "@typescript-eslint/eslint-plugin": "^2.6.0",
     "@typescript-eslint/parser": "^2.6.0",

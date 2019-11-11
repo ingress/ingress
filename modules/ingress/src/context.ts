@@ -1,4 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http'
+import { Url } from 'url'
 import { Middleware } from 'app-builder'
 import { Injector } from '@ingress/di'
 import { EventEmitter } from 'events'
@@ -12,8 +13,8 @@ export interface Request<T> extends IncomingMessage {
   context: T
 }
 
-interface Handler<T> {
-  invoke: Middleware<T>
+interface Handler {
+  invokeAsync: Middleware<any>
 }
 
 export type Body = any
@@ -35,13 +36,14 @@ export class BaseContext<T extends BaseContext<T, A>, A extends BaseAuthContext>
   public res: Response<T>
   public error: Error | null | undefined
   public route: {
+    url: Url
     query: { [key: string]: any }
     params: { [key: string]: any }
     body: Body
     response: Body
     controllerInstance: any
     parserResult: any
-    handler: Handler<T>
+    handler: Handler
   }
 
   get body() {

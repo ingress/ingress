@@ -1,13 +1,15 @@
-import { Ingress, Authenticator } from './ingress'
+import { Ingress } from '../ingress'
+import { BaseContext } from '../context'
+import { IncomingMessage } from 'http'
 import { Websockets, IServerConfig, WebsocketServer, WebsocketRequest } from './websockets'
 
 type WebsocketServerConfig = Omit<IServerConfig, 'httpServer'> & {
-  authenticator?: Authenticator
+  contextFactory?: (req: IncomingMessage) => Promise<BaseContext<any, any>> | BaseContext<any, any>
 }
 
 export class WebsocketAddon {
   server = new WebsocketServer()
-  private handler: (req: WebsocketRequest) => void
+  private handler?: (req: WebsocketRequest) => void
 
   constructor(private options: WebsocketServerConfig = {}) {}
 
@@ -17,12 +19,12 @@ export class WebsocketAddon {
       httpServer: app.server
     })
     this.handler = async (req: WebsocketRequest) => {
-      if (this.options.authenticator) {
-        const authContext = await this.options.authenticator({ req: req.httpRequest })
-        if (!authContext.authenticated) {
+      if (this.options.contextFactory) {
+        const context = await this.options.contextFactory(req.httpRequest)
+        if (!context.authContext.authenticated) {
           req.reject(403)
         } else {
-          Object.assign(req.accept(void 0, req.origin), { authContext })
+          Object.assign(req.accept(void 0, req.origin), { context })
         }
       } else {
         req.accept(void 0, req.origin)
@@ -33,8 +35,12 @@ export class WebsocketAddon {
   }
 
   async unregister(app: Ingress) {
+    if (!app.websockets) {
+      return
+    }
     delete app.websockets
-    this.server.off('request', this.handler)
+    this.server.off('request', this.handler!)
+    this.handler = undefined
     if (this.server.connections.length > 0) {
       let count = this.server.connections.length
       let handler: any
