@@ -11,7 +11,7 @@ const internalError = new Error('Internal Server Error')
 
 const looksLikeHtmlRE = /^\s*</,
   logError = (context: { error?: Error | null }) => {
-    console.error(context.error)
+    console.error('Internal Server Error: ' + context.error)
   },
   isStatusCode = (x: any) => typeof x === 'number' && x <= 500,
   isString = (str: any): str is string => typeof str === 'string' || str instanceof String,
@@ -121,14 +121,11 @@ export class DefaultMiddleware<
       onResEnd = (error: Error | null, res: any) => {
         this.inflight--
         res = res as Response<DefaultContext>
-        if (error) {
-          res.context.emit('error', { error, context: res.context })
-        }
-        res.context.emit('response-finished', { context: res.context })
+        res.context.emit('response-finished', { error, context: res.context })
       },
       onReqEnd = (error: Error | null, req: any) => {
         req = req as Request<DefaultContext>
-        req.context.emit('request-finished', { context: req.context })
+        req.context.emit('request-finished', { error, context: req.context })
         if (error) {
           Promise.resolve(req.context.handleError(error)).then(req.context.handleResponse)
         }
@@ -141,6 +138,7 @@ export class DefaultMiddleware<
         if (error) {
           const { res } = context
           context.error = error
+          //context.emit('error', { error, context })
           isWritable(res) && clearHeaders(res)
           return onError(context)
         }

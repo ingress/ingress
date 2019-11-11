@@ -3,14 +3,14 @@ import { StatusCode } from '@ingress/http-status'
 import { Middleware, DefaultContext } from '../context'
 
 export interface ParseJsonBodyOptions {
-  maxSize: number
+  maxBytes: number
 }
 
 const parsableMethods = ['POST', 'PUT', 'OPTIONS', 'DELETE', 'PATCH']
 
 export class ParseJsonBodyAnnotation {
   public isBodyParser = true
-  constructor(public options: ParseJsonBodyOptions = { maxSize: 1e7 }) {}
+  constructor(public options: ParseJsonBodyOptions = { maxBytes: 1e7 }) {}
 
   get middleware(): Middleware<DefaultContext> {
     const options = this.options
@@ -50,7 +50,7 @@ function parseJson(body: string) {
 }
 
 function parseJsonReq(context: DefaultContext, contentLength: number, next: () => any, options: ParseJsonBodyOptions) {
-  const { maxSize } = options
+  const { maxBytes } = options
   const { req } = context
   let byteLength = 0
   let rawBody = ''
@@ -68,7 +68,7 @@ function parseJsonReq(context: DefaultContext, contentLength: number, next: () =
 
   function onChunk(chunk: Buffer) {
     byteLength += chunk.byteLength
-    if (byteLength > maxSize) {
+    if (byteLength > maxBytes) {
       return onReqEnd(null, StatusCode.PayloadTooLarge)
     }
     rawBody += chunk.toString()
@@ -109,5 +109,5 @@ function parseJsonReq(context: DefaultContext, contentLength: number, next: () =
 }
 
 const ParseJsonBody = createAnnotationFactory(ParseJsonBodyAnnotation)
-const parseJsonBody = new ParseJsonBodyAnnotation()
+const parseJsonBody = new ParseJsonBodyAnnotation().middleware
 export { parseJsonBody, ParseJsonBody }

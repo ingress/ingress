@@ -1,6 +1,7 @@
 {
   "extends": "../../common/config/tsconfig",
   "compilerOptions": {
+    "sourceMap": true,
     "outDir": "lib"
   },
   "include": [

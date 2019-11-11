@@ -1,96 +1,111 @@
 import {
   ReflectiveInjector,
   Injector,
+  Injectable,
   InjectionToken,
   Provider,
   ResolvedReflectiveProvider,
   ResolvedReflectiveFactory,
   ReflectiveKey
-} from 'injection-js'
+} from "injection-js";
 
-import { Type, DependencyCollectorList } from './collector'
+import {
+  Type,
+  DependencyCollectorList,
+  DependencyCollector
+} from "./collector";
 
-export * from './collector'
-export { ReflectiveInjector, Injector, Provider }
+export * from "./collector";
+export { ReflectiveInjector, Injector, Provider, Injectable };
 
 export interface ContainerContext {
-  scope: Injector
+  scope: Injector;
 }
 
 export interface ContainerOptions {
-  contextToken?: Object
-  providers?: Provider[]
-  perRequestProviders?: Provider[]
+  contextToken?: Object;
+  singletons?: Provider[];
+  services?: Provider[];
 }
 
 const EMPTY_DEPS: Array<any> = [],
-  ContextToken = new InjectionToken('ingress.context')
+  ContextToken = new InjectionToken("ingress.context");
 
-export class Container<T extends ContainerContext = ContainerContext> implements Injector {
-  private rootInjector: ReflectiveInjector | undefined
-  private resolvedChildProviders: ResolvedReflectiveProvider[] = []
-  private ResolvedContextProvider: Type<ResolvedReflectiveProvider>
+export class Container<T extends ContainerContext = ContainerContext>
+  implements Injector {
+  private rootInjector: ReflectiveInjector | undefined;
+  private resolvedChildProviders: ResolvedReflectiveProvider[] = [];
+  private ResolvedContextProvider: Type<ResolvedReflectiveProvider>;
 
-  private _singletonCollector = new DependencyCollectorList()
-  private _perRequestCollector = new DependencyCollectorList()
+  public singletonCollector = new DependencyCollectorList();
+  public serviceCollector = new DependencyCollectorList();
 
-  public providers: Provider[] = []
-  public perRequestProviders: Provider[] = []
-  public Singleton = this._singletonCollector.collect
-  public PerRequestLifetime = this._perRequestCollector.collect
+  public singletons: Provider[] = [];
+  public services: Provider[] = [];
+
+  get SingletonService() {
+    return this.singletonCollector.collect;
+  }
+  get Service() {
+    return this.serviceCollector.collect;
+  }
 
   constructor({
-    providers = [],
-    perRequestProviders = [],
+    singletons = [],
+    services = [],
     contextToken = ContextToken
   }: ContainerOptions = {}) {
-    Object.assign(this, { providers, perRequestProviders })
-    const key = ReflectiveKey.get(contextToken)
-    this.ResolvedContextProvider = class<T> implements ResolvedReflectiveProvider {
-      public key = key
-      public resolvedFactories: ResolvedReflectiveFactory[]
-      public multiProvider: boolean = false
+    Object.assign(this, { singletons, services });
+    const key = ReflectiveKey.get(contextToken);
+    this.ResolvedContextProvider = class<T>
+      implements ResolvedReflectiveProvider {
+      public key = key;
+      public resolvedFactories: ResolvedReflectiveFactory[];
+      public multiProvider: boolean = false;
       constructor(value: T) {
         this.resolvedFactories = [
           {
             factory() {
-              return value
+              return value;
             },
             dependencies: EMPTY_DEPS
           }
-        ]
+        ];
       }
       get resolvedFactory() {
-        return this.resolvedFactories[0]
+        return this.resolvedFactories[0];
       }
-    }
+    };
   }
 
-  get<T>(token: T, notFoundValue?: any): T {
-    return this.rootInjector!.get(token, notFoundValue)
+  get(token: any, notFoundValue?: any) {
+    return this.rootInjector!.get(token, notFoundValue);
   }
 
   createChild(...providers: Array<ResolvedReflectiveProvider>) {
-    return this.rootInjector!.createChildFromResolved(this.resolvedChildProviders.concat(providers))
+    return this.rootInjector!.createChildFromResolved(
+      this.resolvedChildProviders.concat(providers)
+    );
   }
 
-  private _initialize() {
-    this.providers = this.providers.concat(this._singletonCollector.items)
-    this.perRequestProviders = this.perRequestProviders.concat(this._perRequestCollector.items)
+  public register() {
+    this.singletons = this.singletons.concat(this.singletonCollector.items);
+    this.services = this.services.concat(this.serviceCollector.items);
 
-    this.rootInjector = ReflectiveInjector.resolveAndCreate(this.providers)
-    this.resolvedChildProviders = ReflectiveInjector.resolve(this.perRequestProviders)
+    this.rootInjector = ReflectiveInjector.resolveAndCreate(this.singletons);
+    this.resolvedChildProviders = ReflectiveInjector.resolve(this.services);
   }
 
   get middleware() {
-    this._initialize()
     return (context: T, next: () => any) => {
-      context.scope = this.createChild(new this.ResolvedContextProvider(context))
-      return next()
-    }
+      context.scope = this.createChild(
+        new this.ResolvedContextProvider(context)
+      );
+      return next();
+    };
   }
 }
 
 export default function createContainer(options: ContainerOptions) {
-  return new Container(options)
+  return new Container(options);
 }
