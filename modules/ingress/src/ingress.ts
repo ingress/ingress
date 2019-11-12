@@ -5,9 +5,8 @@ import { WebsocketAddon } from './websocket/websocket-addon'
 import { RouterAddon, Type } from './router/router'
 import { DefaultMiddleware } from './default-middleware'
 import { Websockets } from './websocket/websockets'
-import { Container } from '@ingress/di'
+import { Container, ContainerContext } from '@ingress/di'
 import { TypeConverter } from './router/type-converter'
-export { DependencyCollector } from '@ingress/di'
 interface SetupTeardown {
   (server: Ingress<any>): Promise<any> | any
 }
@@ -35,6 +34,7 @@ export interface ListenOptions {
 
 export { AfterRequest } from './annotations'
 export * from './router/router'
+export * from '@ingress/di'
 export { BaseAuthContext, BaseContext, DefaultContext }
 export { ingress, Type }
 export default function ingress<
@@ -42,11 +42,13 @@ export default function ingress<
   A extends BaseAuthContext = BaseAuthContext
 >(
   {
+    preRoute,
     authenticator,
     typeConverters,
     routes,
     websockets
   }: {
+    preRoute?: Addon<T>
     authenticator?: Authenticator
     typeConverters?: TypeConverter<any>[]
     routes?: Type<any> | Type<any>[]
@@ -63,15 +65,24 @@ export default function ingress<
 
   websockets = websockets ? true : false
 
-  const collector = (container.serviceCollector = router.controllerCollector).collect
-
   server
+    .use({
+      //Add routes as container services
+      register() {
+        container.serviceCollector.items.push(...router.controllerCollector.items)
+      }
+    })
     .use(container)
     .use(async (context, next) => {
       context.authContext = (await authContextFactory(context)) as A
       return next()
     })
-    .use(router)
+
+  if (preRoute) {
+    server.use(preRoute)
+  }
+
+  server.use(router)
 
   if (websockets) {
     server.use(
@@ -86,8 +97,10 @@ export default function ingress<
   }
 
   return Object.assign(server, {
-    Controller: collector,
-    Service: collector,
+    container,
+    router,
+    Controller: router.Controller,
+    Service: container.Service,
     SingletonService: container.SingletonService
   })
 }
