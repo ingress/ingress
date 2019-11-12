@@ -1,7 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { Url } from 'url'
 import { Middleware } from 'app-builder'
-import { Injector } from '@ingress/di'
 import { EventEmitter } from 'events'
 import { Ingress } from './ingress'
 
@@ -30,7 +29,7 @@ export class BaseContext<T extends BaseContext<T, A>, A extends BaseAuthContext>
   handleResponse: () => any
 
   public authContext: A
-  public scope: Injector
+  public scope: { get: <T>(symbol: T, valueInstead?: any) => T }
   public app: Ingress<T, A>
   public req: Request<T>
   public res: Response<T>
