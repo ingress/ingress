@@ -38,7 +38,7 @@ export class RouterAddon<T extends BaseContext<any, any>> {
     this.options = Object.assign({}, defaultOptions, options)
     this.controllers.push(...(this.options.controllers || []))
     this.routers = {}
-    this.typeConverters = this.options.typeConverters!.concat(defaultTypeConverters)
+    this.typeConverters = this.options.typeConverters!.slice().concat(defaultTypeConverters)
   }
 
   register() {

@@ -6,7 +6,8 @@ import { RouterAddon, Type } from './router/router'
 import { DefaultMiddleware } from './default-middleware'
 import { Websockets } from './websocket/websockets'
 import { Container } from '@ingress/di'
-
+import { TypeConverter, defaultTypeConverters } from './router/type-converter'
+export { DependencyCollector } from '@ingress/di'
 interface SetupTeardown {
   (server: Ingress<any>): Promise<any> | any
 }
@@ -34,16 +35,23 @@ export interface ListenOptions {
 
 export { AfterRequest } from './annotations'
 export * from './router/router'
-export { ingress }
+export { BaseAuthContext, BaseContext, DefaultContext }
+export { ingress, Type }
 export default function ingress<
   T extends BaseContext<T, A> = DefaultContext,
   A extends BaseAuthContext = BaseAuthContext
 >(
   {
     authenticator,
+    typeConverters,
     routes,
     websockets
-  }: { authenticator?: Authenticator; routes?: Type<any> | Type<any>[]; websockets?: boolean } = {
+  }: {
+    authenticator?: Authenticator
+    typeConverters?: TypeConverter<any>[]
+    routes?: Type<any> | Type<any>[]
+    websockets?: boolean
+  } = {
     routes: []
   }
 ) {
@@ -51,7 +59,7 @@ export default function ingress<
     server = new Ingress<T, A>().use(new DefaultMiddleware<T, A>()),
     authContextFactory = authenticator || (() => ({ authenticated: false })),
     container = new Container(),
-    router = new RouterAddon<T>({ controllers })
+    router = new RouterAddon<T>({ controllers, typeConverters })
 
   websockets = websockets ? true : false
 
