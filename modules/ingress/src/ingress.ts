@@ -6,7 +6,7 @@ import { RouterAddon, Type } from './router/router'
 import { DefaultMiddleware } from './default-middleware'
 import { Websockets } from './websocket/websockets'
 import { Container } from '@ingress/di'
-import { TypeConverter, defaultTypeConverters } from './router/type-converter'
+import { TypeConverter } from './router/type-converter'
 export { DependencyCollector } from '@ingress/di'
 interface SetupTeardown {
   (server: Ingress<any>): Promise<any> | any
@@ -59,7 +59,7 @@ export default function ingress<
     server = new Ingress<T, A>().use(new DefaultMiddleware<T, A>()),
     authContextFactory = authenticator || (() => ({ authenticated: false })),
     container = new Container(),
-    router = new RouterAddon<T>({ controllers, typeConverters })
+    router = new RouterAddon<T>({ controllers, typeConverters: typeConverters || [] })
 
   websockets = websockets ? true : false
 
