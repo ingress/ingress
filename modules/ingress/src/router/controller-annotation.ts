@@ -20,7 +20,9 @@ export class ControllerCollector {
   private _collector: ClassDecorator
   constructor() {
     this._collector = (target: any) => {
-      this.items.push(target)
+      if (!this.items.includes(target)) {
+        this.items.push(target)
+      }
     }
     this.collect = ((options?: ControllerOptions | any) => {
       if (!options) {
