@@ -47,7 +47,7 @@ export class RouterAddon<T extends BaseContext<any, any>> {
     }
 
     const { baseUrl } = this.options,
-      controllers = this.controllerCollector.items.concat(this.controllers)
+      controllers = Array.from(new Set(this.controllerCollector.items.concat(this.controllers)))
 
     this.handlers.push(
       ...controllers
