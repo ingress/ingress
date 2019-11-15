@@ -39,7 +39,7 @@ export class Container<T extends ContainerContext = ContainerContext>
 
   public singletonCollector = new DependencyCollectorList();
   public serviceCollector = new DependencyCollectorList();
-
+  public ContextToken = ContextToken;
   public singletons: Provider[] = [];
   public services: Provider[] = [];
 
