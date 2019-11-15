@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "3.0.0-next.4",
+  "version": "3.0.0-next.5",
   "description": "A package for packages",
   "main": "lib/ingress.js",
   "files": [

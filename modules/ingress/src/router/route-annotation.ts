@@ -90,6 +90,12 @@ class PathParamAnnotation implements ParamAnnotation {
   }
 }
 
+class ContextParamAnnotation implements ParamAnnotation {
+  extractValue(context: BaseContext<any, any>) {
+    return context
+  }
+}
+
 class QueryParamAnnotation implements ParamAnnotation {
   constructor(private paramName: string | ((query: any) => any)) {}
 
@@ -113,11 +119,13 @@ const Body: (key?: string | ((body: any) => any)) => Annotation = createAnnotati
   Path = createAnnotationFactory(PathParamAnnotation),
   Query = createAnnotationFactory(QueryParamAnnotation),
   Header = createAnnotationFactory(HeaderParamAnnotation),
+  Context = createAnnotationFactory(ContextParamAnnotation),
   Param = {
     Body,
     Path,
     Query,
-    Header
+    Header,
+    Context
   },
   Get = Route.Get,
   Put = Route.Put,
