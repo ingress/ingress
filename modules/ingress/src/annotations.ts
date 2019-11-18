@@ -1,19 +1,19 @@
 import { Middleware, BaseContext } from './context'
+import { compose } from 'app-builder'
 import { createAnnotationFactory } from 'reflect-annotations'
 
-export type AfterRequestHandler = (context: BaseContext<any, any>) => any
+export type AfterRequestHandler = Middleware<BaseContext<any, any>>
 
 export class AfterRequestAnnotation {
-  constructor(private afterReq: AfterRequestHandler | { handler: AfterRequestHandler; runOnError: true }) {}
+  private afterReqList: AfterRequestHandler[] = []
+  constructor(...afterReq: AfterRequestHandler[]) {
+    this.afterReqList = afterReq
+  }
   get middleware(): Middleware<BaseContext<any, any>> {
-    const after = this.afterReq
+    const fn = compose(this.afterReqList)
     return (context, next) => {
       context.once('response-finished', async ({ context, error }) => {
-        if (error && !('runOnError' in after)) {
-          return
-        }
         try {
-          const fn = 'handler' in after ? after.handler : after
           await fn(context)
         } catch (e) {
           context.emit('error', { error, context })
