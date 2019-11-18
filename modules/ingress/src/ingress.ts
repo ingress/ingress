@@ -31,7 +31,7 @@ export interface ListenOptions {
   readableAll?: boolean
   writableAll?: boolean
 }
-
+export type Context = DefaultContext
 export { AfterRequest } from './annotations'
 export * from './router/router'
 export * from '@ingress/di'
@@ -40,23 +40,19 @@ export { ingress, Type }
 export default function ingress<
   T extends BaseContext<T, A> = DefaultContext,
   A extends BaseAuthContext = BaseAuthContext
->(
-  {
-    preRoute,
-    authenticator,
-    typeConverters,
-    routes,
-    websockets
-  }: {
-    preRoute?: Addon<T>
-    authenticator?: Authenticator
-    typeConverters?: TypeConverter<any>[]
-    routes?: Type<any> | Type<any>[]
-    websockets?: boolean
-  } = {
-    routes: []
-  }
-) {
+>({
+  preRoute,
+  authenticator,
+  typeConverters,
+  routes,
+  websockets
+}: {
+  preRoute?: Addon<T>
+  authenticator?: Authenticator
+  typeConverters?: TypeConverter<any>[]
+  routes?: Type<any> | Type<any>[]
+  websockets?: boolean
+} = {}) {
   const controllers = Array.isArray(routes) ? routes : (routes && [routes]) || [],
     server = new Ingress<T, A>().use(new DefaultMiddleware<T, A>()),
     authContextFactory = authenticator || (() => ({ authenticated: false })),
