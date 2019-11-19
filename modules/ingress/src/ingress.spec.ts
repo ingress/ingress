@@ -54,7 +54,7 @@ describe('ingress', () => {
   it('authenticate requests', async () => {
     const PORT = await getPort()
     server = ingress({
-      authenticator({ req }) {
+      authContextFactory({ req }) {
         void req
         return { authenticated: true, id: '' }
       }
