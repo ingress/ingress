@@ -5,7 +5,7 @@ import { WebsocketAddon } from './websocket/websocket-addon'
 import { RouterAddon, Type } from './router/router'
 import { DefaultMiddleware } from './default-middleware'
 import { Websockets } from './websocket/websockets'
-import { Container, ContainerContext } from '@ingress/di'
+import { Container } from '@ingress/di'
 import { TypeConverter } from './router/type-converter'
 interface SetupTeardown {
   (server: Ingress<any>): Promise<any> | any
@@ -17,12 +17,11 @@ interface Usable<T> {
   middleware?: Middleware<T>
 }
 
-export type Addon<T> = (Usable<T> | (Usable<T> & Middleware<T>)) & { [key: string]: any }
-export type Authenticator = (options: {
+type Addon<T> = (Usable<T> | (Usable<T> & Middleware<T>)) & { [key: string]: any }
+type AuthContextFactory = (options: {
   req: Request<BaseContext<any, any>>
 }) => Promise<BaseAuthContext> | BaseAuthContext
-
-export interface ListenOptions {
+interface ListenOptions {
   port?: number
   host?: string
   path?: string
@@ -31,24 +30,27 @@ export interface ListenOptions {
   readableAll?: boolean
   writableAll?: boolean
 }
-export type Context = DefaultContext
-export { AfterRequest } from './annotations'
+type Context = DefaultContext
+//Type Exports
+export { Addon, AuthContextFactory, ListenOptions, Context, Type, BaseAuthContext, BaseContext, Middleware }
+//Other Exports
+export * from './annotations'
 export * from './router/router'
 export * from '@ingress/di'
-export { BaseAuthContext, BaseContext, DefaultContext }
-export { ingress, Type }
+export { DefaultContext, compose, ingress }
+
 export default function ingress<
   T extends BaseContext<T, A> = DefaultContext,
   A extends BaseAuthContext = BaseAuthContext
 >({
   preRoute,
-  authenticator,
+  authContextFactory: authenticator,
   typeConverters,
   routes,
   websockets
 }: {
   preRoute?: Addon<T>
-  authenticator?: Authenticator
+  authContextFactory?: AuthContextFactory
   typeConverters?: TypeConverter<any>[]
   routes?: Type<any> | Type<any>[]
   websockets?: boolean
