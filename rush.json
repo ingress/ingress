@@ -49,7 +49,7 @@
      */
     "postRushBuild": []
   },
-  "rushVersion": "5.16.0",
+  "rushVersion": "5.17.2",
   "pnpmVersion": "4.1.6",
   "pnpmOptions": {
 

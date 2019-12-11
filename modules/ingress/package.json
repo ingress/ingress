@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "3.0.0-next.8",
+  "version": "3.0.0-next.9",
   "description": "A package for packages",
   "main": "lib/ingress.js",
   "files": [
@@ -11,10 +11,10 @@
   "scripts": {
     "lint": "eslint \"src/**/*\" --fix",
     "prepublish": "npm run build",
-    "build": "npm run lint && tsc",
+    "build": "rm -rf lib && npm run lint && tsc",
     "watch:typescript": "TSC_NONPOLLING_WATCHER=true tsc -w",
     "watch:test": "jest --watchAll",
-    "dev": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
+    "watch": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
     "test": "jest --passWithNoTests"
   },
   "jest": {
@@ -25,34 +25,34 @@
   },
   "dependencies": {
     "@hapi/subtext": "~6.1.2",
-    "@ingress/di": "~1.0.0",
-    "@ingress/http-status": "~1.0.2",
+    "@ingress/di": "~1.0.1",
+    "@ingress/http-status": "~1.0.3",
     "app-builder": "^6.0.0",
     "destroy": "~1.0.4",
     "on-finished": "~2.3.0",
-    "reflect-annotations": "~2.4.1",
+    "reflect-annotations": "~2.5.0",
     "route-recognizer": "0.2.9",
     "rxjs": "~6.5.3",
-    "websocket": "~1.0.30"
+    "websocket": "~1.0.31"
   },
   "devDependencies": {
     "@types/destroy": "~1.0.0",
-    "@types/jest": "^24.0.21",
-    "@types/node": "^12.12.3",
+    "@types/jest": "^24.0.23",
+    "@types/node": "^12.12.17",
     "@types/on-finished": "~2.3.1",
     "@types/route-recognizer": "0.0.27",
     "@types/websocket": "~1.0.0",
-    "@typescript-eslint/eslint-plugin": "^2.6.0",
-    "@typescript-eslint/parser": "^2.6.0",
-    "concurrently": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.11.0",
+    "@typescript-eslint/parser": "^2.11.0",
+    "concurrently": "^5.0.1",
     "cross-fetch": "~3.0.4",
-    "eslint": "^6.6.0",
-    "eslint-config-prettier": "~6.5.0",
+    "eslint": "^6.7.2",
+    "eslint-config-prettier": "~6.7.0",
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-watch": "^6.0.1",
     "get-port": "~5.0.0",
     "jest": "^24.9.0",
-    "prettier": "^1.18.2",
-    "typescript": "^3.6.4"
+    "prettier": "^1.19.1",
+    "typescript": "^3.7.3"
   }
 }

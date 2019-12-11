@@ -1,6 +1,6 @@
 {
   "name": "@ingress/di",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Server-side dependency injection for ingress",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -31,10 +31,10 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@types/node": "^12.12.6",
+    "@types/node": "^12.12.17",
     "reflect-metadata": "^0.1.13",
-    "ts-node": "^8.4.1",
-    "typescript": "^3.6.4"
+    "ts-node": "^8.5.4",
+    "typescript": "^3.7.3"
   },
   "dependencies": {
     "tslib": "^1.10.0",
