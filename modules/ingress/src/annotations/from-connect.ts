@@ -1,8 +1,7 @@
-import { IncomingMessage, ServerResponse } from 'http'
 import { createAnnotationFactory } from 'reflect-annotations'
 import { Middleware, Context } from '../ingress'
 
-export function fromConnect(fn: (req: IncomingMessage, res: ServerResponse, next: any) => void) {
+export function fromConnect(fn: any) {
   return createAnnotationFactory(
     class {
       get middleware(): Middleware<any> {
