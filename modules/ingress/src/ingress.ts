@@ -144,11 +144,11 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
 
   public async listen(options?: ListenOptions | number) {
     if (typeof options === 'number') {
-      options = { port: options, host: 'localhost' }
+      options = { port: options }
     }
 
     if (!options) {
-      options = { port: Number(process.env.PORT) || 0, host: 'localhost' }
+      options = { port: Number(process.env.PORT) || 0 }
     }
 
     if (this.starting) {

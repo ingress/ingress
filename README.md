@@ -1,10 +1,20 @@
-# ingress
+<p align="center">
+    <img src="logo.png" width="400" max-width="90%" alt="ingress" />
+</p>
 
-install: `npm i ingress`
+<p align="center">
+install: <code>npm i ingress</code>
+</p>
 
-A small abstraction around the [http.Server] class that uses [promise-based middleware]
 
-```javascript
+
+
+
+Ingress is a utility for building routable applications using Node.js and TypeScript.
+
+### Getting started:
+
+```typescript
 import ingress, { ParseBody, Route, Param } from 'ingress'
 
 const app = ingress(),
@@ -40,9 +50,3 @@ class MyController {
 
 app.listen(1111)
 ```
-
-
-
-[http.Server]: https://nodejs.org/api/http.html#http_class_http_server
-[promise-based middleware]: https://github.com/calebboyd/app-builder
-
