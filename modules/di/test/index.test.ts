@@ -43,7 +43,7 @@ class TestD {
 const context1 = new Context(),
   context2 = new Context(),
   middleware = container.middleware;
-container.register();
+container.start();
 let called = false,
   expectedSingleton: any,
   expectedDifferentInstance: any;

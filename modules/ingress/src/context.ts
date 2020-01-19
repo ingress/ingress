@@ -25,12 +25,14 @@ export interface Response<T> extends ServerResponse {
 }
 
 export class BaseContext<T extends BaseContext<T, A>, A extends BaseAuthContext> extends EventEmitter {
-  handleError: (error: Error | null) => any
-  handleResponse: () => any
+  handleError!: (error: Error | null) => any
+  handleResponse!: () => any
 
-  public authContext: A
-  public scope: { get: <T>(symbol: T, valueInstead?: any) => T }
-  public app: Ingress<T, A>
+  public authContext!: A
+  public scope!: {
+    get: <T>(symbol: T, valueInstead?: any) => T
+  }
+  public app!: Ingress<T, A>
   public req: Request<T>
   public res: Response<T>
   public error: Error | null | undefined

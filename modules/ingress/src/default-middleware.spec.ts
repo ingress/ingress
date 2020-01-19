@@ -1,32 +1,32 @@
 import ingress, { Ingress } from './ingress'
 import { Readable } from 'stream'
-import getPort = require('get-port')
+import getPort from 'get-port'
 import fetch from 'cross-fetch'
 
 describe('default ingress responses', () => {
-  let server: Ingress
+  let app: Ingress
 
   beforeEach(() => {
-    server = ingress({
+    app = ingress({
       routes: []
     })
   })
 
   afterEach(async () => {
     try {
-      server && (await server.close())
+      app && (await app.stop())
     } catch (e) {
       void e
     }
   })
 
   it('should respond with json', async () => {
-    server.use((context, next) => {
+    app.use((context, next) => {
       context.body = { hello: 'world' }
       return next()
     })
     const PORT = await getPort()
-    await server.listen(PORT)
+    await app.listen(PORT)
     const result = await fetch(`http://localhost:${PORT}`).then(x => x.json())
 
     expect(result.hello).toEqual('world')
@@ -34,7 +34,7 @@ describe('default ingress responses', () => {
 
   it('should respond with json (from stream) (set content length)', async () => {
     const expectedBody = JSON.stringify({ hello: 'world' })
-    server.use((context, next) => {
+    app.use((context, next) => {
       const content = JSON.stringify({ hello: 'world' })
       context.res.setHeader('content-length', content.length)
       context.body = new Readable({
@@ -47,7 +47,7 @@ describe('default ingress responses', () => {
       return next()
     })
     const PORT = await getPort()
-    await server.listen(PORT)
+    await app.listen(PORT)
     const result = await fetch(`http://localhost:${PORT}`).then(x => {
       expect(x.headers.get('content-length')).toEqual(expectedBody.length.toString())
       expect(x.headers.get('content-type')).toEqual('application/octet-stream')
@@ -58,12 +58,12 @@ describe('default ingress responses', () => {
 
   it('should respond with json (from buffer)', async () => {
     const expectedBody = JSON.stringify({ hello: 'world' })
-    server.use((context, next) => {
+    app.use((context, next) => {
       context.body = Buffer.from(JSON.stringify({ hello: 'world' }))
       return next()
     })
     const PORT = await getPort()
-    await server.listen(PORT)
+    await app.listen(PORT)
     const result = await fetch(`http://localhost:${PORT}`).then(x => {
       expect(x.headers.get('content-length')).toEqual(expectedBody.length.toString())
       expect(x.headers.get('content-type')).toEqual('application/octet-stream')
@@ -74,12 +74,12 @@ describe('default ingress responses', () => {
 
   it('should set content length and type', async () => {
     const expectedBody = JSON.stringify({ hello: 'world' })
-    server.use((context, next) => {
+    app.use((context, next) => {
       context.body = { hello: 'world' }
       return next()
     })
     const PORT = await getPort()
-    await server.listen(PORT)
+    await app.listen(PORT)
     const result = await fetch(`http://localhost:${PORT}`).then(x => {
       expect(x.headers.get('content-length')).toEqual(expectedBody.length.toString())
       expect(x.headers.get('content-type')).toEqual('application/json')
@@ -91,7 +91,7 @@ describe('default ingress responses', () => {
   it('emit request lifecycle events', async () => {
     const expectedBody = JSON.stringify({ hello: 'world' })
     const events: string[] = []
-    server.use((context, next) => {
+    app.use((context, next) => {
       context
         .once('request-finished', () => {
           events.push('request-finished')
@@ -104,7 +104,7 @@ describe('default ingress responses', () => {
       return next()
     })
     const PORT = await getPort()
-    await server.listen(PORT)
+    await app.listen(PORT)
     await fetch(`http://localhost:${PORT}`).then(x => {
       expect(x.headers.get('content-length')).toEqual(expectedBody.length.toString())
       expect(x.headers.get('content-type')).toEqual('application/json')
