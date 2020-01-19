@@ -1,10 +1,5 @@
-node_modules
-lib
-.rush
-.idea
-*.log
 .DS_Store
-# Rush files
-common/temp/**
-.rush/temp/**
-package-deps.json
+node_modules
+dist
+lib
+*.log

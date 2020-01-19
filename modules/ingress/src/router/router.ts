@@ -41,7 +41,7 @@ export class RouterAddon<T extends BaseContext<any, any>> {
     this.typeConverters = this.options.typeConverters!.slice().concat(defaultTypeConverters)
   }
 
-  register() {
+  start() {
     if (this.initialized) {
       return
     }

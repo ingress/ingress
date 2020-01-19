@@ -1,6 +1,6 @@
 import { Ingress } from '../ingress'
 import { BaseContext } from '../context'
-import { IncomingMessage } from 'http'
+import { IncomingMessage, Server as HttpServer } from 'http'
 import { Websockets, IServerConfig, WebsocketServer, WebsocketRequest } from './websockets'
 
 type WebsocketServerConfig = Omit<IServerConfig, 'httpServer'> & {
@@ -13,10 +13,10 @@ export class WebsocketAddon {
 
   constructor(private options: WebsocketServerConfig = {}) {}
 
-  register(app: Ingress) {
+  start(app: Ingress) {
     this.server.mount({
       ...this.options,
-      httpServer: app.server
+      httpServer: app.server || (app.server = new HttpServer())
     })
     this.handler = async (req: WebsocketRequest) => {
       if (this.options.contextFactory) {
@@ -34,7 +34,7 @@ export class WebsocketAddon {
     return (app.websockets = new Websockets(this.server))
   }
 
-  async unregister(app: Ingress) {
+  async stop(app: Ingress) {
     if (!app.websockets) {
       return
     }

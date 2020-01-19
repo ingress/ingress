@@ -23,36 +23,62 @@
       "\\.ts$"
     ]
   },
+  "eslintConfig": {
+    "parser": "@typescript-eslint/parser",
+    "extends": [
+      "plugin:@typescript-eslint/recommended",
+      "prettier/@typescript-eslint",
+      "plugin:prettier/recommended"
+    ],
+    "ignorePatterns": [],
+    "overrides": [
+      {
+        "files": [
+          "*.spec.ts"
+        ],
+        "env": {
+          "jest": true
+        }
+      }
+    ],
+    "rules": {}
+  },
+  "prettier": {
+    "parser": "typescript",
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 120
+  },
   "dependencies": {
-    "@hapi/subtext": "~6.1.2",
+    "@hapi/subtext": "~7.0.1",
     "@ingress/di": "~1.0.1",
     "@ingress/http-status": "~1.0.3",
-    "app-builder": "^6.0.0",
+    "app-builder": "^6.1.0",
     "destroy": "~1.0.4",
     "on-finished": "~2.3.0",
     "reflect-annotations": "~2.5.0",
     "route-recognizer": "0.2.9",
-    "rxjs": "~6.5.3",
+    "rxjs": "~6.5.4",
     "websocket": "~1.0.31"
   },
   "devDependencies": {
+    "@types/jest": "^24.9.0",
+    "@typescript-eslint/eslint-plugin": "^2.16.0",
+    "@typescript-eslint/parser": "^2.16.0",
+    "concurrently": "^5.0.2",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "~6.9.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "jest": "^24.9.0",
+    "prettier": "^1.19.1",
+    "typescript": "^3.7.5",
     "@types/destroy": "~1.0.0",
-    "@types/jest": "^24.0.23",
-    "@types/node": "^12.12.19",
+    "@types/node": "^13.1.8",
     "@types/on-finished": "~2.3.1",
     "@types/route-recognizer": "0.0.27",
     "@types/websocket": "~1.0.0",
-    "@typescript-eslint/eslint-plugin": "^2.12.0",
-    "@typescript-eslint/parser": "^2.12.0",
-    "concurrently": "^5.0.1",
     "cross-fetch": "~3.0.4",
-    "eslint": "^6.7.2",
-    "eslint-config-prettier": "~6.7.0",
-    "eslint-plugin-prettier": "^3.1.2",
     "eslint-watch": "^6.0.1",
-    "get-port": "~5.0.0",
-    "jest": "^24.9.0",
-    "prettier": "^1.19.1",
-    "typescript": "^3.7.3"
+    "get-port": "~5.1.1"
   }
 }

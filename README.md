@@ -3,16 +3,11 @@
 </p>
 
 <p align="center">
-install: <code>npm i ingress</code>
+install: <code>npm i ingress</code><br><br>a utility for building applications using node.js<br>
 </p>
 
+### Getting started (http):
 
-
-
-
-Ingress is a utility for building routable applications using Node.js and TypeScript.
-
-### Getting started:
 
 ```typescript
 import ingress, { ParseBody, Route, Param } from 'ingress'
