@@ -1,14 +1,14 @@
 import ingress, { Ingress } from './ingress'
-import getPort = require('get-port')
+import getPort from 'get-port'
 
 describe('ingress', () => {
-  let server: Ingress
+  let app: Ingress
 
-  beforeEach(() => (server = ingress()))
+  beforeEach(() => (app = ingress()))
 
   afterEach(async () => {
     try {
-      server && (await server.close())
+      app && (await app.stop())
     } catch (e) {
       void e
     }
@@ -16,59 +16,52 @@ describe('ingress', () => {
 
   it('should not allow calling listen concurrently', async () => {
     const PORT = await getPort()
-    server.listen({ port: PORT })
+    app.listen({ port: PORT })
     let error: any
     try {
-      await server.listen(PORT)
+      await app.listen(PORT)
     } catch (e) {
       error = e
     }
-    expect(error.message).toEqual('Server is already starting')
-    await server.close()
+    expect(error.message).toEqual('Already started or starting')
+    await app.stop()
   })
   it('should not allow calling close concurrently', async () => {
     const PORT = await getPort()
-    await server.listen(PORT)
+    await app.listen(PORT)
     let error: any
-    server.close()
+    app.stop()
     try {
-      await server.close()
+      await app.stop()
     } catch (e) {
       error = e
     }
-    expect(error.message).toEqual('Server is already closing')
+    expect(error.message).toEqual('Already stopped or stopping')
   })
 
   it('should listen', async () => {
     const PORT = await getPort()
-    await server.listen(PORT)
-    let error: any
-    try {
-      await server.listen(PORT)
-    } catch (e) {
-      error = e
-    }
-    expect(error.code).toEqual('ERR_SERVER_ALREADY_LISTEN')
+    await app.listen(PORT)
   })
 
   it('authenticate requests', async () => {
     const PORT = await getPort()
-    server = ingress({
+    app = ingress({
       authContextFactory({ req }) {
         void req
         return { authenticated: true, id: '' }
       }
     })
 
-    await server.listen(PORT)
+    await app.listen(PORT)
   })
 
   it('should close', async () => {
     const PORT = await getPort()
-    await server.listen(PORT)
+    await app.listen(PORT)
     let error: any
     try {
-      await server.close()
+      await app.stop()
     } catch (e) {
       error = e
     }

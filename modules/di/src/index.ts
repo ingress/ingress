@@ -77,8 +77,8 @@ export class Container<T extends ContainerContext = ContainerContext>
       }
     };
   }
-
-  get(token: any, notFoundValue?: any) {
+  get<T>(token: any, notFoundValue?: any): T;
+  get<T>(token: T, notFoundValue?: any): T {
     return this.rootInjector!.get(token, notFoundValue);
   }
 
@@ -88,14 +88,17 @@ export class Container<T extends ContainerContext = ContainerContext>
     );
   }
 
-  public register() {
+  public resolveProviders() {
+    this.start();
+  }
+
+  public start() {
     this.singletons = this.singletons.concat(this.singletonCollector.items);
     this.services = this.services.concat(this.serviceCollector.items);
 
     this.rootInjector = ReflectiveInjector.resolveAndCreate(this.singletons);
     this.resolvedChildProviders = ReflectiveInjector.resolve(this.services);
   }
-
   get middleware() {
     return (context: T, next: () => any) => {
       context.scope = this.createChild(

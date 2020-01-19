@@ -1,4 +1,4 @@
-import { AppBuilder, Middleware, compose } from 'app-builder'
+import { AppBuilder, Middleware, compose, functionList } from 'app-builder'
 import { BaseContext, DefaultContext, BaseAuthContext, Request } from './context'
 import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
 import { WebsocketAddon } from './websocket/websocket-addon'
@@ -12,8 +12,8 @@ interface SetupTeardown {
 }
 
 interface Usable<T> {
-  register?: SetupTeardown
-  unregister?: SetupTeardown
+  start?: SetupTeardown
+  stop?: SetupTeardown
   middleware?: Middleware<T>
 }
 
@@ -66,7 +66,7 @@ export default function ingress<
   server
     .use({
       //Add routes as container services
-      register() {
+      start() {
         container.serviceCollector.items.push(...router.controllerCollector.items)
       }
     })
@@ -105,15 +105,19 @@ export default function ingress<
 
 export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends BaseAuthContext = BaseAuthContext> {
   private appBuilder = new AppBuilder<T>()
-  private closing = false
+  private stopping = false
   private starting = false
+  private stopped = false
+  private started = false
   private setups: SetupTeardown[] = []
   private teardowns: SetupTeardown[] = []
-  public server: HttpServer
+  public server?: HttpServer
   public websockets?: Websockets
 
-  constructor({ server } = { server: new HttpServer() }) {
-    this.server = server
+  constructor({ server }: { server?: HttpServer } = {}) {
+    if (server) {
+      this.server = server
+    }
   }
 
   use(usable: Addon<T>) {
@@ -121,9 +125,9 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
       const mw = usable.middleware
       mw && this.use(mw)
     }
-    if ('register' in usable && 'function' === typeof usable.register) {
-      usable.register && this.setups.push(usable.register.bind(usable))
-      usable.unregister && this.teardowns.push(usable.unregister.bind(usable))
+    if ('start' in usable && 'function' === typeof usable.start) {
+      this.setups.push(usable.start.bind(usable))
+      usable.stop && this.teardowns.push(usable.stop.bind(usable))
     }
     if ('function' === typeof usable) {
       this.appBuilder.use(usable)
@@ -137,60 +141,58 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
     return context
   }
 
-  private handler() {
-    const app = this.appBuilder.build()
-    return (req: IncomingMessage, res: ServerResponse) => app(this.createContext(req, res))
+  get middleware() {
+    return this.appBuilder.build()
+  }
+
+  public async start(): Promise<void> {
+    if (this.starting || this.started) {
+      throw new Error('Already started or starting')
+    }
+    this.starting = true
+    this.stopping = this.stopped = false
+    await compose(functionList(this.setups.map(x => x.bind(null, this))))()
+    this.starting = false
+    this.started = true
+  }
+
+  public async stop(): Promise<void> {
+    if (this.stopping || this.stopped) {
+      throw new Error('Already stopped or stopping')
+    }
+    this.stopping = true
+    this.starting = this.started = false
+    try {
+      await compose(functionList(this.teardowns.map(x => x.bind(null, this))))()
+    } finally {
+      this.stopped = true
+      this.stopping = false
+    }
   }
 
   public async listen(options?: ListenOptions | number) {
-    if (typeof options === 'number') {
-      options = { port: options }
+    if (!this.server) {
+      this.server = new HttpServer()
     }
+    const mw = this.middleware,
+      handler = (req: IncomingMessage, res: ServerResponse) => mw(this.createContext(req, res))
 
-    if (!options) {
-      options = { port: Number(process.env.PORT) || 0 }
+    if (!this.started || !this.starting) {
+      await this.start()
     }
-
-    if (this.starting) {
-      throw new Error('Server is already starting')
-    }
-
-    this.starting = true
-    const handler = this.handler()
     try {
-      await compose(
-        this.setups.map(x => {
-          return (_: any, next: any) => Promise.resolve(x(this)).then(next)
-        })
-      )()
       this.server.on('request', handler)
       await new Promise((resolve, reject) => {
-        this.server.listen(options, (error?: Error) => (error ? reject(error) : resolve()))
+        this.server!.listen(options, (error?: Error) => (error ? reject(error) : resolve()))
       })
       this.teardowns.unshift(app => {
         return new Promise((resolve, reject) => {
-          app.server.off('request', handler)
-          app.server.close((error?: Error) => (error ? reject(error) : resolve()))
+          app.server!.off('request', handler)
+          app.server!.close((error?: Error) => (error ? reject(error) : resolve()))
         })
       })
     } finally {
       this.starting = false
-    }
-  }
-
-  async close() {
-    if (this.closing) {
-      throw new Error('Server is already closing')
-    }
-    this.closing = true
-    try {
-      await compose(
-        this.teardowns.map(x => {
-          return (_: any, next: any) => Promise.resolve(x(this)).then(next)
-        })
-      )()
-    } finally {
-      this.closing = false
     }
   }
 }
