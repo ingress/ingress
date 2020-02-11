@@ -29,7 +29,7 @@ export interface ContainerOptions {
 }
 
 const EMPTY_DEPS: Array<any> = [],
-  ContextToken = new InjectionToken("ingress.context");
+  ContextToken = new InjectionToken("ingress.context") as any;
 
 export { ContextToken };
 
