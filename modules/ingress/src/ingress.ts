@@ -5,7 +5,7 @@ import { WebsocketAddon } from './websocket/websocket-addon'
 import { RouterAddon, Type } from './router/router'
 import { DefaultMiddleware } from './default-middleware'
 import { Websockets } from './websocket/websockets'
-import { Container, ContextToken } from '@ingress/di'
+import { Container } from '@ingress/di'
 import { TypeConverter } from './router/type-converter'
 interface SetupTeardown {
   (server: Ingress<any>): Promise<any> | any
@@ -30,8 +30,8 @@ interface ListenOptions {
   readableAll?: boolean
   writableAll?: boolean
 }
-const Context = (ContextToken as any) as DefaultContext
-type Context = DefaultContext
+//BaseContext Definition and Token
+class Context extends BaseContext<Context, BaseAuthContext> {}
 //Type Exports
 export { Addon, AuthContextFactory, ListenOptions, Context, Type, BaseAuthContext, BaseContext, Middleware }
 //Other Exports
@@ -47,19 +47,21 @@ export default function ingress<
   preRoute,
   authContextFactory: authenticator,
   typeConverters,
+  contextToken,
   routes,
   websockets
 }: {
   preRoute?: Addon<T>
   authContextFactory?: AuthContextFactory
   typeConverters?: TypeConverter<any>[]
+  contextToken?: any
   routes?: Type<any> | Type<any>[]
   websockets?: boolean
 } = {}) {
   const controllers = Array.isArray(routes) ? routes : (routes && [routes]) || [],
     server = new Ingress<T, A>().use(new DefaultMiddleware<T, A>()),
     authContextFactory = authenticator || (() => ({ authenticated: false })),
-    container = new Container(),
+    container = new Container({ contextToken: contextToken || Context }),
     router = new RouterAddon<T>({ controllers, typeConverters: typeConverters || [] })
 
   websockets = websockets ? true : false
