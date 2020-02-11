@@ -5,7 +5,7 @@ import { WebsocketAddon } from './websocket/websocket-addon'
 import { RouterAddon, Type } from './router/router'
 import { DefaultMiddleware } from './default-middleware'
 import { Websockets } from './websocket/websockets'
-import { Container } from '@ingress/di'
+import { Container, ContextToken } from '@ingress/di'
 import { TypeConverter } from './router/type-converter'
 interface SetupTeardown {
   (server: Ingress<any>): Promise<any> | any
@@ -30,6 +30,7 @@ interface ListenOptions {
   readableAll?: boolean
   writableAll?: boolean
 }
+const Context = (ContextToken as any) as DefaultContext
 type Context = DefaultContext
 //Type Exports
 export { Addon, AuthContextFactory, ListenOptions, Context, Type, BaseAuthContext, BaseContext, Middleware }
