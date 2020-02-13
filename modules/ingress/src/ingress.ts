@@ -5,6 +5,7 @@ import { WebsocketAddon } from './websocket/websocket-addon'
 import { RouterAddon, Type } from './router/router'
 import { DefaultMiddleware } from './default-middleware'
 import { Websockets } from './websocket/websockets'
+export * from '@ingress/http-status'
 import { Container } from '@ingress/di'
 import { TypeConverter } from './router/type-converter'
 interface SetupTeardown {
