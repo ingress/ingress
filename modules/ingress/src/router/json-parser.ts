@@ -101,7 +101,7 @@ function parseJsonReq(context: DefaultContext, contentLength: number, next: () =
       context.res.statusMessage = 'Unexpected end of input'
       return context.handleResponse()
     }
-
+    context.route.parserResult = rawBody
     context.route.body = body
     deferred.resolve(next())
   }
