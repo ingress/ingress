@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "description": "A package for packages",
   "main": "lib/ingress.js",
   "files": [
@@ -79,6 +79,7 @@
     "get-port": "~5.1.1",
     "jest": "^24.9.0",
     "prettier": "^1.19.1",
+    "reflect-metadata": "^0.1.13",
     "typescript": "^3.7.5"
   }
 }
