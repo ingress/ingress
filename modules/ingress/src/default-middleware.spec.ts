@@ -72,6 +72,67 @@ describe('default ingress responses', () => {
     expect(result.hello).toEqual('world')
   })
 
+  it('should respond with json for boolean values', async () => {
+    const expectedBody = JSON.stringify(false)
+    app.use((context, next) => {
+      context.body = false
+      return next()
+    })
+    const PORT = await getPort()
+    await app.listen(PORT)
+    const result = await fetch(`http://localhost:${PORT}`).then(x => {
+      expect(x.headers.get('content-length')).toEqual(expectedBody.length.toString())
+      expect(x.headers.get('content-type')).toEqual('application/json')
+      return x.json()
+    })
+    expect(result).toEqual(false)
+  })
+
+  it('should respond with text for empty string', async () => {
+    app.use((context, next) => {
+      context.body = ''
+      return next()
+    })
+    const PORT = await getPort()
+    await app.listen(PORT)
+    const result = await fetch(`http://localhost:${PORT}`).then(x => {
+      expect(x.headers.get('content-length')).toBe('0')
+      expect(x.headers.get('content-type')).toEqual('text/plain')
+      return x.text()
+    })
+    expect(result).toEqual('')
+  })
+
+  it('should provide no response for null', async () => {
+    app.use((context, next) => {
+      context.body = null
+      return next()
+    })
+    const PORT = await getPort()
+    await app.listen(PORT)
+    const result = await fetch(`http://localhost:${PORT}`).then(x => {
+      expect(x.headers.get('content-length')).toBe('0')
+      expect(x.headers.get('content-type')).toBeNull()
+      return x.text()
+    })
+    expect(result).toEqual('')
+  })
+
+  it('should provide no response for undefined', async () => {
+    app.use((context, next) => {
+      context.body = undefined
+      return next()
+    })
+    const PORT = await getPort()
+    await app.listen(PORT)
+    const result = await fetch(`http://localhost:${PORT}`).then(x => {
+      expect(x.headers.get('content-length')).toBe('0')
+      expect(x.headers.get('content-type')).toBeNull()
+      return x.text()
+    })
+    expect(result).toEqual('')
+  })
+
   it('should set content length and type', async () => {
     const expectedBody = JSON.stringify({ hello: 'world' })
     app.use((context, next) => {
