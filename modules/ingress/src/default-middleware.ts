@@ -79,8 +79,10 @@ export class DefaultMiddleware<
       return res.end()
     }
 
-    if (!body) {
-      return this._statusResponse(res.statusCode, res.statusMessage, res)
+    if (body === null || body === undefined) {
+      res.statusCode = res.statusCode || 404
+      res.statusMessage = res.statusMessage || StatusCode[res.statusCode] || StatusCode[500]
+      return res.end()
     }
 
     if (ctx.req.method === 'HEAD') {
