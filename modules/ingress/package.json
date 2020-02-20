@@ -1,7 +1,7 @@
 {
   "name": "ingress",
-  "version": "3.7.0",
-  "description": "A package for packages",
+  "version": "3.8.0",
+  "description": "Composable nodejs applications",
   "main": "lib/ingress.js",
   "files": [
     "lib",
@@ -13,7 +13,7 @@
     "prepublish": "npm run build",
     "build": "rm -rf lib && npm run lint && tsc",
     "watch:typescript": "TSC_NONPOLLING_WATCHER=true tsc -w",
-    "watch:test": "jest --watchAll",
+    "watch:test": "jest --watchAll --detectOpenHandles",
     "watch": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
     "test": "jest --passWithNoTests"
   },
@@ -63,13 +63,14 @@
   },
   "devDependencies": {
     "@types/destroy": "~1.0.0",
-    "@types/jest": "^25.1.2",
-    "@types/node": "^13.7.1",
+    "@types/jest": "^25.1.3",
+    "@types/node": "^13.7.4",
     "@types/on-finished": "~2.3.1",
     "@types/route-recognizer": "0.0.27",
+    "@types/sinon": "^7.5.1",
     "@types/websocket": "~1.0.0",
-    "@typescript-eslint/eslint-plugin": "^2.19.2",
-    "@typescript-eslint/parser": "^2.19.2",
+    "@typescript-eslint/eslint-plugin": "^2.20.0",
+    "@typescript-eslint/parser": "^2.20.0",
     "concurrently": "^5.1.0",
     "cross-fetch": "~3.0.4",
     "eslint": "^6.8.0",
@@ -80,6 +81,7 @@
     "jest": "^25.1.0",
     "prettier": "^1.19.1",
     "reflect-metadata": "^0.1.13",
+    "sinon": "^9.0.0",
     "typescript": "^3.7.5"
   }
 }
