@@ -58,7 +58,9 @@ export interface Route extends PathFactory {
 const methods = ['Get', 'Post', 'Put', 'Delete', 'Head', 'Patch']
 
 export const Route = methods.reduce((set, method) => {
-  set[method] = (path: string) => set(path, method)
+  set[method] = (path: string, ...otherMethods: Array<PathFactory | string>) => {
+    return set(path, ...[...otherMethods, method])
+  }
   set[method].toString = () => method
   return set
 }, createAnnotationFactory(RouteAnnotation) as any) as Route

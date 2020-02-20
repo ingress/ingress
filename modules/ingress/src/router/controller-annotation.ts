@@ -12,11 +12,11 @@ export interface Controller {
   (options?: ControllerOptions | string): ClassDecorator
 }
 
-export type ControllerDecorator = Controller & ClassDecorator
+export type ControllerDependencyCollector = Controller & ClassDecorator
 
 export class ControllerCollector {
   public items: Array<Type<any>> = []
-  public collect: ControllerDecorator
+  public collect: ControllerDependencyCollector
   private _collector: ClassDecorator
   constructor() {
     this._collector = (target: any) => {
@@ -36,6 +36,6 @@ export class ControllerCollector {
         }) as ClassDecorator
       }
       return this._collector(options) as ClassDecorator
-    }) as ControllerDecorator
+    }) as ControllerDependencyCollector
   }
 }

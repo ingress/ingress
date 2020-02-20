@@ -3,7 +3,7 @@ import { Middleware } from 'app-builder'
 import { createHandler, Handler } from './handler'
 import { parse as parseUrl } from 'url'
 import { TypeConverter, defaultTypeConverters } from './type-converter'
-import { Type, ControllerCollector, ControllerDecorator } from './controller-annotation'
+import { Type, ControllerCollector, ControllerDependencyCollector } from './controller-annotation'
 import { BaseContext } from '../context'
 import RouteRecognizer = require('route-recognizer')
 
@@ -31,7 +31,7 @@ export class RouterAddon<T extends BaseContext<any, any>> {
   public controllerCollector = new ControllerCollector()
   public controllers: Type<any>[] = this.controllerCollector.items
   public handlers: Handler[] = []
-  public Controller: ControllerDecorator = this.controllerCollector.collect
+  public Controller: ControllerDependencyCollector = this.controllerCollector.collect
   public readonly typeConverters: TypeConverter<any>[]
 
   constructor(options: RouterOptions = {}) {
