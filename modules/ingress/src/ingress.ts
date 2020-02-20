@@ -40,7 +40,7 @@ export * from './annotations'
 export * from './router/router'
 export * from '@ingress/di'
 export { DefaultContext, compose, ingress }
-
+export type IngressApp = ReturnType<typeof ingress>
 export default function ingress<
   T extends BaseContext<T, A> = DefaultContext,
   A extends BaseAuthContext = BaseAuthContext
