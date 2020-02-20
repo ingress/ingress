@@ -17,9 +17,9 @@ interface Handler {
 }
 
 export type Body = any
-export type BaseAuthContext =
-  | { authenticated: boolean }
-  | { authenticated: false; headers?: { [key: string]: string }; responseCode?: number }
+export interface BaseAuthContext {
+  authenticated: boolean
+}
 export interface Response<T> extends ServerResponse {
   context: T
 }
