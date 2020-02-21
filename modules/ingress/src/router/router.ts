@@ -78,7 +78,7 @@ export class RouterAddon<T extends BaseContext<any, any>> {
   get middleware(): Middleware<T> {
     return (context, next) => {
       const req = context.req,
-        url = (context.route.url = parseUrl(req.url || '')),
+        url = context.route.url || (context.route.url = parseUrl(req.url || '')),
         route = req.method && url.pathname && this.match(req.method, url.pathname + (url.search || '')),
         match = route && route[0],
         handler = match && (match.handler as Handler)

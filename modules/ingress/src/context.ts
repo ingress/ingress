@@ -59,10 +59,7 @@ export class BaseContext<T extends BaseContext<T, A>, A extends BaseAuthContext>
     super()
     this.req = Object.assign(req, { context: this }) as any
     this.res = Object.assign(res, { context: this }) as any
-    this.route = Object.assign(empty(), {
-      query: empty(),
-      params: empty()
-    }) as any
+    this.route = empty() as any
     this.error = this.body = null
   }
 }
