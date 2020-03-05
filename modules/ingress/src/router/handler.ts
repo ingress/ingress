@@ -79,7 +79,7 @@ export function convertType(
   typeConverters: TypeConverter<any>[]
 ): ParamResolver {
   const paramType = source.types.parameters && source.types.parameters[paramIndex]
-  if (!paramType || paramType === Object) {
+  if (!paramType) {
     return paramResolver
   }
   const typeConverter =
@@ -88,7 +88,10 @@ export function convertType(
       isExactTypeConverter(c) ? c.type === paramType : c.typePredicate(paramType)
     )
   if (!typeConverter) {
-    throw new Error(`no type converter found for type: ${paramType.name || paramType}`)
+    throw new Error(
+      `No type converter found for: ${source.controller.name}.${source.name} at ${paramIndex}${paramType.name ||
+        paramType}`
+    )
   }
   return context => {
     const value = paramResolver(context)
