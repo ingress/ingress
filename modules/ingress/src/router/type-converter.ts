@@ -38,5 +38,11 @@ export const defaultTypeConverters: TypeConverter<any>[] = [
     convert(value) {
       return Boolean(value && value.toString().toLowerCase() === 'true')
     }
+  },
+  {
+    type: Object,
+    convert(value) {
+      return value
+    }
   }
 ]
