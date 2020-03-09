@@ -80,7 +80,7 @@ function parseJsonReq(context: DefaultContext, contentLength: number, next: () =
     req.removeListener('error', onReqEnd)
 
     if (error) {
-      ;(error as any).code = (error as any).code || StatusCode.BadRequest
+      ;(error as any).statusCode = (error as any).statusCode || StatusCode.BadRequest
       return deferred.reject(error)
     }
 
