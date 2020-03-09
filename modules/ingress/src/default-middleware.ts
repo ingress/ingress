@@ -6,8 +6,8 @@ import { Stream } from 'stream'
 import onFinished = require('on-finished')
 import destroy = require('destroy')
 
-const internalError = new Error('Internal Server Error')
-;(internalError as any).code = 500
+const internalError = new Error('Internal Server Error') as Error & { statusCode: number }
+internalError.statusCode = 500
 
 const looksLikeHtmlRE = /^\s*</,
   logError = (context: { error?: Error | null }) => {
@@ -70,7 +70,7 @@ export class DefaultMiddleware<
     }
 
     if (ctx.error) {
-      const code = (ctx.error as any).code
+      const code = (ctx.error as any).statusCode
       return this._statusResponse(isStatusCode(code) ? code : 500, res.statusMessage, res, body)
     }
 
