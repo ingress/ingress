@@ -61,7 +61,7 @@ export class DefaultMiddleware<
 
   private _handleResponse(ctx: T) {
     const res = ctx.res as any,
-      hasContentType = Boolean(res.getHeader('content-type'))
+      hasContentType = res.hasHeader('content-type')
 
     let body = ctx.body
 
