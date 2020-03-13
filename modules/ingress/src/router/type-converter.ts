@@ -25,6 +25,18 @@ export const defaultTypeConverters: TypeConverter<any>[] = [
     }
   },
   {
+    type: Boolean,
+    convert(value) {
+      return Boolean(
+        value ??
+          value
+            .toString()
+            .trim()
+            .toLowerCase() === 'true'
+      )
+    }
+  },
+  {
     type: String,
     convert: value => {
       if (value === null || value === undefined) {
@@ -34,9 +46,15 @@ export const defaultTypeConverters: TypeConverter<any>[] = [
     }
   },
   {
-    type: Boolean,
-    convert(value) {
-      return Boolean(value && value.toString().toLowerCase() === 'true')
+    type: Date,
+    convert: value => {
+      const date = new Date(value)
+
+      if (date.toString() === 'Invalid Date') {
+        throw new Error('Invalid Date Input')
+      }
+
+      return date
     }
   },
   {
