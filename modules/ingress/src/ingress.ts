@@ -1,7 +1,6 @@
 import { AppBuilder, Middleware, compose, functionList } from 'app-builder'
 import { BaseContext, DefaultContext, BaseAuthContext, Request } from './context'
 import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
-import { WebsocketAddon } from './websocket/websocket-addon'
 import { RouterAddon, Type } from './router/router'
 import { DefaultMiddleware } from './default-middleware'
 import { Websockets } from './websocket/websockets'
@@ -19,9 +18,10 @@ interface Usable<T> {
 }
 
 type Addon<T> = (Usable<T> | (Usable<T> & Middleware<T>)) & { [key: string]: any }
-type AuthContextFactory = (options: {
-  req: Request<BaseContext<any, any>>
-}) => Promise<BaseAuthContext> | BaseAuthContext
+type AuthContextFactory<
+  T extends BaseContext<T, A> = BaseContext<any, any>,
+  A extends BaseAuthContext = BaseAuthContext
+> = (options: T) => Promise<A> | A
 interface ListenOptions {
   port?: number
   host?: string
@@ -47,27 +47,27 @@ export default function ingress<
 >({
   preRoute,
   authContextFactory: authenticator,
+  onError,
   typeConverters,
   contextToken,
-  routes,
-  websockets
+  routes
 }: {
   preRoute?: Addon<T>
   authContextFactory?: AuthContextFactory
   typeConverters?: TypeConverter<any>[]
   contextToken?: any
+  onError?: (context: T) => Promise<any>
   routes?: Type<any> | Type<any>[]
-  websockets?: boolean
 } = {}) {
   const controllers = Array.isArray(routes) ? routes : (routes && [routes]) || [],
-    server = new Ingress<T, A>().use(new DefaultMiddleware<T, A>()),
+    defaultMiddleware = onError ? new DefaultMiddleware<T, A>({ onError }) : new DefaultMiddleware<T, A>(),
+    server = new Ingress<T, A>(),
     authContextFactory = authenticator || (() => ({ authenticated: false })),
     container = new Container({ contextToken: contextToken || Context }),
     router = new RouterAddon<T>({ controllers, typeConverters: typeConverters || [] })
 
-  websockets = websockets ? true : false
-
   server
+    .use(defaultMiddleware)
     .use({
       //Add routes as container services
       start() {
@@ -85,18 +85,6 @@ export default function ingress<
   }
 
   server.use(router)
-
-  if (websockets) {
-    server.use(
-      new WebsocketAddon({
-        contextFactory: async req => {
-          const context = server.createContext(req, {} as any)
-          context.authContext = (await authContextFactory(context)) as A
-          return context
-        }
-      })
-    )
-  }
 
   return Object.assign(server, {
     container,
@@ -149,9 +137,12 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
     return this.appBuilder.build()
   }
 
-  public async start(): Promise<void> {
+  public async start(app?: Ingress): Promise<void> {
     if (this.starting || this.started) {
       throw new Error('Already started or starting')
+    }
+    if (!this.server && app && app.server) {
+      this.server = app.server
     }
     this.starting = true
     this.stopping = this.stopped = false
@@ -185,7 +176,7 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
       await this.start()
     }
     try {
-      this.server.on('request', handler)
+      this.server?.on('request', handler)
       await new Promise((resolve, reject) => {
         this.server!.listen(options, (error?: Error) => (error ? reject(error) : resolve()))
       })

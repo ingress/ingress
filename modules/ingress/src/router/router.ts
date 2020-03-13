@@ -9,7 +9,6 @@ import RouteRecognizer = require('route-recognizer')
 
 //Exports
 export { ParseJsonBody } from './json-parser'
-export { ParseBody } from './raw-parser'
 export * from './route-annotation'
 export { Type }
 

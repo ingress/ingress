@@ -9,6 +9,10 @@ import { resolvePaths, RouteMetadata } from './path-resolver'
 
 const pickRequest = (context: BaseContext<any, any>) => context.req
 
+enum MiddlewarePriority {
+  'BeforeBodyParser' = 'BeforeBodyParser'
+}
+
 export function isRoutable(maybeRoute: AnnotatedPropertyDescription) {
   const annotations = maybeRoute.classAnnotations.concat(maybeRoute.methodAnnotations),
     hasMethod = annotations.some(x => x.isRouteAnnotation),
@@ -16,10 +20,21 @@ export function isRoutable(maybeRoute: AnnotatedPropertyDescription) {
   return Boolean(hasMethod && hasRoute)
 }
 
+function isRegularMiddleware(x: any) {
+  return !x.isBodyParser && 'middleware' in x && x.priority !== MiddlewarePriority.BeforeBodyParser
+}
+
+function extractEarlyMiddleware<T>(route: RouteMetadata): Array<Middleware<T>> {
+  return route.classAnnotations
+    .concat(route.methodAnnotations)
+    .filter(x => x.middlewarePriority === MiddlewarePriority.BeforeBodyParser)
+    .map(x => x.middleware)
+}
+
 function extractMiddleware<T>(route: RouteMetadata): Array<Middleware<T>> {
   return route.classAnnotations
     .concat(route.methodAnnotations)
-    .filter(x => !x.isBodyParser && 'middleware' in x)
+    .filter(x => isRegularMiddleware(x))
     .map(x => x.middleware)
 }
 
@@ -138,6 +153,7 @@ export function createHandler(source: RouteMetadata, baseUrl = '/', typeConverte
     paramAnnotations,
     paramResolvers,
     invokeAsync: compose([
+      ...extractEarlyMiddleware(source),
       extractBodyParser(source),
       ...extractMiddleware(source),
       resolveRouteMiddleware({

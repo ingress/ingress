@@ -11,7 +11,7 @@ internalError.statusCode = 500
 
 const looksLikeHtmlRE = /^\s*</,
   logError = (context: { error?: Error | null }) => {
-    console.error('Internal Server Error: ' + context.error)
+    console.error('Internal Server Error:\n' + context.error)
   },
   isStatusCode = (x: any) => typeof x === 'number' && x <= 500,
   isString = (str: any): str is string => typeof str === 'string' || str instanceof String,
@@ -27,8 +27,8 @@ const looksLikeHtmlRE = /^\s*</,
     res.getHeaderNames().forEach((x: string) => res.removeHeader(x))
   }
 
-export interface DefaultOptions {
-  onError<T>(context: T): Promise<any> | any
+export interface DefaultOptions<T> {
+  onError(context: T): Promise<any> | any
 }
 
 export class DefaultMiddleware<
@@ -36,9 +36,9 @@ export class DefaultMiddleware<
   A extends BaseAuthContext = BaseAuthContext
 > {
   public inflight = 0
-  private onError: <T>(context: T) => Promise<any> | any
+  private onError: (context: T) => Promise<any> | any
 
-  constructor(options: DefaultOptions = { onError: logError }) {
+  constructor(options: DefaultOptions<T> = { onError: logError }) {
     this.onError = options.onError
   }
 
@@ -140,7 +140,6 @@ export class DefaultMiddleware<
         if (error) {
           const { res } = context
           context.error = error
-          //context.emit('error', { error, context })
           isWritable(res) && clearHeaders(res)
           return onError(context)
         }
