@@ -1,4 +1,5 @@
 import { createAnnotationFactory, Annotation } from 'reflect-annotations'
+import { ParseBody } from './raw-parser'
 import { BaseContext } from '../context'
 
 const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
@@ -45,25 +46,6 @@ class RouteAnnotation {
 export interface PathFactory {
   (urlDefinition?: string, ...methods: Array<PathFactory | string>): Annotation
 }
-
-export interface Route extends PathFactory {
-  Get: PathFactory
-  Post: PathFactory
-  Put: PathFactory
-  Delete: PathFactory
-  Head: PathFactory
-  Patch: PathFactory
-}
-
-const methods = ['Get', 'Post', 'Put', 'Delete', 'Head', 'Patch']
-
-export const Route = methods.reduce((set, method) => {
-  set[method] = (path: string, ...otherMethods: Array<PathFactory | string>) => {
-    return set(path, ...[...otherMethods, method])
-  }
-  set[method].toString = () => method
-  return set
-}, createAnnotationFactory(RouteAnnotation) as any) as Route
 
 export interface ParamAnnotation {
   extractValue?(context: BaseContext<any, any>): any
@@ -117,23 +99,37 @@ class HeaderParamAnnotation implements ParamAnnotation {
   }
 }
 
-const Body: (key?: string | ((body: any) => any)) => Annotation = createAnnotationFactory(BodyParamAnnotation),
-  Path = createAnnotationFactory(PathParamAnnotation),
-  Query = createAnnotationFactory(QueryParamAnnotation),
-  Header = createAnnotationFactory(HeaderParamAnnotation),
-  Context = createAnnotationFactory(ContextParamAnnotation),
-  Param = {
-    Body,
-    Path,
-    Query,
-    Header,
-    Context
-  },
-  Get = Route.Get,
-  Put = Route.Put,
-  Post = Route.Post,
-  Delete = Route.Delete,
-  Head = Route.Head,
-  Patch = Route.Patch
+const methods = ['Get', 'Post', 'Put', 'Delete', 'Head', 'Patch']
 
-export { Body, Query, Header, Param, Get, Put, Post, Delete, Head, Patch, RouteAnnotation, Annotation }
+export const Param = {
+  Body: createAnnotationFactory(BodyParamAnnotation) as (key?: string | ((body: any) => any)) => Annotation,
+  Path: createAnnotationFactory(PathParamAnnotation),
+  Query: createAnnotationFactory(QueryParamAnnotation),
+  Header: createAnnotationFactory(HeaderParamAnnotation),
+  Context: createAnnotationFactory(ContextParamAnnotation)
+}
+
+export interface Route extends PathFactory {
+  Get: PathFactory
+  Post: PathFactory
+  Put: PathFactory
+  Delete: PathFactory
+  Head: PathFactory
+  Patch: PathFactory
+  Body: typeof Param.Body
+  Path: typeof Param.Path
+  Query: typeof Param.Query
+  Header: typeof Param.Header
+  Context: typeof Param.Context
+  Parse: typeof ParseBody
+}
+
+export const Route = methods.reduce((set, method) => {
+  set[method] = (path: string, ...otherMethods: Array<PathFactory | string>) => {
+    return set(path, ...[...otherMethods, method])
+  }
+  set[method].toString = () => method
+  return set
+}, Object.assign(createAnnotationFactory(RouteAnnotation), Param, { Parse: ParseBody }) as any) as Route
+
+export { RouteAnnotation, Annotation }
