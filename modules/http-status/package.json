@@ -21,7 +21,7 @@
   "author": "Caleb Boyd <caleb.boyd@hotmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^13.7.7",
+    "@types/node": "^13.9.1",
     "prettier": "^1.19.1",
     "typescript": "^3.8.3"
   }
