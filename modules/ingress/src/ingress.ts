@@ -1,5 +1,5 @@
 import { AppBuilder, Middleware, compose, functionList } from 'app-builder'
-import { BaseContext, DefaultContext, BaseAuthContext, Request } from './context'
+import { BaseContext, DefaultContext, BaseAuthContext } from './context'
 import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
 import { RouterAddon, Type } from './router/router'
 import { DefaultMiddleware } from './default-middleware'
@@ -149,6 +149,10 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
     await compose(functionList(this.setups.map(x => x.bind(null, this))))()
     this.starting = false
     this.started = true
+  }
+
+  public close() {
+    return this.stop()
   }
 
   public async stop(): Promise<void> {
