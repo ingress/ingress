@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "3.10.0",
+  "version": "3.10.1",
   "description": "Composable nodejs applications",
   "main": "lib/ingress.js",
   "files": [
@@ -53,12 +53,13 @@
     "@hapi/subtext": "~7.0.3",
     "@ingress/di": "^1.2.0",
     "@ingress/http-status": "^1.1.0",
-    "app-builder": "^6.2.0",
+    "app-builder": "^6.2.1",
     "destroy": "~1.0.4",
     "on-finished": "~2.3.0",
     "reflect-annotations": "^2.6.0",
     "route-recognizer": "0.2.9",
     "rxjs": "~6.5.4",
+    "uuid": "^7.0.2",
     "websocket": "~1.0.31"
   },
   "devDependencies": {
@@ -68,6 +69,7 @@
     "@types/on-finished": "~2.3.1",
     "@types/route-recognizer": "0.0.27",
     "@types/sinon": "^7.5.2",
+    "@types/uuid": "^7.0.0",
     "@types/websocket": "~1.0.0",
     "@typescript-eslint/eslint-plugin": "^2.23.0",
     "@typescript-eslint/parser": "^2.23.0",
