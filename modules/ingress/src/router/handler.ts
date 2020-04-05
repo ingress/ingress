@@ -49,7 +49,7 @@ function resolveParameters(params: ParamResolver[], context: BaseContext<any, an
     const resolver = params[i]
     resolvedParameters[i] = resolver(context)
   }
-  return resolvedParameters
+  return Promise.all(resolvedParameters)
 }
 
 function extractParameter(annotation: any): ParamResolver {
@@ -77,8 +77,8 @@ function resolveRouteMiddleware<T extends BaseContext<any, any>>(handler: {
     controllerMethod = handler.controller.prototype[routeName],
     paramResolvers = handler.paramResolvers
 
-  return (context: T, next: () => Promise<any>) => {
-    const params = resolveParameters(paramResolvers, context)
+  return async (context: T, next: () => Promise<any>) => {
+    const params = await resolveParameters(paramResolvers, context)
     return Promise.resolve(controllerMethod.call(context.route.controllerInstance, ...params)).then((x) => {
       //TODO handle custom response message types..
       context.body = context.body || x
