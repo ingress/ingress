@@ -17,37 +17,31 @@ export type TypeConverter<T> = ExactTypeConverter<T> | PredicateTypeConverter<T>
 export const defaultTypeConverters: TypeConverter<any>[] = [
   {
     type: Number,
-    convert: value => {
+    convert: (value) => {
       if (value === null || isNaN(value)) {
         throw new Error(`cannot convert ${JSON.stringify(value)} to number`)
       }
       return +value
-    }
+    },
   },
   {
     type: Boolean,
     convert(value) {
-      return Boolean(
-        value ??
-          value
-            .toString()
-            .trim()
-            .toLowerCase() === 'true'
-      )
-    }
+      return Boolean(value ?? value.toString().trim().toLowerCase() === 'true')
+    },
   },
   {
     type: String,
-    convert: value => {
+    convert: (value) => {
       if (value === null || value === undefined) {
         throw new Error(`cannot convert ${JSON.stringify(value)} to string`)
       }
       return value.toString()
-    }
+    },
   },
   {
     type: Date,
-    convert: value => {
+    convert: (value) => {
       const date = new Date(value)
 
       if (date.toString() === 'Invalid Date') {
@@ -55,12 +49,12 @@ export const defaultTypeConverters: TypeConverter<any>[] = [
       }
 
       return date
-    }
+    },
   },
   {
     type: Object,
     convert(value) {
       return value
-    }
-  }
+    },
+  },
 ]

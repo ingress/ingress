@@ -10,13 +10,13 @@ import { resolvePaths, RouteMetadata } from './path-resolver'
 const pickRequest = (context: BaseContext<any, any>) => context.req
 
 enum MiddlewarePriority {
-  'BeforeBodyParser' = 'BeforeBodyParser'
+  'BeforeBodyParser' = 'BeforeBodyParser',
 }
 
 export function isRoutable(maybeRoute: AnnotatedPropertyDescription) {
   const annotations = maybeRoute.classAnnotations.concat(maybeRoute.methodAnnotations),
-    hasMethod = annotations.some(x => x.isRouteAnnotation),
-    hasRoute = annotations.some(x => x.isHttpMethodAnnotation)
+    hasMethod = annotations.some((x) => x.isRouteAnnotation),
+    hasRoute = annotations.some((x) => x.isHttpMethodAnnotation)
   return Boolean(hasMethod && hasRoute)
 }
 
@@ -27,19 +27,19 @@ function isRegularMiddleware(x: any) {
 function extractEarlyMiddleware<T>(route: RouteMetadata): Array<Middleware<T>> {
   return route.classAnnotations
     .concat(route.methodAnnotations)
-    .filter(x => x.middlewarePriority === MiddlewarePriority.BeforeBodyParser)
-    .map(x => x.middleware)
+    .filter((x) => x.middlewarePriority === MiddlewarePriority.BeforeBodyParser)
+    .map((x) => x.middleware)
 }
 
 function extractMiddleware<T>(route: RouteMetadata): Array<Middleware<T>> {
   return route.classAnnotations
     .concat(route.methodAnnotations)
-    .filter(x => isRegularMiddleware(x))
-    .map(x => x.middleware)
+    .filter((x) => isRegularMiddleware(x))
+    .map((x) => x.middleware)
 }
 
 function extractBodyParser(route: RouteMetadata) {
-  const bodyParser = route.classAnnotations.concat(route.methodAnnotations).find(x => x.isBodyParser)
+  const bodyParser = route.classAnnotations.concat(route.methodAnnotations).find((x) => x.isBodyParser)
   return bodyParser ? bodyParser.middleware : parseJsonBody
 }
 
@@ -57,7 +57,7 @@ function extractParameter(annotation: any): ParamResolver {
   if (!isParamAnnotation) {
     return pickRequest
   }
-  return context => (annotation as ParamAnnotation).extractValue!(context)
+  return (context) => (annotation as ParamAnnotation).extractValue!(context)
 }
 
 export interface ParamResolver {
@@ -79,7 +79,7 @@ function resolveRouteMiddleware<T extends BaseContext<any, any>>(handler: {
 
   return (context: T, next: () => Promise<any>) => {
     const params = resolveParameters(paramResolvers, context)
-    return Promise.resolve(controllerMethod.call(context.route.controllerInstance, ...params)).then(x => {
+    return Promise.resolve(controllerMethod.call(context.route.controllerInstance, ...params)).then((x) => {
       //TODO handle custom response message types..
       context.body = context.body || x
       return next()
@@ -104,11 +104,12 @@ export function convertType(
     )
   if (!typeConverter) {
     throw new Error(
-      `No type converter found for: ${source.controller.name}.${source.name} at ${paramIndex}${paramType.name ||
-        paramType}`
+      `No type converter found for: ${source.controller.name}.${source.name} at ${paramIndex}${
+        paramType.name || paramType
+      }`
     )
   }
-  return context => {
+  return (context) => {
     const value = paramResolver(context)
     return typeConverter.convert(value, paramType)
   }
@@ -159,10 +160,10 @@ export function createHandler(source: RouteMetadata, baseUrl = '/', typeConverte
       resolveRouteMiddleware({
         controller: source.controller,
         controllerMethod: source.name,
-        paramResolvers
-      })
+        paramResolvers,
+      }),
     ]),
-    handler: handlerRef as Handler
+    handler: handlerRef as Handler,
   }
   handler.handler = handler
   return handler

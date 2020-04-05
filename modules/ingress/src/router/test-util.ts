@@ -3,7 +3,7 @@ import { parse } from 'url'
 
 export function getAsync(url: string) {
   return new Promise<string>((resolve, reject) => {
-    get(url, x => parseResponse(x).then(resolve, reject))
+    get(url, (x) => parseResponse(x).then(resolve, reject))
   })
 }
 
@@ -35,12 +35,12 @@ export function postAsync(path: string, { data, headers, method }: any = {}) {
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(postData),
-        ...(headers || {})
-      }
+        ...(headers || {}),
+      },
     }
 
   return new Promise((resolve, reject) => {
-    const req = request(options, x => parseResponse(x).then(resolve, reject))
+    const req = request(options, (x) => parseResponse(x).then(resolve, reject))
     req.write(postData)
     req.end()
   })

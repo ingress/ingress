@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import ingress, { Route, IngressApp } from '../ingress'
 import * as sinon from 'sinon'
 import getPortAsync from 'get-port'
@@ -9,7 +10,7 @@ async function getPort() {
     port,
     path(uri: string) {
       return `http://localhost:${port}${uri}`
-    }
+    },
   }
 }
 

@@ -148,9 +148,7 @@ export class DefaultMiddleware<
       context.res.statusCode = 404
       onFinished(context.res, onResEnd)
       onFinished(context.req, onReqEnd)
-      return next()
-        .catch(context.handleError)
-        .then(context.handleResponse)
+      return next().catch(context.handleError).then(context.handleResponse)
     }
   }
 }

@@ -19,8 +19,8 @@ export function resolvePaths(baseUrl = '/', route: RouteMetadata): { [method: st
     parents.push(new RouteAnnotation(baseUrl))
   }
 
-  parents.forEach(parent => {
-    children.forEach(child => {
+  parents.forEach((parent) => {
+    children.forEach((child) => {
       if (!child.methods.length && !parent.methods.length) {
         throw new Error(`${route.controller.name}.${route.name} has no Http Method defined`)
       }
@@ -32,7 +32,7 @@ export function resolvePaths(baseUrl = '/', route: RouteMetadata): { [method: st
       const methods = parent.methods.length ? parent.methods : child.methods,
         resolvedPath = parent.resolvePath(resolveFrom, child)
 
-      methods.forEach(m => {
+      methods.forEach((m) => {
         paths[m] = paths[m] || []
         paths[m].push(resolvedPath)
       })

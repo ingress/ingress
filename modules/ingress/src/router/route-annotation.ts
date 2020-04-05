@@ -106,7 +106,7 @@ export const Param = {
   Path: createAnnotationFactory(PathParamAnnotation),
   Query: createAnnotationFactory(QueryParamAnnotation),
   Header: createAnnotationFactory(HeaderParamAnnotation),
-  Context: createAnnotationFactory(ContextParamAnnotation)
+  Context: createAnnotationFactory(ContextParamAnnotation),
 }
 
 export interface Route extends PathFactory {

@@ -8,7 +8,7 @@ describe('default ingress responses', () => {
 
   beforeEach(() => {
     app = ingress({
-      routes: []
+      routes: [],
     })
   })
 
@@ -27,7 +27,7 @@ describe('default ingress responses', () => {
     })
     const PORT = await getPort()
     await app.listen(PORT)
-    const result = await fetch(`http://localhost:${PORT}`).then(x => x.json())
+    const result = await fetch(`http://localhost:${PORT}`).then((x) => x.json())
 
     expect(result.hello).toEqual('world')
   })
@@ -41,14 +41,14 @@ describe('default ingress responses', () => {
         read() {
           this.push(content)
           this.push(null)
-        }
+        },
       })
 
       return next()
     })
     const PORT = await getPort()
     await app.listen(PORT)
-    const result = await fetch(`http://localhost:${PORT}`).then(x => {
+    const result = await fetch(`http://localhost:${PORT}`).then((x) => {
       expect(x.headers.get('content-length')).toEqual(expectedBody.length.toString())
       expect(x.headers.get('content-type')).toEqual('application/octet-stream')
       return x.json()
@@ -64,7 +64,7 @@ describe('default ingress responses', () => {
     })
     const PORT = await getPort()
     await app.listen(PORT)
-    const result = await fetch(`http://localhost:${PORT}`).then(x => {
+    const result = await fetch(`http://localhost:${PORT}`).then((x) => {
       expect(x.headers.get('content-length')).toEqual(expectedBody.length.toString())
       expect(x.headers.get('content-type')).toEqual('application/octet-stream')
       return x.json()
@@ -80,7 +80,7 @@ describe('default ingress responses', () => {
     })
     const PORT = await getPort()
     await app.listen(PORT)
-    const result = await fetch(`http://localhost:${PORT}`).then(x => {
+    const result = await fetch(`http://localhost:${PORT}`).then((x) => {
       expect(x.headers.get('content-length')).toEqual(expectedBody.length.toString())
       expect(x.headers.get('content-type')).toEqual('application/json')
       return x.json()
@@ -95,7 +95,7 @@ describe('default ingress responses', () => {
     })
     const PORT = await getPort()
     await app.listen(PORT)
-    const result = await fetch(`http://localhost:${PORT}`).then(x => {
+    const result = await fetch(`http://localhost:${PORT}`).then((x) => {
       expect(x.headers.get('content-length')).toBe('0')
       expect(x.headers.get('content-type')).toEqual('text/plain')
       return x.text()
@@ -110,7 +110,7 @@ describe('default ingress responses', () => {
     })
     const PORT = await getPort()
     await app.listen(PORT)
-    const result = await fetch(`http://localhost:${PORT}`).then(x => {
+    const result = await fetch(`http://localhost:${PORT}`).then((x) => {
       expect(x.headers.get('content-length')).toBe('0')
       expect(x.headers.get('content-type')).toBeNull()
       return x.text()
@@ -125,7 +125,7 @@ describe('default ingress responses', () => {
     })
     const PORT = await getPort()
     await app.listen(PORT)
-    const result = await fetch(`http://localhost:${PORT}`).then(x => {
+    const result = await fetch(`http://localhost:${PORT}`).then((x) => {
       expect(x.headers.get('content-length')).toBe('0')
       expect(x.headers.get('content-type')).toBeNull()
       return x.text()
@@ -141,7 +141,7 @@ describe('default ingress responses', () => {
     })
     const PORT = await getPort()
     await app.listen(PORT)
-    const result = await fetch(`http://localhost:${PORT}`).then(x => {
+    const result = await fetch(`http://localhost:${PORT}`).then((x) => {
       expect(x.headers.get('content-length')).toEqual(expectedBody.length.toString())
       expect(x.headers.get('content-type')).toEqual('application/json')
       return x.json()
@@ -166,12 +166,12 @@ describe('default ingress responses', () => {
     })
     const PORT = await getPort()
     await app.listen(PORT)
-    await fetch(`http://localhost:${PORT}`).then(x => {
+    await fetch(`http://localhost:${PORT}`).then((x) => {
       expect(x.headers.get('content-length')).toEqual(expectedBody.length.toString())
       expect(x.headers.get('content-type')).toEqual('application/json')
       return x.json()
     })
-    await new Promise(r => setTimeout(r, 2000))
+    await new Promise((r) => setTimeout(r, 2000))
     expect(events).toEqual(['response-finished', 'request-finished'])
   })
 })
