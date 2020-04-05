@@ -16,7 +16,7 @@ export class WebsocketAddon {
   start(app: Ingress) {
     this.server.mount({
       ...this.options,
-      httpServer: app.server || (app.server = new HttpServer())
+      httpServer: app.server || (app.server = new HttpServer()),
     })
     this.handler = async (req: WebsocketRequest) => {
       if (this.options.contextFactory) {
@@ -44,7 +44,7 @@ export class WebsocketAddon {
     if (this.server.connections.length > 0) {
       let count = this.server.connections.length
       let handler: any
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         handler = () => {
           if (--count === 0) {
             this.server.off('close', handler)

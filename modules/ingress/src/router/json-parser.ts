@@ -16,7 +16,7 @@ export class ParseJsonBodyAnnotation {
     const options = this.options
     return (context, next) => {
       const {
-        req: { headers, method }
+        req: { headers, method },
       } = context
 
       if (method === 'GET' || method === 'HEAD') return next()
@@ -54,10 +54,7 @@ function parseJsonReq(context: DefaultContext, contentLength: number, next: () =
   const { req } = context
   let byteLength = 0
   let rawBody = ''
-  req
-    .on('data', onChunk)
-    .on('end', onReqEnd)
-    .on('error', onReqEnd)
+  req.on('data', onChunk).on('end', onReqEnd).on('error', onReqEnd)
 
   const deferred: any = {}
 

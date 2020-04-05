@@ -50,7 +50,7 @@ describe('ingress', () => {
       authContextFactory({ req }) {
         void req
         return { authenticated: true, id: '' }
-      }
+      },
     })
 
     await app.listen(PORT)

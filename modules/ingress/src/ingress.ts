@@ -50,7 +50,7 @@ export default function ingress<
   onError,
   typeConverters,
   contextToken,
-  routes
+  routes,
 }: {
   preRoute?: Addon<T>
   authContextFactory?: AuthContextFactory
@@ -72,7 +72,7 @@ export default function ingress<
       //Add routes as container services
       start() {
         container.serviceCollector.items.push(...router.controllerCollector.items)
-      }
+      },
     })
     .use(container)
     .use(async (context, next) => {
@@ -91,7 +91,7 @@ export default function ingress<
     router,
     Controller: router.Controller,
     Service: container.Service,
-    SingletonService: container.SingletonService
+    SingletonService: container.SingletonService,
   })
 }
 
@@ -146,7 +146,7 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
     }
     this.starting = true
     this.stopping = this.stopped = false
-    await compose(functionList(this.setups.map(x => x.bind(null, this))))()
+    await compose(functionList(this.setups.map((x) => x.bind(null, this))))()
     this.starting = false
     this.started = true
   }
@@ -162,7 +162,7 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
     this.stopping = true
     this.starting = this.started = false
     try {
-      await compose(functionList(this.teardowns.map(x => x.bind(null, this))))()
+      await compose(functionList(this.teardowns.map((x) => x.bind(null, this))))()
     } finally {
       this.stopped = true
       this.stopping = false
@@ -184,7 +184,7 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
       await new Promise((resolve, reject) => {
         this.server!.listen(options, (error?: Error) => (error ? reject(error) : resolve()))
       })
-      this.teardowns.unshift(app => {
+      this.teardowns.unshift((app) => {
         return new Promise((resolve, reject) => {
           app.server!.off('request', handler)
           app.server!.close((error?: Error) => (error ? reject(error) : resolve()))

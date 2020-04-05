@@ -17,7 +17,7 @@ export class ParseBodyAnnotation {
     this.options = {
       parse: options.parse || false,
       output: options.buffer ? 'data' : options.stream ? 'stream' : 'data',
-      maxBytes: options.maxBytes || 1e7
+      maxBytes: options.maxBytes || 1e7,
     }
   }
 

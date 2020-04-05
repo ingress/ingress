@@ -19,7 +19,7 @@ export interface RouterOptions {
 }
 
 const defaultOptions: RouterOptions = {
-  typeConverters: []
+  typeConverters: [],
 }
 
 export class RouterAddon<T extends BaseContext<any, any>> {
@@ -56,12 +56,12 @@ export class RouterAddon<T extends BaseContext<any, any>> {
       ...controllers
         .reduce<AnnotatedPropertyDescription[]>(
           (routes, controller) =>
-            routes.concat(...reflectAnnotations(controller).map(x => Object.assign(x, { controller }))),
+            routes.concat(...reflectAnnotations(controller).map((x) => Object.assign(x, { controller }))),
           []
         )
         .map((route: any) => {
           const handler = createHandler(route, baseUrl, this.typeConverters)
-          Object.keys(handler.paths).forEach(method => {
+          Object.keys(handler.paths).forEach((method) => {
             const recognizer = (this.routers[method] = this.routers[method] || new (RouteRecognizer as any)())
             handler.paths[method].forEach((path: string) => {
               recognizer.add([handler.withPath(path)])
@@ -94,7 +94,7 @@ export class RouterAddon<T extends BaseContext<any, any>> {
       context.route = Object.assign(context.route, {
         handler,
         controllerInstance: context.scope.get(handler.controller),
-        parserResult: null
+        parserResult: null,
       })
       context.res.statusCode = 200
       context.route.query = (route as any).queryParams || Object.create(null)

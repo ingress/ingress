@@ -2,7 +2,7 @@ import {
   server as WebsocketServer,
   IServerConfig,
   request as WebsocketRequest,
-  connection as WebsocketConnection
+  connection as WebsocketConnection,
 } from 'websocket'
 export { WebsocketServer, WebsocketRequest, IServerConfig }
 import { Subject } from 'rxjs'
