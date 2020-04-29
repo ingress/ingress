@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.7.0](https://github.com/ingress/ingress/compare/reflect-annotations@2.6.0...reflect-annotations@2.7.0) (2020-04-29)
+
+
+### Bug Fixes
+
+* route-recognizer uri regex encoding ([2b803c6](https://github.com/ingress/ingress/commit/2b803c6b42c65b0be0310b7ba37f2f995e7e6af9))
+
+
+
+
+
 # 2.6.0 (2020-01-19)
 
 
