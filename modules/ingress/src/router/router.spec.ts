@@ -24,32 +24,56 @@ describe('Routing', () => {
   beforeEach(() => {
     app = ingress()
     routeSpy = sinon.spy()
-  })
 
-  afterEach(() => {
-    return app.stop()
-  })
-
-  it('should route', async () => {
-    const { Controller } = app
-    expectedResponse = 'Hello World'
-
-    @Controller('route')
-    class MyRoutes {
+    @app.Controller('route')
+    class TestController {
       @Route.Get('test', Route.Post, Route.Put)
       someroute() {
         routeSpy()
         return expectedResponse
       }
+      @Route.Get('/:something/$money', Route.Post, Route.Put)
+      specialURICharacter() {
+        routeSpy()
+        return expectedResponse
+      }
     }
+  })
+
+  afterEach(() => {
+    return app.close()
+  })
+
+  it('should route', async () => {
+    expectedResponse = 'Hello World'
     const { port, path } = await getPort()
     await app.listen(+port)
-    const getResponse = await getAsync(path('/route/test'))
-    const postResponse = await postAsync(path('/route/test'), {})
+    const getResponse = await getAsync(path('/route/test')),
+      postResponse = await postAsync(path('/route/test'), {})
     expect(getResponse).toEqual(expectedResponse)
     expect(postResponse).toEqual(expectedResponse)
     sinon.assert.calledTwice(routeSpy)
   })
+
+  it('should route with encoded characters', async () => {
+    expectedResponse = 'Hello World'
+    const { port, path } = await getPort()
+    await app.listen(+port)
+    const getResponse = await getAsync(path('/route/something/$money'))
+    expect(getResponse).toEqual(expectedResponse)
+    sinon.assert.calledOnce(routeSpy)
+  })
+
+  // it('should route with special characters', async () => {
+  //   expectedResponse = 'Hello World'
+  //   const { port, path } = await getPort()
+  //   await app.listen(+port)
+  //   const getResponse = await getAsync(path('/route/test/$money')),
+  //     postResponse = await postAsync(path('/route/test/$money'), {})
+  //   expect(getResponse).toEqual(expectedResponse)
+  //   expect(postResponse).toEqual(expectedResponse)
+  //   sinon.assert.calledTwice(routeSpy)
+  // })
 
   // it('should call middleware in order', async () => {
   //   const response = await getAsync('/api/test/ordered-middleware')

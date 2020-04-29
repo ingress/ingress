@@ -150,8 +150,8 @@ describe('default ingress responses', () => {
   })
 
   it('emit request lifecycle events', async () => {
-    const expectedBody = JSON.stringify({ hello: 'world' })
-    const events: string[] = []
+    const expectedBody = JSON.stringify({ hello: 'world' }),
+      events: string[] = []
     app.use((context, next) => {
       context
         .once('request-finished', () => {

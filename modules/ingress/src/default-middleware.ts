@@ -108,7 +108,7 @@ export class DefaultMiddleware<
     if (isStreamLike(body)) {
       !hasContentType && this._contentType(res, 'application/octet-stream')
       onFinished(res, () => destroy(body))
-      ensureErrorHandler(body as Stream, ctx.handleError!)
+      ensureErrorHandler(body as Stream, ctx.handleError)
       return (body as Stream).pipe(res)
     }
 

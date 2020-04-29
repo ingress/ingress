@@ -21,10 +21,10 @@ export class ParseJsonBodyAnnotation {
 
       if (method === 'GET' || method === 'HEAD') return next()
 
-      const contentType = headers['content-type']
-      const contentLength = Number.parseInt(headers['content-length']!, 10)
+      const contentType = headers['content-type'],
+        contentLength = Number.parseInt(headers['content-length'] ?? '', 10)
 
-      if (~parsableMethods.indexOf(method!)) {
+      if (method && ~parsableMethods.indexOf(method)) {
         if (!contentType && !contentLength && headers['transfer-encoding'] === void 0) {
           return next()
         }
@@ -50,10 +50,10 @@ function parseJson(body: string) {
 }
 
 function parseJsonReq(context: DefaultContext, contentLength: number, next: () => any, options: ParseJsonBodyOptions) {
-  const { maxBytes } = options
-  const { req } = context
-  let byteLength = 0
-  let rawBody = ''
+  const { maxBytes } = options,
+    { req } = context
+  let byteLength = 0,
+    rawBody = ''
   req.on('data', onChunk).on('end', onReqEnd).on('error', onReqEnd)
 
   const deferred: any = {}
@@ -105,6 +105,6 @@ function parseJsonReq(context: DefaultContext, contentLength: number, next: () =
   return deferred.promise
 }
 
-const ParseJsonBody = createAnnotationFactory(ParseJsonBodyAnnotation)
-const parseJsonBody = new ParseJsonBodyAnnotation().middleware
+const ParseJsonBody = createAnnotationFactory(ParseJsonBodyAnnotation),
+  parseJsonBody = new ParseJsonBodyAnnotation().middleware
 export { parseJsonBody, ParseJsonBody }

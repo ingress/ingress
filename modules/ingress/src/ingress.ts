@@ -3,10 +3,10 @@ import { BaseContext, DefaultContext, BaseAuthContext } from './context'
 import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
 import { RouterAddon, Type } from './router/router'
 import { DefaultMiddleware } from './default-middleware'
-import { Websockets } from './websocket/websockets'
 export * from '@ingress/http-status'
 import { Container } from '@ingress/di'
 import { TypeConverter } from './router/type-converter'
+
 interface SetupTeardown {
   (server: Ingress<any>): Promise<any> | any
 }
@@ -69,7 +69,7 @@ export default function ingress<
   server
     .use(defaultMiddleware)
     .use({
-      //Add routes as container services
+      //Copy routes from router, and register them with the DI container
       start() {
         container.serviceCollector.items.push(...router.controllerCollector.items)
       },
@@ -81,6 +81,7 @@ export default function ingress<
     })
 
   if (preRoute) {
+    //Add middleware branch for before the router`
     server.use(preRoute)
   }
 
@@ -104,7 +105,6 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
   private setups: SetupTeardown[] = []
   private teardowns: SetupTeardown[] = []
   public server?: HttpServer
-  public websockets?: Websockets
 
   constructor({ server }: { server?: HttpServer } = {}) {
     if (server) {
@@ -182,12 +182,12 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
     try {
       this.server?.on('request', handler)
       await new Promise((resolve, reject) => {
-        this.server!.listen(options, (error?: Error) => (error ? reject(error) : resolve()))
+        this.server?.listen(options, (error?: Error) => (error ? reject(error) : resolve()))
       })
       this.teardowns.unshift((app) => {
         return new Promise((resolve, reject) => {
-          app.server!.off('request', handler)
-          app.server!.close((error?: Error) => (error ? reject(error) : resolve()))
+          app.server?.off('request', handler)
+          app.server?.close((error?: Error) => (error ? reject(error) : resolve()))
         })
       })
     } finally {
