@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/ingress/ingress/compare/@ingress/di@1.1.0...@ingress/di@1.3.0) (2020-04-29)
+
+
+### Bug Fixes
+
+* export context token type and value ([6b21a2b](https://github.com/ingress/ingress/commit/6b21a2bc2d423c6a9d90f441b96fd7c358360f46))
+* route-recognizer uri regex encoding ([2b803c6](https://github.com/ingress/ingress/commit/2b803c6b42c65b0be0310b7ba37f2f995e7e6af9))
+
+
+
+
+
 # 1.1.0 (2020-01-19)
 
 
