@@ -5,7 +5,7 @@ import { parse as parseUrl } from 'url'
 import { TypeConverter, defaultTypeConverters } from './type-converter'
 import { Type, ControllerCollector, ControllerDependencyCollector } from './controller-annotation'
 import { BaseContext } from '../context'
-import RouteRecognizer = require('route-recognizer')
+import RouteRecognizer from 'route-recognizer'
 
 //Exports
 export { ParseJsonBody } from './json-parser'
@@ -23,7 +23,7 @@ const defaultOptions: RouterOptions = {
 }
 
 export class RouterAddon<T extends BaseContext<any, any>> {
-  private routers: { [key: string]: RouteRecognizer<Handler> }
+  private routers: { [key: string]: RouteRecognizer }
   private options: RouterOptions
   private initialized = false
 
@@ -61,12 +61,13 @@ export class RouterAddon<T extends BaseContext<any, any>> {
         )
         .map((route: any) => {
           const handler = createHandler(route, baseUrl, this.typeConverters)
-          Object.keys(handler.paths).forEach((method) => {
-            const recognizer = (this.routers[method] = this.routers[method] || new (RouteRecognizer as any)())
-            handler.paths[method].forEach((path: string) => {
-              recognizer.add([handler.withPath(path)])
-            })
-          })
+          for (const [method, paths] of Object.entries(handler.paths)) {
+            const router = this.routers[method] || new RouteRecognizer()
+            for (const path of paths) {
+              router.add([handler.withPath(path)])
+            }
+            this.routers[method] = router
+          }
           return handler
         })
     )
@@ -81,8 +82,8 @@ export class RouterAddon<T extends BaseContext<any, any>> {
   get middleware(): Middleware<T> {
     return (context, next) => {
       const req = context.req,
-        url = context.route.url || (context.route.url = parseUrl(req.url || '')),
-        route = req.method && url.pathname && this.match(req.method, url.pathname + (url.search || '')),
+        url = context.route.url || (context.route.url = parseUrl(req.url ?? '')),
+        route = req.method && url.pathname && this.match(req.method, url.pathname + (url.search ?? '')),
         match = route && route[0],
         handler = match && (match.handler as Handler)
 

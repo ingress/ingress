@@ -9,10 +9,10 @@
   ],
   "keywords": [],
   "scripts": {
-    "lint": "eslint \"src/**/*\" --fix",
+    "lint": "eslint \"src/**/*.ts\" --fix",
     "prepublish": "npm run build",
     "build": "rm -rf lib && npm run lint && tsc",
-    "watch:typescript": "TSC_NONPOLLING_WATCHER=true tsc -w",
+    "watch:typescript": "tsc -w",
     "watch:test": "jest --watchAll --detectOpenHandles",
     "watch": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
     "test": "jest --passWithNoTests"
@@ -41,7 +41,15 @@
         }
       }
     ],
-    "rules": {}
+    "rules": {
+      "@typescript-eslint/no-use-before-define": 0,
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/explicit-function-return-type": 0,
+      "one-var": [
+        "error",
+        "consecutive"
+      ]
+    }
   },
   "prettier": {
     "parser": "typescript",
@@ -53,11 +61,11 @@
     "@hapi/subtext": "~7.0.3",
     "@ingress/di": "^1.2.0",
     "@ingress/http-status": "^1.1.0",
-    "app-builder": "^6.2.1",
+    "app-builder": "^6.2.2",
     "destroy": "~1.0.4",
     "on-finished": "~2.3.0",
     "reflect-annotations": "^2.6.0",
-    "route-recognizer": "0.2.9",
+    "route-recognizer": "0.3.4",
     "rxjs": "~6.5.5",
     "uuid": "^7.0.3",
     "websocket": "~1.0.31"
@@ -65,25 +73,25 @@
   "devDependencies": {
     "@types/destroy": "~1.0.0",
     "@types/jest": "^25.2.1",
-    "@types/node": "^13.11.0",
+    "@types/node": "^13.13.4",
     "@types/on-finished": "~2.3.1",
-    "@types/route-recognizer": "0.0.27",
+    "@types/route-recognizer": "0.3.0",
     "@types/sinon": "^9.0.0",
-    "@types/uuid": "^7.0.2",
+    "@types/uuid": "^7.0.3",
     "@types/websocket": "~1.0.0",
-    "@typescript-eslint/eslint-plugin": "^2.26.0",
-    "@typescript-eslint/parser": "^2.26.0",
-    "concurrently": "^5.1.0",
+    "@typescript-eslint/eslint-plugin": "^2.30.0",
+    "@typescript-eslint/parser": "^2.30.0",
+    "concurrently": "^5.2.0",
     "cross-fetch": "~3.0.4",
     "eslint": "^6.8.0",
-    "eslint-config-prettier": "~6.10.1",
-    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-config-prettier": "~6.11.0",
+    "eslint-plugin-prettier": "^3.1.3",
     "eslint-watch": "^6.0.1",
     "get-port": "~5.1.1",
-    "jest": "^25.2.7",
-    "prettier": "^2.0.2",
+    "jest": "^25.5.1",
+    "prettier": "^2.0.5",
     "reflect-metadata": "^0.1.13",
-    "sinon": "^9.0.1",
+    "sinon": "^9.0.2",
     "typescript": "^3.8.3"
   }
 }

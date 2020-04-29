@@ -52,12 +52,11 @@ function resolveParameters(params: ParamResolver[], context: BaseContext<any, an
   return Promise.all(resolvedParameters)
 }
 
-function extractParameter(annotation: any): ParamResolver {
-  const isParamAnnotation = annotation && (annotation as ParamAnnotation).extractValue
-  if (!isParamAnnotation) {
+function extractParameter(annotation: ParamAnnotation): ParamResolver {
+  if (!annotation?.extractValue) {
     return pickRequest
   }
-  return (context) => (annotation as ParamAnnotation).extractValue!(context)
+  return (context) => (annotation as any).extractValue(context)
 }
 
 export interface ParamResolver {
