@@ -7,17 +7,11 @@ describe('default ingress responses', () => {
   let app: Ingress
 
   beforeEach(() => {
-    app = ingress({
-      routes: [],
-    })
+    app = ingress()
   })
 
   afterEach(async () => {
-    try {
-      app && (await app.stop())
-    } catch (e) {
-      void e
-    }
+    return app?.stop()
   })
 
   it('should respond with json', async () => {

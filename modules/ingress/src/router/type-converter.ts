@@ -27,7 +27,13 @@ export const defaultTypeConverters: TypeConverter<any>[] = [
   {
     type: Boolean,
     convert(value) {
-      return Boolean(value ?? value.toString().trim().toLowerCase() === 'true')
+      if (value === 'true' || value === true) {
+        return true
+      }
+      if (value === 'false' || value === false) {
+        return false
+      }
+      throw new Error(`cannot convert ${JSON.stringify(value)} to boolean`)
     },
   },
   {
