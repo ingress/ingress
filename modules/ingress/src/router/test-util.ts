@@ -1,4 +1,4 @@
-import { get, request } from 'http'
+import { get, request, IncomingMessage } from 'http'
 import { parse } from 'url'
 
 export function getAsync(url: string) {
@@ -7,8 +7,8 @@ export function getAsync(url: string) {
   })
 }
 
-function parseResponse(response: any): Promise<string> {
-  return new Promise((resolve, reject) => {
+async function parseResponse(response: IncomingMessage): Promise<string> {
+  const body = new Promise<string>((resolve, reject) => {
     let res = ''
     const consume = (chunk: Buffer) => (res += chunk)
     function destroy(error?: Error) {
@@ -22,9 +22,17 @@ function parseResponse(response: any): Promise<string> {
     response.once('error', destroy)
     response.once('end', destroy)
   })
+  if ((response.statusCode || 500) >= 300) {
+    return Promise.reject({
+      statusCode: response.statusCode,
+      statusMessage: response.statusMessage,
+      body: await body,
+    })
+  }
+  return body
 }
 
-export function postAsync(path: string, { data, headers, method }: any = {}) {
+export function postAsync(path: string, { data, headers, method }: any = {}): Promise<string> {
   const url = parse(path),
     postData = data ? JSON.stringify(data) : '',
     options = {
@@ -38,10 +46,8 @@ export function postAsync(path: string, { data, headers, method }: any = {}) {
         ...(headers || {}),
       },
     }
-
   return new Promise((resolve, reject) => {
     const req = request(options, (x) => parseResponse(x).then(resolve, reject))
-    req.write(postData)
-    req.end()
+    req.end(postData)
   })
 }

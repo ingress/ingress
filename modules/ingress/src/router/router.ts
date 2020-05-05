@@ -30,6 +30,9 @@ export class RouterAddon<T extends BaseContext<any, any>> {
   public controllerCollector = new ControllerCollector()
   public controllers: Type<any>[] = this.controllerCollector.items
   public handlers: Handler[] = []
+  /**
+   * Load decorated class as a Controller into the app
+   */
   public Controller: ControllerDependencyCollector = this.controllerCollector.collect
   public readonly typeConverters: TypeConverter<any>[]
 

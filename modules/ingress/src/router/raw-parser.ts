@@ -32,6 +32,9 @@ export class ParseBodyAnnotation {
   }
 }
 
+/**
+ * Apply Custom (stream or buffer) Parsing as middleware
+ */
 const ParseBody = createAnnotationFactory(ParseBodyAnnotation) as (
   options?: ParseBodyOptions
 ) => Annotation<ParseBodyAnnotation>

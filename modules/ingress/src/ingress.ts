@@ -50,28 +50,29 @@ export default function ingress<
   onError,
   typeConverters,
   contextToken,
-  routes,
+  router,
 }: {
   preRoute?: Addon<T>
   authContextFactory?: AuthContextFactory
   typeConverters?: TypeConverter<any>[]
   contextToken?: any
   onError?: (context: T) => Promise<any>
-  routes?: Type<any> | Type<any>[]
+  router?: { routes?: Type<any>[]; baseUrl?: string }
 } = {}) {
-  const controllers = Array.isArray(routes) ? routes : (routes && [routes]) || [],
+  const controllers = router?.routes ?? [],
+    routeRoot = router?.baseUrl ?? '/',
     defaultMiddleware = onError ? new DefaultMiddleware<T, A>({ onError }) : new DefaultMiddleware<T, A>(),
     server = new Ingress<T, A>(),
     authContextFactory = authenticator || (() => ({ authenticated: false })),
     container = new Container({ contextToken: contextToken || Context }),
-    router = new RouterAddon<T>({ controllers, typeConverters: typeConverters || [] })
+    routerAddon = new RouterAddon<T>({ controllers, typeConverters: typeConverters || [], baseUrl: routeRoot })
 
   server
     .use(defaultMiddleware)
     .use({
       //Copy routes from router, and register them with the DI container
       start() {
-        container.serviceCollector.items.push(...router.controllerCollector.items)
+        container.serviceCollector.items.push(...routerAddon.controllerCollector.items)
       },
     })
     .use(container)
@@ -80,17 +81,13 @@ export default function ingress<
       return next()
     })
 
-  if (preRoute) {
-    //Add middleware branch for before the router`
-    server.use(preRoute)
-  }
-
-  server.use(router)
+  preRoute && server.use(preRoute)
+  server.use(routerAddon)
 
   return Object.assign(server, {
     container,
     router,
-    Controller: router.Controller,
+    Controller: routerAddon.Controller,
     Service: container.Service,
     SingletonService: container.SingletonService,
   })
