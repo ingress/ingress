@@ -41,7 +41,7 @@ export class Connection {
   messageSubscription = this.onMessage.subscribe(this.namespace.onMessage)
   closeSubscription = this.onClose.subscribe(this.namespace.onClose)
 
-  constructor(public id: string, private conn: WebsocketConnection, private namespace: Namespace) {}
+  constructor(public id: string, private conn: WebsocketConnection | null, private namespace: Namespace) {}
 
   send(message: Buffer | string, cb?: (...args: any[]) => void) {
     this.conn?.send(message, cb)
@@ -78,7 +78,7 @@ export class Connection {
     this.closeSubscription.unsubscribe()
     this.messageSubscription.unsubscribe()
     this.pingSubscription.unsubscribe()
-    delete this.conn
+    this.conn = null
   }
 
   private _onPong() {

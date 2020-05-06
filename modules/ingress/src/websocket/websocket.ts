@@ -39,7 +39,6 @@
 //     // if (!app.websockets) {
 //     //   return
 //     // }
-//     // delete app.websockets
 //     this.handler = undefined
 //   }
 // }

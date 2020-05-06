@@ -3,6 +3,7 @@ import ingress, { Route, IngressApp } from '../ingress'
 import * as sinon from 'sinon'
 import getPortAsync from 'get-port'
 import { getAsync, postAsync } from './test-util'
+import { catchError } from 'rxjs/operators'
 
 async function getPort() {
   const port = await getPortAsync()
@@ -23,7 +24,7 @@ describe('Parameters', () => {
 
   beforeEach(async () => {
     const onError = (ctx: any) => {
-      //console.log('HERE', ctx)
+      //console.log('ERROR', ctx.error)
       return errorStub(ctx)
     }
     errorStub = sinon.stub()
@@ -117,6 +118,8 @@ describe('Parameters', () => {
         headers: { expected: '3' },
       })
       expect(JSON.parse(res)).toEqual([1, 2, 3])
+
+      //Error state
       let error: Error | undefined = undefined
       try {
         await postAsync(path('/base/route/type-conversion/numbers/foo'), {
@@ -125,17 +128,24 @@ describe('Parameters', () => {
         })
       } catch (e) {
         error = e
+        expect(e.statusCode).toEqual(400)
       }
 
       expect(error).toBeDefined()
       sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert "foo" to number' } }))
+      //Error state
+      try {
+        const res = await postAsync(path('/base/route/type-conversion/numbers/4'), {
+          data: null,
+          headers: { expected: '3' },
+        })
+      } catch (e) {
+        error = e
+        expect(e.statusCode).toEqual(400)
+      }
+      sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert null to number' } }))
     })
   })
-
-  //   await postAsync('/api/type-conversion/numbers/4', null, { 'num-header': '3' }).then((res: any) => {
-  //     sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert null to number' } }))
-  //     errorStub.reset()
-  //   })
 
   //   await postAsync('/api/type-conversion/numbers/4', '2', {}).then((res: any) => {
   //     sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to number' } }))
