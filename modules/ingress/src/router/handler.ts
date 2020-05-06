@@ -63,10 +63,6 @@ export interface ParamResolver {
   (context: BaseContext<any, any>): any
 }
 
-function isExactTypeConverter<T>(converter: TypeConverter<T>): converter is ExactTypeConverter<T> {
-  return 'type' in converter
-}
-
 function resolveRouteMiddleware<T extends BaseContext<any, any>>(handler: {
   controllerMethod: string
   controller: Type<any>
@@ -77,12 +73,16 @@ function resolveRouteMiddleware<T extends BaseContext<any, any>>(handler: {
     paramResolvers = handler.paramResolvers
 
   return async (context: T, next: () => Promise<any>) => {
-    const params = await resolveParameters(paramResolvers, context)
-    return Promise.resolve(controllerMethod.call(context.route.controllerInstance, ...params)).then((x) => {
-      //TODO handle custom response message types..
-      context.body = context.body || x
-      return next()
-    })
+    let params: any[]
+    try {
+      params = await resolveParameters(paramResolvers, context)
+    } catch (e) {
+      e.statusCode = e.statusCode || 400
+      throw e
+    }
+    context.body =
+      context.body || (await Promise.resolve(controllerMethod.call(context.route.controllerInstance, ...params)))
+    return next()
   }
 }
 
@@ -96,11 +96,14 @@ export function convertType(
   if (!paramType) {
     return paramResolver
   }
-  const typeConverter =
-    paramType &&
-    typeConverters.find((c: TypeConverter<any>) =>
-      isExactTypeConverter(c) ? c.type === paramType : c.typePredicate(paramType)
-    )
+  let typeConverter: TypeConverter<any> | undefined = undefined
+  for (const c of typeConverters) {
+    if (('type' in c && c.type === paramType) || ('typePredicate' in c && c.typePredicate(paramType))) {
+      typeConverter = c
+      break
+    }
+  }
+
   if (!typeConverter) {
     throw new Error(
       `No type converter found for: ${source.controller.name}.${source.name} at ${paramIndex}${
@@ -110,7 +113,7 @@ export function convertType(
   }
   return (context) => {
     const value = paramResolver(context)
-    return typeConverter.convert(value, paramType)
+    return typeConverter?.convert(value, paramType)
   }
 }
 
