@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0-alpha.0](https://github.com/ingress/ingress/compare/ingress@3.12.0...ingress@4.0.0-alpha.0) (2020-05-07)
+
+
+### Features
+
+* set 400 status code for failed parameter validation ([1436220](https://github.com/ingress/ingress/commit/14362201e69d4c59bdaab3e183b727da27599dcb))
+* type as converter ([84a6a2e](https://github.com/ingress/ingress/commit/84a6a2e8ef36d283a74d23d6242f7b7ac4f14037))
+
+
+
+
+
 # [3.12.0](https://me.github.com/ingress/ingress/compare/ingress@3.2.0...ingress@3.12.0) (2020-04-29)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-alpha.0](https://github.com/ingress/ingress/compare/reflect-annotations@2.7.0...reflect-annotations@3.0.0-alpha.0) (2020-05-07)
+
+
+### Features
+
+* type as converter ([84a6a2e](https://github.com/ingress/ingress/commit/84a6a2e8ef36d283a74d23d6242f7b7ac4f14037))
+
+
+
+
+
 # [2.7.0](https://github.com/ingress/ingress/compare/reflect-annotations@2.6.0...reflect-annotations@2.7.0) (2020-04-29)
 
 
