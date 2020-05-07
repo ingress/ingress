@@ -1,7 +1,6 @@
-import { reflectClassProperties } from '../src/reflect-class'
-import { createAnnotationFactory, getAnnotations } from '../src/annotations'
-import { reflectAnnotations } from '../src/index'
-import { expect } from 'chai'
+import { reflectClassProperties } from './reflect-class'
+import { createAnnotationFactory, getAnnotations } from './annotations'
+import { reflectAnnotations } from './index'
 
 class MiddlewareFixture {
   middleware(ctx: any, next: Function) {
@@ -10,7 +9,7 @@ class MiddlewareFixture {
   }
 }
 class Fixture {
-  cascade: boolean = true
+  cascade = true
 }
 class ExtraFixture {}
 
@@ -19,7 +18,6 @@ class ExtraFixtureWithParameter {
 }
 
 class ExtraFixtureWithLotsOfParameters {
-  //@ts-ignore
   constructor(a1: 1, a2: 2, a3: 3, a4: 4, a5: 5, a6: 6, a7: 7, a8: 8, a9: 9, a10: 10, a11: 11) {}
 }
 
@@ -27,9 +25,7 @@ const FixtureAnnotation = createAnnotationFactory(Fixture)
 const MiddlewareAnnotation = createAnnotationFactory(MiddlewareFixture)
 const ExtraAnnotation = createAnnotationFactory(ExtraFixture)
 const ExtraAnnotationWithAParameter = createAnnotationFactory(ExtraFixtureWithParameter)
-const ExtraAnnotationWithALotsOfParameters = createAnnotationFactory(
-  ExtraFixtureWithLotsOfParameters
-)
+const ExtraAnnotationWithALotsOfParameters = createAnnotationFactory(ExtraFixtureWithLotsOfParameters)
 
 @MiddlewareAnnotation()
 @ExtraAnnotation()
@@ -73,11 +69,9 @@ class Five {
 
 class Six {
   @MiddlewareAnnotation()
-  //@ts-ignore
   methodWithTypes(@FixtureAnnotation() param: string, foo: any, otherParam: number): string {
     return 'hello'
   }
-  //@ts-ignore
   methodWithNoAnnotations(param: string, foo: any, otherParam: number): string {
     return 'hello'
   }
@@ -87,68 +81,66 @@ describe('reflect-annotations', () => {
   describe('reflectClassProperties', () => {
     it('should reflect on a class', () => {
       const data = reflectClassProperties(One)
-      expect(data.properties).to.eql(['one', 'onea'])
-      expect(data.constructors).to.eql([One])
-      expect(data.source).to.equal(One)
+      expect(data.properties).toEqual(['one', 'onea'])
+      expect(data.constructors).toEqual([One])
+      expect(data.source).toEqual(One)
     })
 
     it('should handle odd hierarchies?', () => {
       const data = reflectClassProperties(Three)
-      expect(data.source).to.equal(Three)
-      expect(data.properties.sort()).to.eql(
-        ['three', 'threeb', 'two', 'towa', 'twob', 'one', 'onea'].sort()
-      )
-      expect(data.constructors).to.eql([Three, Two, One])
+      expect(data.source).toEqual(Three)
+      expect(data.properties.sort()).toEqual(['three', 'threeb', 'two', 'towa', 'twob', 'one', 'onea'].sort())
+      expect(data.constructors).toEqual([Three, Two, One])
     })
   })
 
   describe('createAnnotationFactory', () => {
     it('should set annotations on the target method', () => {
       const metadata = getAnnotations(One.prototype, 'one')
-      expect(metadata[0]).to.be.an.instanceof(MiddlewareFixture)
+      expect(metadata[0]).toBeInstanceOf(MiddlewareFixture)
     })
 
     it('should set annotations on the target class', () => {
       const metadata = getAnnotations(One)
-      expect(metadata[0]).to.be.an.instanceof(Fixture)
+      expect(metadata[0]).toBeInstanceOf(Fixture)
     })
   })
 
   describe('createAnnotationFactory', () => {
     it('should expose the annotationInstnace', () => {
       const instance = FixtureAnnotation().annotationInstance
-      expect(instance).to.be.an.instanceof(Fixture)
+      expect(instance).toBeInstanceOf(Fixture)
     })
   })
 
   describe('reflectAnnotations', () => {
     it('should return all annotations', () => {
       const classProperties = reflectAnnotations(One)
-      expect(classProperties).to.have.length(2)
-      expect(classProperties[0].classAnnotations).to.eql(classProperties[1].classAnnotations)
-      expect(classProperties[0].methodAnnotations).to.have.length(3)
-      expect(classProperties[1].methodAnnotations).to.have.length(0)
+      expect(classProperties).toHaveLength(2)
+      expect(classProperties[0].classAnnotations).toEqual(classProperties[1].classAnnotations)
+      expect(classProperties[0].methodAnnotations).toHaveLength(3)
+      expect(classProperties[1].methodAnnotations).toHaveLength(0)
     })
 
     it('should return method annotations in the declared order', () => {
       const classProperties = reflectAnnotations(One)
-      const methodOne = classProperties.find(x => x.name === 'one')!
+      const methodOne = classProperties.find((x) => x.name === 'one')
 
-      expect(methodOne.methodAnnotations.map(x => x.constructor.toString())).to.eql([
+      expect(methodOne?.methodAnnotations.map((x) => x.constructor.toString())).toEqual([
         Fixture.toString(),
         ExtraFixture.toString(),
-        MiddlewareFixture.toString()
+        MiddlewareFixture.toString(),
       ])
     })
 
     it('should return method annotations in the parsed order', () => {
       const classProperties = reflectAnnotations(One, { declaredOrder: false })
-      const methodOne = classProperties.find(x => x.name === 'one')!
+      const methodOne = classProperties.find((x) => x.name === 'one')
 
-      expect(methodOne.methodAnnotations.map(x => x.constructor.toString())).to.eql([
+      expect(methodOne?.methodAnnotations.map((x) => x.constructor.toString())).toEqual([
         MiddlewareFixture.toString(),
         ExtraFixture.toString(),
-        Fixture.toString()
+        Fixture.toString(),
       ])
     })
 
@@ -156,10 +148,10 @@ describe('reflect-annotations', () => {
       const classProperties = reflectAnnotations(One)
       const annotations = classProperties[0].classAnnotations
 
-      expect(annotations.map(x => x.constructor.toString())).to.eql([
+      expect(annotations.map((x) => x.constructor.toString())).toEqual([
         MiddlewareFixture.toString(),
         ExtraFixture.toString(),
-        Fixture.toString()
+        Fixture.toString(),
       ])
     })
 
@@ -167,33 +159,33 @@ describe('reflect-annotations', () => {
       const classProperties = reflectAnnotations(Four)
       const annotations = classProperties[0].classAnnotations
 
-      expect(annotations.map(x => x.constructor.toString())).to.eql([
+      expect(annotations.map((x) => x.constructor.toString())).toEqual([
         ExtraFixtureWithParameter.toString(),
-        ExtraFixtureWithLotsOfParameters.toString()
+        ExtraFixtureWithLotsOfParameters.toString(),
       ])
-      expect(annotations[0].options.a).to.eql(42)
+      expect(annotations[0].options.a).toEqual(42)
     })
 
     it('should collect parameter annotions', () => {
       const classProperties = reflectAnnotations(Five)
-      expect(classProperties[0].methodAnnotations.map(x => x.constructor.toString())).to.eql([
-        MiddlewareFixture.toString()
+      expect(classProperties[0].methodAnnotations.map((x) => x.constructor.toString())).toEqual([
+        MiddlewareFixture.toString(),
       ])
-      expect(classProperties[0].parameterAnnotations.map(x => x.constructor.toString())).to.eql([
-        Fixture.toString()
+      expect(classProperties[0].parameterAnnotations.map((x) => x.constructor.toString())).toEqual([Fixture.toString()])
+      expect(classProperties[1].parameterAnnotations.map((x) => x && x.constructor.toString())).toEqual([
+        MiddlewareFixture.toString(),
+        undefined,
+        Fixture.toString(),
       ])
-      expect(
-        classProperties[1].parameterAnnotations.map(x => x && x.constructor.toString())
-      ).to.eql([MiddlewareFixture.toString(), undefined, Fixture.toString()])
     })
   })
 
   it('should collect types', () => {
     const [annotatedMethod, unannotatedMethod] = reflectAnnotations(Six)
-    expect(annotatedMethod.types.parameters).to.eql([String, Object, Number])
-    expect(annotatedMethod.types.return).to.eql(String)
+    expect(annotatedMethod.types.parameters).toEqual([String, Object, Number])
+    expect(annotatedMethod.types.return).toEqual(String)
 
-    expect(unannotatedMethod.types.parameters).to.be.undefined
-    expect(unannotatedMethod.types.return).to.be.undefined
+    expect(unannotatedMethod.types.parameters).toBeUndefined()
+    expect(unannotatedMethod.types.return).toBeUndefined()
   })
 })

@@ -18,6 +18,6 @@ export function reflectClassProperties(source: Function) {
   return {
     source,
     properties,
-    constructors
+    constructors,
   }
 }
