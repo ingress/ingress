@@ -15,14 +15,15 @@ describe('ingress', () => {
   })
 
   it('should not allow calling listen concurrently', async () => {
-    const PORT = await getPort()
-    app.listen({ port: PORT })
+    const PORT = await getPort(),
+      callToListen = app.listen({ port: PORT })
     let error: any
     try {
       await app.listen(PORT)
     } catch (e) {
       error = e
     }
+    await callToListen
     expect(error.message).toEqual('Already started or starting')
     await app.stop()
   })

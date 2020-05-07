@@ -246,7 +246,7 @@ describe('Parameters', () => {
         router: {
           routes: [Routes],
         },
-      }).listen()
+      }).start()
     } catch (e) {
       error = e
     }

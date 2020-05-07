@@ -3,8 +3,7 @@ import 'reflect-metadata'
 const ANNOTATIONS = 'annotations',
   PARAMETER_ANNOTATIONS = 'parameter-annotations',
   PARAMETER_TYPES = 'design:paramtypes',
-  RETURN_TYPE = 'design:returntype',
-  bind = Function.bind
+  RETURN_TYPE = 'design:returntype'
 
 export interface Constructor<T> {
   new (...args: any[]): T
@@ -41,11 +40,11 @@ export interface Constructor9<T, A1, A2, A3, A4, A5, A6, A7, A8, A9> {
 }
 
 export function getAnnotations(target: any, key?: string | symbol): Array<any> {
-  return Reflect.getMetadata(ANNOTATIONS, target, <any>key) || []
+  return Reflect.getMetadata(ANNOTATIONS, target, key as any) || []
 }
 
 export function setAnnotations(target: any, key?: string | symbol, annotations?: Array<any>) {
-  Reflect.defineMetadata(ANNOTATIONS, annotations || [], target, key!)
+  Reflect.defineMetadata(ANNOTATIONS, annotations || [], target, key as any)
 }
 
 export function getParameterAnnotations(target: any, key: string | symbol): Array<any> {
@@ -53,11 +52,7 @@ export function getParameterAnnotations(target: any, key: string | symbol): Arra
   return annotations ? Array.from(annotations) : []
 }
 
-export function setParameterAnnotations(
-  target: any,
-  key: string | symbol,
-  annotations: Array<any>
-) {
+export function setParameterAnnotations(target: any, key: string | symbol, annotations: Array<any>) {
   Reflect.defineMetadata(PARAMETER_ANNOTATIONS, annotations, target, key)
 }
 
@@ -69,15 +64,11 @@ export function getReturnType(target: any, key: string | symbol): Array<any> | u
   return Reflect.getMetadata(RETURN_TYPE, target, key)
 }
 
-export type Annotation<T = any> = ClassDecorator &
-  MethodDecorator &
-  ParameterDecorator & { annotationInstance: T }
+export type Annotation<T = any> = ClassDecorator & MethodDecorator & ParameterDecorator & { annotationInstance: T }
 
 export function createAnnotationFactory<T>(Type: Constructor0<T>): () => Annotation<T>
 export function createAnnotationFactory<T, A1>(Type: Constructor1<T, A1>): (a1: A1) => Annotation<T>
-export function createAnnotationFactory<T, A1, A2>(
-  Type: Constructor2<T, A1, A2>
-): (a1: A1, a2: A2) => Annotation<T>
+export function createAnnotationFactory<T, A1, A2>(Type: Constructor2<T, A1, A2>): (a1: A1, a2: A2) => Annotation<T>
 export function createAnnotationFactory<T, A1, A2, A3>(
   Type: Constructor3<T, A1, A2, A3>
 ): (a1: A1, a2: A2, a3: A3) => Annotation<T>
@@ -101,13 +92,9 @@ export function createAnnotationFactory<T, A1, A2, A3, A4, A5, A6, A7, A8, A9>(
 ): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9) => Annotation<T>
 export function createAnnotationFactory<T>(Type: Constructor<T>): (...args: any[]) => Annotation<T>
 export function createAnnotationFactory<T>(Type: Constructor<T>) {
-  return function(...args: any[]): Annotation<T> {
+  return function (...args: any[]): Annotation<T> {
     const annotationInstance = new Type(...args)
-    const annotation = (
-      target: any,
-      key?: string | symbol,
-      descriptorOrParamIndex?: PropertyDescriptor | number
-    ) => {
+    const annotation = (target: any, key?: string | symbol, descriptorOrParamIndex?: PropertyDescriptor | number) => {
       if (key && typeof descriptorOrParamIndex === 'number') {
         const annotations = getParameterAnnotations(target, key)
         annotations[descriptorOrParamIndex] = annotationInstance
