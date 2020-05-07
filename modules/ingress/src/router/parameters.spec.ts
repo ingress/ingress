@@ -3,7 +3,6 @@ import ingress, { Route, IngressApp } from '../ingress'
 import * as sinon from 'sinon'
 import getPortAsync from 'get-port'
 import { getAsync, postAsync } from './test-util'
-import { catchError } from 'rxjs/operators'
 
 async function getPort() {
   const port = await getPortAsync()
@@ -22,13 +21,30 @@ describe('Parameters', () => {
     errorStub: sinon.SinonStub,
     expectedResponse: string
 
+  class MyType {
+    static convert(value: any) {
+      return new MyType(value)
+    }
+    constructor(public value: any) {}
+  }
+
+  class PredicateType {
+    static convert(value: any) {
+      return new PredicateType('predicate ' + value)
+    }
+    constructor(public value: any) {}
+  }
+
   beforeEach(async () => {
     const onError = (ctx: any) => {
       //console.log('ERROR', ctx.error)
       return errorStub(ctx)
     }
     errorStub = sinon.stub()
-    app = ingress({ router: { baseUrl: 'base' }, onError })
+    app = ingress({
+      router: { baseUrl: 'base' },
+      onError,
+    })
     app.router
     routeSpy = sinon.spy()
 
@@ -74,6 +90,27 @@ describe('Parameters', () => {
         routeSpy()
         return [p, b, h]
       }
+      @Route.Post('type-conversion/strings/:expected')
+      typeConversionString(
+        @Route.Header('expected') h: string,
+        @Route.Body() b: string,
+        @Route.Path('expected') p: string
+      ) {
+        routeSpy()
+        return [p, b, h]
+      }
+      @Route.Get('type-conversion/custom/:expected')
+      typeConversionCustom(@Route.Path('expected') p: MyType) {
+        routeSpy()
+        expect(p).toBeInstanceOf(MyType)
+        return p
+      }
+      @Route.Get('/type-conversion/custom-predicate/:expected')
+      typeConversionCustomPredicate(@Route.Path('expected') p: PredicateType) {
+        routeSpy()
+        expect(p).toBeInstanceOf(PredicateType)
+        return p
+      }
     }
     expectedResponse = Math.random().toString()
     const portInfo = await getPort()
@@ -109,7 +146,14 @@ describe('Parameters', () => {
       const res2 = await postAsync(path('/base/route/type-conversion/booleans/false?expected=false'), {
         headers: { expected: 'false' },
       })
-      expect(JSON.parse(res2)).toEqual([false, false, false])
+
+      try {
+        await postAsync(path('/base/route/type-conversion/booleans/wat'))
+      } catch (e) {
+        expect(e.statusMessage).toEqual('Bad Request')
+        expect(e.statusCode).toEqual(400)
+      }
+      sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to boolean' } }))
     })
 
     it('should convert a Number parameter', async () => {
@@ -119,69 +163,94 @@ describe('Parameters', () => {
       })
       expect(JSON.parse(res)).toEqual([1, 2, 3])
 
-      //Error state
-      let error: Error | undefined = undefined
       try {
         await postAsync(path('/base/route/type-conversion/numbers/foo'), {
           data: JSON.stringify(2),
           headers: { expected: '3' },
         })
       } catch (e) {
-        error = e
+        expect(e.statusMessage).toEqual('Bad Request')
         expect(e.statusCode).toEqual(400)
       }
-
-      expect(error).toBeDefined()
       sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert "foo" to number' } }))
-      //Error state
+
       try {
-        const res = await postAsync(path('/base/route/type-conversion/numbers/4'), {
+        await postAsync(path('/base/route/type-conversion/numbers/4'), {
           data: null,
           headers: { expected: '3' },
         })
       } catch (e) {
-        error = e
+        expect(e.statusMessage).toEqual('Bad Request')
         expect(e.statusCode).toEqual(400)
       }
       sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert null to number' } }))
+
+      try {
+        await postAsync(path('/base/route/type-conversion/numbers/4'), { data: '2' })
+      } catch (e) {
+        expect(e.statusMessage).toEqual('Bad Request')
+        expect(e.statusCode).toEqual(400)
+      }
+      sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to number' } }))
     })
   })
 
-  //   await postAsync('/api/type-conversion/numbers/4', '2', {}).then((res: any) => {
-  //     sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to number' } }))
-  //     errorStub.reset()
-  //   })
-  // })
+  it('should convert a String parameter', async () => {
+    const res = await postAsync(path('/base/route/type-conversion/strings/one'), {
+      data: 2,
+      headers: { expected: 'three' },
+    })
+    expect(res).toEqual(JSON.stringify(['one', '2', 'three']))
 
-  // it('should convert a String parameter', async () => {
-  //   await postAsync('/api/type-conversion/strings/one', 2, { 'string-header': 'three' }).then((res: any) => {
-  //     expect(res).toEqual(JSON.stringify(['one', '2', 'three']))
-  //   })
+    try {
+      await postAsync(path('/base/route/type-conversion/strings/one'), {
+        data: null,
+        headers: { expected: 'three' },
+      })
+    } catch (e) {
+      expect(e.statusMessage).toEqual('Bad Request')
+      expect(e.statusCode).toEqual(400)
+    }
+    sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert null to string' } }))
 
-  //   await postAsync('/api/type-conversion/strings/one', null, { 'string-header': 'three' }).then((res: any) => {
-  //     sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert null to string' } }))
-  //     errorStub.reset()
-  //   })
+    try {
+      await postAsync(path('/base/route/type-conversion/strings/one'))
+    } catch (e) {
+      expect(e.statusMessage).toEqual('Bad Request')
+      expect(e.statusCode).toEqual(400)
+    }
+    sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to string' } }))
+  })
 
-  //   await postAsync('/api/type-conversion/strings/one', 2, {}).then((res: any) => {
-  //     sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to string' } }))
-  //     errorStub.reset()
-  //   })
-  // })
+  it('should allow a custom type converter', async () => {
+    const res = await getAsync(path('/base/route/type-conversion/custom/asdf'))
+    expect(res).toEqual(JSON.stringify(new MyType('asdf')))
+  })
 
-  // it('should allow a custom type converter', () => {
-  //   return getAsync('/api/type-conversion/custom/32').then((res: any) => {
-  //     expect(res).toEqual(JSON.stringify(32))
-  //   })
-  // })
+  it('should allow a custom type converter based on type predicate', async () => {
+    const res = await getAsync(path('/base/route/type-conversion/custom-predicate/64'))
+    expect(res).toEqual(JSON.stringify(new PredicateType('predicate 64')))
+  })
 
-  // it('should allow a custom type converter based on type predicate', () => {
-  //   return getAsync('/api/type-conversion/custom-predicate/64').then((res: any) => {
-  //     expect(res).toEqual(JSON.stringify('predicate 64'))
-  //   })
-  // })
-
-  it('should throw an error if a type converter cannot be found for a type', () => {
-    void 0
+  it('should throw an error if a type converter cannot be determined for a type', async () => {
+    class SomeType {}
+    let error: Error | undefined = undefined
+    class Routes {
+      @Route.Get('somepath/:something')
+      somepath(@Route.Path('something') p: SomeType) {
+        return p
+      }
+    }
+    try {
+      await ingress({
+        router: {
+          routes: [Routes],
+        },
+      }).listen()
+    } catch (e) {
+      error = e
+    }
+    //reflective error message
+    expect(error?.message).toEqual('No type converter found for: Routes.somepath at parameter 0:SomeType')
   })
 })

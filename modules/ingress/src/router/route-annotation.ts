@@ -4,7 +4,14 @@ import { BaseContext } from '../context'
 
 const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
   result = (x: string) => '/' + trim(x),
-  upper = (x: any) => x.toString().toUpperCase()
+  upper = (x: any) => x.toString().toUpperCase(),
+  hasOwnProperty = {}.hasOwnProperty,
+  getKey = (obj: any, key: string) => {
+    if (obj && hasOwnProperty.call(obj, key)) {
+      return obj[key]
+    }
+    return undefined
+  }
 
 class RouteAnnotation {
   public path: string
@@ -48,8 +55,7 @@ export interface PathFactory {
 }
 
 export interface ParamAnnotation {
-  extractValue?(context: BaseContext<any, any>): any
-  convertType?(value: any): any
+  extractValue(context: BaseContext<any, any>): any
 }
 
 class BodyParamAnnotation implements ParamAnnotation {
@@ -60,7 +66,7 @@ class BodyParamAnnotation implements ParamAnnotation {
       return this.key(context.route.body)
     }
     if (this.key) {
-      return context.route?.body?.[this.key] ?? null
+      return getKey(context.route.body, this.key)
     }
     return context.route?.body
   }
@@ -74,7 +80,7 @@ class PathParamAnnotation implements ParamAnnotation {
       return this.paramName(context.route.params)
     }
     if (this.paramName) {
-      return context.route.params[this.paramName]
+      return getKey(context.route.params, this.paramName)
     }
     return context.route.params
   }
@@ -94,7 +100,7 @@ class QueryParamAnnotation implements ParamAnnotation {
       return this.paramName(context.route.query)
     }
     if (this.paramName) {
-      return context.route.query[this.paramName]
+      return getKey(context.route.query, this.paramName)
     }
     return context.route.query
   }

@@ -1,0 +1,58 @@
+name: Ingress CI
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@01aeccc
+      - name: Cache NPM
+        id: cache-npm
+        uses: actions/cache@70655ec
+        with:
+          path: modules/*/node_modules
+          key: ${{ runner.OS }}-node-modules-${{ hashFiles('modules/*/package-lock.json') }}
+      - name: Install Dependencies
+        run: |
+          npm i
+
+      - name: Check Commits
+        run: |
+          npm run commitlint
+
+      - name: Build Projects
+        run: |
+          npm run build
+
+      - name: Run Tests
+        run: |
+          npm test
+
+      - name: Get Branch Name
+        id: branch
+        run: echo "::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})"
+
+      - name: Echo branch name
+        run: echo "${{steps.branch.outputs.branch}}"
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/staging'
+    steps:
+      - uses: actions/checkout@01aeccc
+      - name: Cache NPM
+        id: cache-npm
+        uses: actions/cache@70655ec
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-node-modules-${{ hashFiles('package-lock.json') }}
+      - name: Install Dependencies
+        run: |
+          npm i
+      - name: Get Branch Name
+        id: branch
+        run: echo "::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})"
+
+      - name: Echo branch name
+        run: echo "${{steps.branch.outputs.branch}}"

@@ -4,7 +4,7 @@ import { parseJsonBody } from './json-parser'
 import { BaseContext } from '../context'
 import { ParamAnnotation } from './route-annotation'
 import { Type } from './controller-annotation'
-import { TypeConverter, ExactTypeConverter } from './type-converter'
+import { TypeConverter } from './type-converter'
 import { resolvePaths, RouteMetadata } from './path-resolver'
 
 const pickRequest = (context: BaseContext<any, any>) => context.req
@@ -56,7 +56,7 @@ function extractParameter(annotation: ParamAnnotation): ParamResolver {
   if (!annotation?.extractValue) {
     return pickRequest
   }
-  return (context) => (annotation as any).extractValue(context)
+  return (context) => annotation.extractValue(context)
 }
 
 export interface ParamResolver {
@@ -104,9 +104,12 @@ export function convertType(
     }
   }
 
+  if ('convert' in paramType) {
+    typeConverter = paramType
+  }
   if (!typeConverter) {
     throw new Error(
-      `No type converter found for: ${source.controller.name}.${source.name} at ${paramIndex}${
+      `No type converter found for: ${source.controller.name}.${source.name} at parameter ${paramIndex}:${
         paramType.name || paramType
       }`
     )
