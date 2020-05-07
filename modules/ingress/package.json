@@ -7,7 +7,6 @@
     "lib",
     "!**/*.spec.js"
   ],
-  "keywords": [],
   "scripts": {
     "lint": "eslint \"src/**/*.ts\" --fix",
     "prepublish": "npm run build",
@@ -16,6 +15,14 @@
     "watch:test": "jest --watchAll --detectOpenHandles",
     "watch": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
     "test": "jest --passWithNoTests"
+  },
+  "repository": {
+    "directory": "modules/ingress",
+    "type": "git",
+    "url": "ssh://git@github.com/ingress/ingress.git"
+  },
+  "publishConfig": {
+    "registry": "http://registry.npmjs.org/"
   },
   "jest": {
     "testRegex": ".*?(\\.spec).js",
@@ -51,6 +58,17 @@
       ]
     }
   },
+  "license": "MIT",
+  "keywords": [
+    "typescript",
+    "server",
+    "http",
+    "application",
+    "framework",
+    "composable",
+    "declarative",
+    "middleware"
+  ],
   "prettier": {
     "parser": "typescript",
     "semi": false,
