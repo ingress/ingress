@@ -48,16 +48,14 @@ export default function ingress<
   preRoute,
   authContextFactory: authenticator,
   onError,
-  typeConverters,
   contextToken,
   router,
 }: {
   preRoute?: Addon<T>
   authContextFactory?: AuthContextFactory
-  typeConverters?: TypeConverter<any>[]
   contextToken?: any
   onError?: (context: T) => Promise<any>
-  router?: { routes?: Type<any>[]; baseUrl?: string }
+  router?: { routes?: Type<any>[]; baseUrl?: string; typeConverters?: TypeConverter<any>[] }
 } = {}) {
   const controllers = router?.routes ?? [],
     routeRoot = router?.baseUrl ?? '/',
@@ -65,7 +63,7 @@ export default function ingress<
     server = new Ingress<T, A>(),
     authContextFactory = authenticator || (() => ({ authenticated: false })),
     container = new Container({ contextToken: contextToken || Context }),
-    routerAddon = new RouterAddon<T>({ controllers, typeConverters: typeConverters || [], baseUrl: routeRoot })
+    routerAddon = new RouterAddon<T>({ controllers, typeConverters: router?.typeConverters ?? [], baseUrl: routeRoot })
 
   server
     .use(defaultMiddleware)

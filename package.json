@@ -3,7 +3,12 @@
   "private": true,
   "version": "0.0.1",
   "scripts": {
-    "postinstall": "lerna bootstrap",
+    "postinstall": "lerna exec npm install",
+    "test": "lerna run test",
+    "lint": "lerna run lint",
+    "check-updates": "ls -1 modules | while read line ; do npx npm-check-updates --packageFile modules/$line/package.json ; done",
+    "updates": "ls -1 modules | while read line ; do npx npm-check-updates -u --packageFile modules/$line/package.json ; done ; npm run postinstall",
+    "build": "lerna run build",
     "commitlint": "commitlint -f $(git rev-list --tags --max-count=1) -t $(git log --pretty=%H | head -1)"
   },
   "devDependencies": {
