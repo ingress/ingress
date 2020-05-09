@@ -6,7 +6,7 @@ import {
   IMessage,
 } from 'websocket'
 export { WebsocketServer, WebsocketRequest, IServerConfig }
-import { Subject, fromEvent } from 'rxjs'
+import { Subject, fromEvent, Observable } from 'rxjs'
 import { Ack } from './ack'
 import { map } from 'rxjs/operators'
 import { createBackChannel } from './backchannel'
@@ -36,10 +36,7 @@ export class Connection {
   onPong = fromEvent(this.conn as any, 'pong').pipe(map(() => this._onPong()))
   onMessage = fromEvent(this.conn as any, 'message').pipe(map((x: any) => this._onMessage(x)))
   onClose = fromEvent(this.conn as any, 'close').pipe(map(() => this._onClose()))
-  onError = fromEvent(this.conn as any, 'error')
-  pingSubscription = this.onPong.subscribe(this.namespace.onPong)
-  messageSubscription = this.onMessage.subscribe(this.namespace.onMessage)
-  closeSubscription = this.onClose.subscribe(this.namespace.onClose)
+  onError = fromEvent<Error>(this.conn as any, 'error').pipe(map((e) => this._onError(e)))
 
   constructor(public id: string, private conn: WebsocketConnection | null, private namespace: Namespace) {}
 
@@ -75,14 +72,15 @@ export class Connection {
     for (const x of this.channels.keys()) {
       this.leave(x)
     }
-    this.closeSubscription.unsubscribe()
-    this.messageSubscription.unsubscribe()
-    this.pingSubscription.unsubscribe()
     this.conn = null
   }
 
   private _onPong() {
     return this
+  }
+
+  private _onError(e: Error) {
+    void e
   }
 
   private _onMessage(message: IMessage) {
@@ -105,15 +103,31 @@ export class Channel extends Map<string, Connection> {
   }
 }
 
+export type NamespaceOptions = {
+  backchannel: Subject<BackChannelMessage>
+  timeout: number
+}
+
 export class Namespace {
   public channels = new Map<string, Channel>()
-  public onMessage = new Subject<SocketMessage>()
-  public onPong = new Subject<Connection>()
-  public onError = new Subject<Connection>()
-  public onClose = new Subject<Connection>()
+  private backchannel = new Subject<BackChannelMessage>()
+  private backchannelTimeout = 1000
+  public onMessage = new Observable<SocketMessage>()
+  public onPong = new Observable<Connection>()
+  public onError = new Observable<Connection>()
+  public onClose = new Observable<Connection>()
   private empty = new Channel('__empty__', this)
   private pendingAcks = new Map<string, Ack>()
-  constructor(public name: string, private backchannel: Subject<BackChannelMessage> = createBackChannel()) {}
+  constructor(
+    public name: string,
+    options: NamespaceOptions = {
+      backchannel: createBackChannel(),
+      timeout: 1000,
+    }
+  ) {
+    this.backchannel = options.backchannel
+    this.backchannelTimeout = options.timeout
+  }
 
   createConnection<T>(id: string, conn: WebsocketConnection, extensions: T): Connection & T {
     return Object.assign(new Connection(id, conn, this), extensions)
@@ -158,19 +172,19 @@ export class Namespace {
       sentTo = new Set<string>()
     let payload = '',
       i = channels.length,
-      canSoftAck = false
+      canAck = false
 
     while (i--) {
       const channel = this.channels.get(channels[i]) || this.empty
       for (const connection of channel.values()) {
         if (!sentTo.has(connection.id) && !(connection.id in toExclude)) {
           connection.send(payload || (payload = JSON.stringify(message)))
-          canSoftAck = true
+          canAck = true
           sentTo.add(connection.id)
         }
       }
     }
-    if (ack && canSoftAck) {
+    if (ack && canAck) {
       const bcmAck: BackChannelMessage = ['__ack__', [], [ack], null, null]
       this.backchannel.next(bcmAck)
     }
@@ -186,8 +200,14 @@ export class Namespace {
     channels?: ToChannels
     exclusions?: Exclusions
     ack?: Acknowledgement
-  }) {
+  }): Promise<any> {
     const bcm: BackChannelMessage = [this.name, channels, message, exclusions ?? null, ack ?? null]
+    if (ack) {
+      const pending = new Ack(this.pendingAcks, ack, this.backchannelTimeout)
+      this.backchannel.next(bcm)
+      return pending.promise
+    }
     this.backchannel.next(bcm)
+    return Promise.resolve()
   }
 }

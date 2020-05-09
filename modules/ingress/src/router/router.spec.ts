@@ -2,7 +2,7 @@
 import ingress, { Route, IngressApp } from '../ingress'
 import * as sinon from 'sinon'
 import getPortAsync from 'get-port'
-import { getAsync, postAsync } from './test-util'
+import { getAsync, postAsync } from './test.util.spec'
 import { createAnnotationFactory } from 'reflect-annotations'
 
 async function getPort() {
@@ -105,9 +105,7 @@ describe('Routing', () => {
     path = portInfo.path
   })
 
-  afterEach(() => {
-    return app.close()
-  })
+  afterEach(() => app.close())
 
   it('should route', async () => {
     expectedResponse = 'Hello World'
