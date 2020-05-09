@@ -9,7 +9,7 @@ import {
   ReflectiveKey,
 } from 'injection-js'
 
-import { Type, DependencyCollectorList, DependencyCollector } from './collector'
+import { Type, DependencyCollectorList } from './collector'
 
 export * from './collector'
 export { ReflectiveInjector, Injector, Provider, Injectable }
@@ -71,10 +71,12 @@ export class Container<T extends ContainerContext = ContainerContext> implements
   }
   get<T>(token: any, notFoundValue?: any): T
   get<T>(token: T, notFoundValue?: any): T {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.rootInjector!.get(token, notFoundValue)
   }
 
-  createChild(...providers: Array<ResolvedReflectiveProvider>) {
+  createChild(...providers: Array<ResolvedReflectiveProvider>): Injector {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.rootInjector!.createChildFromResolved(this.resolvedChildProviders.concat(providers))
   }
 
@@ -89,6 +91,7 @@ export class Container<T extends ContainerContext = ContainerContext> implements
     this.rootInjector = ReflectiveInjector.resolveAndCreate(this.singletons)
     this.resolvedChildProviders = ReflectiveInjector.resolve(this.services)
   }
+
   get middleware() {
     return (context: T, next: () => any) => {
       context.scope = this.createChild(new this.ResolvedContextProvider(context))

@@ -2,7 +2,7 @@
 import ingress, { Route, IngressApp } from '../ingress'
 import * as sinon from 'sinon'
 import getPortAsync from 'get-port'
-import { getAsync, postAsync } from './test-util'
+import { getAsync, postAsync } from './test.util.spec'
 
 async function getPort() {
   const port = await getPortAsync()

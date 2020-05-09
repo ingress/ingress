@@ -6,15 +6,15 @@
 install: <code>npm i ingress</code><br><br>a utility for building applications using typescript and node.js<br>
 </p>
 
-<a href="https://www.npmjs.com/package/ingress"><img src="https://github.com/ingress/ingress/workflows/Ingress%20CI/badge.svg?branch=master" alt="Ingress CI"></a>
+<a href="https://github.com/ingress/ingress/actions"><img src="https://github.com/ingress/ingress/workflows/Ingress%20CI/badge.svg?branch=master" alt="Ingress CI"></a>
 <a href="https://www.npmjs.com/package/ingress"><img src="https://img.shields.io/npm/v/ingress.svg" alt="Version"></a>
-<a href="https://www.npmjs.com/package/ingress"><img src="https://img.shields.io/npm/l/ingress.svg" alt="License"></a>
+<a href="https://github.com/ingress/ingress/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/ingress.svg" alt="License"></a>
 
 **_Key Features_**
 
-- Dependency Injection/Collection
-- Type Validation and Type Coercion
-- Versatile composable middleware (global, route, error, or third-party connect-compatible)
+- Dependency Injection, Discovery and IoC
+- Runtime type validation and coercion
+- Composable, connect-compatible, middleware integrations
 
 ## Getting started (http):
 
@@ -55,7 +55,7 @@ class MyController {
 app.listen(1111);
 ```
 
-## Dependency Injection and the Request Lifecyle
+## Dependency Injection, Discovery, and IoC
 
 Each ingress app has a parent dependency injection container created from `@ingress/di`. The middleware addon creates a child container (`context.scope`) on each request, from which services and controllers are resolved. Registering services or controllers can be done at app creation time, or using the collector decorators. This facilitates a flexible dependency registration pattern, where the app can depend on the controllers, or the controllers can depend on the app.
 
@@ -97,7 +97,7 @@ class MyType {
 
 For advanced run-time type coercion and validation and compile-time types using JSON schema, [`tjs`](https://github.com/sberan/typed-json-schema) is recommended.
 
-## Application Middleware
+## Middleware
 
 Ingress applications are based on, and built with middleware.
 Ingress middleware supports the following signature:
@@ -108,7 +108,7 @@ interface Middleware<T> {
 }
 ```
 
-[Ingress middleware](https://github.com/calebboyd/app-builder) follows the [before/after](https://esbenp.github.io/2015/07/31/implementing-before-after-middleware/) pattern common in many web frameworks
+[Ingress middleware](https://github.com/ingress/app-builder) follows the [before/after](https://esbenp.github.io/2015/07/31/implementing-before-after-middleware/) pattern common in many web frameworks
 
 Additionally, Ingress supports addons, an Ingress app is also an Ingress Addon.
 
@@ -145,7 +145,7 @@ If an error is thrown during a request, by default, ingress will provide a 500 s
 
 A top level error handler might look like the following:
 
-```javascript
+```typescript
 const app = ingress({
   onError(context) {
     context.scope.get(Logger).logError(context.error);
