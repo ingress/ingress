@@ -12,7 +12,7 @@ install: <code>npm i ingress</code><br><br>a utility for building applications u
 
 **_Key Features_**
 
-- Dependency Injection, Discovery and IoC
+- Dependency Injection, Discovery, IoC and lifecycle management
 - Runtime type validation and coercion
 - Composable, connect-compatible, middleware integrations
 
@@ -57,14 +57,14 @@ app.listen(1111);
 
 ## Dependency Injection, Discovery, and IoC
 
-Each ingress app has a parent dependency injection container created from `@ingress/di`. The middleware addon creates a child container (`context.scope`) on each request, from which services and controllers are resolved. Registering services or controllers can be done at app creation time, or using the collector decorators. This facilitates a flexible dependency registration pattern, where the app can depend on the controllers, or the controllers can depend on the app.
+Each ingress app has a parent dependency injection container created from `@ingress/di`. Registering services or controllers can be done at app creation time, or using the collector decorators, after the app has been created, but not started. This facilitates a flexible dependency registration pattern, where the app can depend on the controllers, or, the controllers can depend on the app, With the example above, this would require each expression to be its own module (app, service, controller, startup respectively)
 
 When a request occurs, the ingress dependency injection container (`app.container`) will create a new child container (`context.scope`). This child container will be used to instantiate any `Service` or `Controller` used during that request. You can optionally inject any `Service`s or `SingletonService`s into these other dependencies. Note, that a `Service` has a per-request life-cycle and therefore cannot be injected into a `SingletonService` which lives for the life of the owning container. You should avoid patterns that result in needing circular dependencies. However, you can access dependencies circularly, by dynamically requesting them via a child container, `context.scope.get(...)`.
 
 ## Runtime type validation and coercion
 
-To validate incoming types, Ingress uses metadata emitted by the compiler. Specifically,
-The `tsconfig.json` must specify, these options are already inherent for use defining routes.
+To validate incoming data, Ingress uses metadata emitted by the compiler. Specifically,
+The `tsconfig.json` must specify these options, which are already inherent for use using decorators.
 
 ```
   "experimentalDecorators": true,
@@ -89,10 +89,17 @@ For example, a custom type might look like the following:
 ```typescript
 class MyType {
   static convert(value: any) {
-    return new MyType(value);
+    return new MyType(Number(value));
   }
   constructor(public value: any) {}
 }
+
+//Note: an error in the `convert` method will cause a HTTP 400 StatusCode failure
+@Route.Post('/')
+toNumber(@Route.Body() body: MyType) {
+  return typeof body.value === 'number' // true
+}
+
 ```
 
 For advanced run-time type coercion and validation and compile-time types using JSON schema, [`tjs`](https://github.com/sberan/typed-json-schema) is recommended.
@@ -100,7 +107,7 @@ For advanced run-time type coercion and validation and compile-time types using 
 ## Middleware
 
 Ingress applications are based on, and built with middleware.
-Ingress middleware supports the following signature:
+Ingress function middleware supports the following signature:
 
 ```typescript
 interface Middleware<T> {
