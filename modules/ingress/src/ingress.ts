@@ -117,6 +117,9 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
       usable.stop && this.teardowns.push(usable.stop.bind(usable))
     }
     if ('function' === typeof usable) {
+      if (usable.length < 2) {
+        throw new TypeError('middleware function must have at least an arity of two')
+      }
       this.appBuilder.use(usable)
     }
     return this
