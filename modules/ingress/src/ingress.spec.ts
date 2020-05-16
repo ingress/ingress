@@ -1,8 +1,8 @@
-import ingress, { Ingress } from './ingress'
+import ingress, { IngressApp } from './app'
 import getPort from 'get-port'
 
 describe('ingress', () => {
-  let app: Ingress
+  let app: IngressApp
 
   beforeEach(() => (app = ingress()))
 

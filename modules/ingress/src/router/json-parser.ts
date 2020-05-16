@@ -8,7 +8,7 @@ export interface ParseJsonBodyOptions {
 
 const parsableMethods = ['POST', 'PUT', 'OPTIONS', 'DELETE', 'PATCH']
 
-export class ParseJsonBodyAnnotation {
+export class ParseJsonAnnotation {
   public isBodyParser = true
   constructor(public options: ParseJsonBodyOptions = { maxBytes: 1e7 }) {}
 
@@ -41,7 +41,7 @@ export class ParseJsonBodyAnnotation {
   }
 }
 
-function parseJson(body: string) {
+function jsonParse(body: string) {
   try {
     return JSON.parse(body)
   } catch (e) {
@@ -92,7 +92,7 @@ function parseJsonReq(context: DefaultContext, contentLength: number, next: () =
       return context.handleResponse()
     }
 
-    const body = parseJson(rawBody)
+    const body = jsonParse(rawBody)
     if (rawBody && body === void 0) {
       context.res.statusCode = StatusCode.BadRequest
       context.res.statusMessage = 'Unexpected end of input'
@@ -105,6 +105,6 @@ function parseJsonReq(context: DefaultContext, contentLength: number, next: () =
   return deferred.promise
 }
 
-const ParseJsonBody = createAnnotationFactory(ParseJsonBodyAnnotation),
-  parseJsonBody = new ParseJsonBodyAnnotation().middleware
-export { parseJsonBody, ParseJsonBody }
+const ParseJson = createAnnotationFactory(ParseJsonAnnotation),
+  parseJson = new ParseJsonAnnotation().middleware
+export { parseJson, ParseJson }

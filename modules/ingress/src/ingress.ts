@@ -1,96 +1,10 @@
 import { AppBuilder, Middleware, compose, functionList } from 'app-builder'
 import { BaseContext, DefaultContext, BaseAuthContext } from './context'
 import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
-import { RouterAddon, Type } from './router/router'
-import { DefaultMiddleware } from './default-middleware'
-export * from '@ingress/http-status'
-import { Container } from '@ingress/di'
-import { TypeConverter } from './router/type-converter'
 
-interface SetupTeardown {
-  (server: Ingress<any>): Promise<any> | any
-}
-
-interface Usable<T> {
-  start?: SetupTeardown
-  stop?: SetupTeardown
-  middleware?: Middleware<T>
-}
-
-type Addon<T> = (Usable<T> | (Usable<T> & Middleware<T>)) & { [key: string]: any }
-type AuthContextFactory<
-  T extends BaseContext<T, A> = BaseContext<any, any>,
-  A extends BaseAuthContext = BaseAuthContext
-> = (options: T) => Promise<A> | A
-interface ListenOptions {
-  port?: number
-  host?: string
-  path?: string
-  backlog?: number
-  exclusive?: boolean
-  readableAll?: boolean
-  writableAll?: boolean
-}
-//BaseContext Definition and Token
-class Context extends BaseContext<Context, BaseAuthContext> {}
-//Type Exports
-export { Addon, AuthContextFactory, ListenOptions, Context, Type, BaseAuthContext, BaseContext, Middleware }
-//Other Exports
-export * from './annotations'
-export * from './router/router'
-export * from '@ingress/di'
-export { DefaultContext, compose, ingress }
-export type IngressApp = ReturnType<typeof ingress>
-export default function ingress<
-  T extends BaseContext<T, A> = DefaultContext,
-  A extends BaseAuthContext = BaseAuthContext
->({
-  preRoute,
-  authContextFactory: authenticator,
-  onError,
-  contextToken,
-  router,
-}: {
-  preRoute?: Addon<T>
-  authContextFactory?: AuthContextFactory
-  contextToken?: any
-  onError?: (context: T) => Promise<any>
-  router?: { routes?: Type<any>[]; baseUrl?: string; typeConverters?: TypeConverter<any>[] }
-} = {}) {
-  const controllers = router?.routes ?? [],
-    routeRoot = router?.baseUrl ?? '/',
-    defaultMiddleware = onError ? new DefaultMiddleware<T, A>({ onError }) : new DefaultMiddleware<T, A>(),
-    server = new Ingress<T, A>(),
-    authContextFactory = authenticator || (() => ({ authenticated: false })),
-    container = new Container({ contextToken: contextToken || Context }),
-    routerAddon = new RouterAddon<T>({ controllers, typeConverters: router?.typeConverters ?? [], baseUrl: routeRoot })
-
-  server
-    .use(defaultMiddleware)
-    .use({
-      //Copy routes from router, and register them with the DI container
-      start() {
-        container.serviceCollector.items.push(...routerAddon.controllerCollector.items)
-      },
-    })
-    .use(container)
-    .use(async (context, next) => {
-      context.authContext = (await authContextFactory(context)) as A
-      return next()
-    })
-
-  preRoute && server.use(preRoute)
-  server.use(routerAddon)
-
-  return Object.assign(server, {
-    container,
-    router,
-    Controller: routerAddon.Controller,
-    Service: container.Service,
-    SingletonService: container.SingletonService,
-  })
-}
-
+/**
+ * @public
+ */
 export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends BaseAuthContext = BaseAuthContext> {
   private appBuilder = new AppBuilder<T>()
   private stopping = false
@@ -192,4 +106,36 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
       this.starting = false
     }
   }
+}
+
+/**
+ * @public
+ */
+export interface SetupTeardown {
+  (server: Ingress<any>): Promise<any> | any
+}
+/**
+ * @public
+ */
+export interface Usable<T> {
+  start?: SetupTeardown
+  stop?: SetupTeardown
+  middleware?: Middleware<T>
+}
+
+/**
+ * @public
+ */
+export type Addon<T> = (Usable<T> | (Usable<T> & Middleware<T>)) & { [key: string]: any }
+/**
+ * @public
+ */
+export interface ListenOptions {
+  port?: number
+  host?: string
+  path?: string
+  backlog?: number
+  exclusive?: boolean
+  readableAll?: boolean
+  writableAll?: boolean
 }

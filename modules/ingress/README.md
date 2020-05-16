@@ -1,6 +1,4 @@
-<p align="center">
-    <img src="logo.png" width="400" max-width="90%" alt="ingress" />
-</p>
+![ingress](/modules/ingress/logo.png)
 
 <p align="center">
 install: <code>npm i ingress</code><br><br>a utility for building applications using typescript and node.js<br>

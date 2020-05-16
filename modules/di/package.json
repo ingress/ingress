@@ -12,7 +12,7 @@
     "build": "rm -rf lib && npm run lint && tsc",
     "lint": "eslint \"src/**/*\" --fix --ext \"*.ts\"",
     "prepublishOnly": "npm run build",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "watch": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
     "watch:test": "jest --watchAll",
     "watch:typescript": "tsc -w"
@@ -36,10 +36,10 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@types/jest": "^25.2.1",
-    "@types/node": "^13.13.5",
-    "@typescript-eslint/eslint-plugin": "^2.31.0",
-    "@typescript-eslint/parser": "^2.31.0",
+    "@types/jest": "^25.2.2",
+    "@types/node": "^14.0.1",
+    "@typescript-eslint/eslint-plugin": "^2.33.0",
+    "@typescript-eslint/parser": "^2.33.0",
     "concurrently": "^5.2.0",
     "eslint": "^7.0.0",
     "eslint-config-prettier": "~6.11.0",
@@ -48,11 +48,11 @@
     "prettier": "^2.0.5",
     "reflect-metadata": "^0.1.13",
     "ts-node": "^8.10.1",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.2"
   },
   "dependencies": {
     "injection-js": "^2.3.0",
-    "tslib": "^1.11.2"
+    "tslib": "^2.0.0"
   },
   "jest": {
     "testRegex": ".*?(\\.spec).js",

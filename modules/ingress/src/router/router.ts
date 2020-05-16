@@ -8,9 +8,12 @@ import { BaseContext } from '../context'
 import RouteRecognizer from 'route-recognizer'
 
 //Exports
-export { ParseJsonBody } from './json-parser'
-export * from './route-annotation'
-export { Type }
+export { ParseJson } from './json-parser'
+export { ParseOptions, Parse, ParseAnnotation } from './parse.annotation'
+export * from './route.annotation'
+export { RouteMetadata } from './path-resolver'
+export { ExactTypeConverter, PredicateTypeConverter, TypeConverter } from './type-converter'
+export { Type, Handler }
 
 export interface RouterOptions {
   controllers?: Array<Type<any>>
@@ -67,7 +70,7 @@ export class RouterAddon<T extends BaseContext<any, any>> {
           for (const [method, paths] of Object.entries(handler.paths)) {
             const router = this.routers[method] || new RouteRecognizer()
             for (const path of paths) {
-              router.add([handler.withPath(path)])
+              router.add([{ handler, path }])
             }
             this.routers[method] = router
           }

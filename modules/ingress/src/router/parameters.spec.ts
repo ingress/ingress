@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import ingress, { Route, IngressApp } from '../ingress'
+import ingress, { IngressApp } from '../app'
+import { Route } from '../router/router'
 import * as sinon from 'sinon'
 import getPortAsync from 'get-port'
 import { getAsync, postAsync } from './test.util.spec'
@@ -223,8 +224,8 @@ describe('Parameters', () => {
   })
 
   it('should allow a custom type converter', async () => {
-    const res = await getAsync(path('/base/route/type-conversion/custom/asdf'))
-    expect(res).toEqual(JSON.stringify(new MyType('asdf')))
+    const res = await getAsync(path('/base/route/type-conversion/custom/hello'))
+    expect(res).toEqual(JSON.stringify(new MyType('hello')))
   })
 
   it('should allow a custom type converter based on type predicate', async () => {
@@ -236,8 +237,8 @@ describe('Parameters', () => {
     class SomeType {}
     let error: Error | undefined = undefined
     class Routes {
-      @Route.Get('somepath/:something')
-      somepath(@Route.Path('something') p: SomeType) {
+      @Route.Get('somePath/:something')
+      somePath(@Route.Path('something') p: SomeType) {
         return p
       }
     }
@@ -251,6 +252,6 @@ describe('Parameters', () => {
       error = e
     }
     //reflective error message
-    expect(error?.message).toEqual('No type converter found for: Routes.somepath at parameter 0:SomeType')
+    expect(error?.message).toEqual('No type converter found for: Routes.somePath at parameter 0:SomeType')
   })
 })

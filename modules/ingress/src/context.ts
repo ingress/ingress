@@ -8,22 +8,29 @@ export { Middleware } from 'app-builder'
 
 const empty = (): object => Object.create(null)
 
+/**
+ * @public
+ */
 export interface Request<T> extends IncomingMessage {
   context: T
 }
 
-interface Handler {
-  invokeAsync: Middleware<any>
-}
-
-export type Body = any
+/**
+ * @public
+ */
 export interface BaseAuthContext {
   authenticated: boolean
 }
+/**
+ * @public
+ */
 export interface Response<T> extends ServerResponse {
   context: T
 }
 
+/**
+ * @internal
+ */
 export class BaseContext<T extends BaseContext<T, A>, A extends BaseAuthContext> extends EventEmitter {
   handleError!: (error: Error | null) => any
   handleResponse!: () => any
@@ -40,18 +47,18 @@ export class BaseContext<T extends BaseContext<T, A>, A extends BaseAuthContext>
     url: Url
     query: { [key: string]: any }
     params: { [key: string]: any }
-    body: Body
-    response: Body
+    body: any
+    response: any
     controllerInstance: any
     parserResult: any
-    handler: Handler
+    handler: { invokeAsync: Middleware<any> }
   }
 
   get body() {
     return this.route.response
   }
 
-  set body(value: Body) {
+  set body(value: any) {
     this.route.response = value
   }
 
@@ -64,4 +71,7 @@ export class BaseContext<T extends BaseContext<T, A>, A extends BaseAuthContext>
   }
 }
 
+/**
+ * @public
+ */
 export class DefaultContext extends BaseContext<DefaultContext, any> {}

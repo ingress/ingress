@@ -1,8 +1,8 @@
 import { compose, Middleware } from 'app-builder'
 import { AnnotatedPropertyDescription } from 'reflect-annotations'
-import { parseJsonBody } from './json-parser'
+import { parseJson } from './json-parser'
 import { BaseContext } from '../context'
-import { ParamAnnotation } from './route-annotation'
+import { ParamAnnotation } from './route.annotation'
 import { Type } from './controller-annotation'
 import { TypeConverter } from './type-converter'
 import { resolvePaths, RouteMetadata } from './path-resolver'
@@ -40,7 +40,7 @@ function extractMiddleware<T>(route: RouteMetadata): Array<Middleware<T>> {
 
 function extractBodyParser(route: RouteMetadata) {
   const bodyParser = route.classAnnotations.concat(route.methodAnnotations).find((x) => x.isBodyParser)
-  return bodyParser ? bodyParser.middleware : parseJsonBody
+  return bodyParser ? bodyParser.middleware : parseJson
 }
 
 function resolveParameters(params: ParamResolver[], context: BaseContext<any, any>) {
@@ -86,7 +86,7 @@ function resolveRouteMiddleware<T extends BaseContext<any, any>>(handler: {
   }
 }
 
-export function convertType(
+function convertType(
   paramResolver: ParamResolver,
   paramIndex: number,
   source: RouteMetadata,
@@ -120,24 +120,19 @@ export function convertType(
   }
 }
 
-export function withPath(this: Handler, path: string) {
-  return { ...this, path }
-}
-
+/**
+ * @public
+ */
 export interface Handler {
   path: string
   handler: Handler
   invokeAsync: Middleware<any>
-  withPath: typeof withPath
   source: RouteMetadata
   baseUrl: string
-  convertType: typeof convertType
   paths: { [method: string]: string[] }
-  typeConverters: TypeConverter<any>[]
   controller: Type<any>
   controllerMethod: string
   paramAnnotations: ParamAnnotation[]
-  paramResolvers: ParamResolver[]
 }
 
 export function createHandler(source: RouteMetadata, baseUrl = '/', typeConverters: TypeConverter<any>[]) {
@@ -148,16 +143,12 @@ export function createHandler(source: RouteMetadata, baseUrl = '/', typeConverte
   let handlerRef: any
   const handler = {
     path: '',
-    withPath,
     source,
     baseUrl,
-    convertType,
     paths,
-    typeConverters,
     controller: source.controller,
     controllerMethod: source.name,
     paramAnnotations,
-    paramResolvers,
     invokeAsync: compose([
       ...extractEarlyMiddleware(source),
       extractBodyParser(source),

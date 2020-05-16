@@ -1,18 +1,21 @@
 import { createAnnotationFactory, Annotation } from 'reflect-annotations'
-import { ParseBody } from './raw-parser'
-import { BaseContext } from '../context'
+import { Parse } from './parse.annotation'
+import { DefaultContext } from '../context'
 
 const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
   result = (x: string) => '/' + trim(x),
   upper = (x: any) => x.toString().toUpperCase(),
-  hasOwnProperty = {}.hasOwnProperty,
+  hasOwn = {}.hasOwnProperty,
   getKey = (obj: any, key: string) => {
-    if (obj && hasOwnProperty.call(obj, key)) {
+    if (obj && hasOwn.call(obj, key)) {
       return obj[key]
     }
     return undefined
   }
 
+/**
+ * @public
+ */
 class RouteAnnotation {
   public path: string
   public methods: string[] = []
@@ -49,78 +52,78 @@ class RouteAnnotation {
     return result(prefix + '/' + this.path + '/' + suffix.path)
   }
 }
-
+/**
+ * @public
+ */
 export interface PathFactory {
   (urlDefinition?: string, ...methods: Array<PathFactory | string>): Annotation
 }
-
+/**
+ * @public
+ */
 export interface ParamAnnotation {
-  extractValue(context: BaseContext<any, any>): any
+  extractValue(context: DefaultContext): any
 }
 
-class BodyParamAnnotation implements ParamAnnotation {
-  constructor(private key?: string | ((body: any) => any)) {}
-
-  extractValue(context: BaseContext<any, any>) {
-    if ('function' === typeof this.key) {
-      return this.key(context.route.body)
+function createParamAnnotationFactory(property: string) {
+  return createAnnotationFactory(
+    class {
+      constructor(private key?: string | ((param: any) => any)) {}
+      extractValue(context: DefaultContext) {
+        const base = (context.route as any)[property]
+        if ('function' === typeof this.key) {
+          return this.key(base)
+        }
+        if (this.key) {
+          return getKey(base, this.key)
+        }
+        return base
+      }
     }
-    if (this.key) {
-      return getKey(context.route.body, this.key)
-    }
-    return context.route?.body
-  }
+  ) as (key?: string | ((body: any) => any)) => Annotation
 }
-
-class PathParamAnnotation implements ParamAnnotation {
-  constructor(private paramName?: string | ((query: any) => any)) {}
-
-  extractValue(context: BaseContext<any, any>) {
-    if ('function' === typeof this.paramName) {
-      return this.paramName(context.route.params)
-    }
-    if (this.paramName) {
-      return getKey(context.route.params, this.paramName)
-    }
-    return context.route.params
-  }
-}
-
-class ContextParamAnnotation implements ParamAnnotation {
-  extractValue(context: BaseContext<any, any>) {
+/**
+ * @public
+ */
+const Body = createParamAnnotationFactory('body'),
+  Path = createParamAnnotationFactory('params'),
+  Query = createParamAnnotationFactory('query')
+/**
+ * @public
+ */
+export type RouteParamAnnotation = typeof Body
+/**
+ * @public
+ */
+export class ContextParamAnnotation implements ParamAnnotation {
+  extractValue(context: DefaultContext) {
     return context
   }
 }
 
-class QueryParamAnnotation implements ParamAnnotation {
-  constructor(private paramName?: string | ((query: any) => any)) {}
-
-  extractValue(context: BaseContext<any, any>) {
-    if ('function' === typeof this.paramName) {
-      return this.paramName(context.route.query)
-    }
-    if (this.paramName) {
-      return getKey(context.route.query, this.paramName)
-    }
-    return context.route.query
-  }
-}
-
-class HeaderParamAnnotation implements ParamAnnotation {
+/**
+ * @public
+ */
+export class HeaderParamAnnotation implements ParamAnnotation {
   constructor(private paramName: string) {}
-
-  extractValue(context: BaseContext<any, any>) {
+  extractValue(context: DefaultContext) {
     return context.req.headers[this.paramName]
   }
 }
 
 const methods = ['Get', 'Post', 'Put', 'Delete', 'Head', 'Patch'],
-  Body = createAnnotationFactory(BodyParamAnnotation) as (key?: string | ((body: any) => any)) => Annotation,
-  Path = createAnnotationFactory(PathParamAnnotation) as (key?: string | ((body: any) => any)) => Annotation,
-  Query = createAnnotationFactory(QueryParamAnnotation) as (key?: string | ((body: any) => any)) => Annotation,
+  /**
+   * @public
+   */
   Header = createAnnotationFactory(HeaderParamAnnotation),
+  /**
+   * @public
+   */
   Context = createAnnotationFactory(ContextParamAnnotation)
 
+/**
+ * @public
+ */
 export interface Route extends PathFactory {
   /**
    * Accept the HTTP GET Method
@@ -149,15 +152,15 @@ export interface Route extends PathFactory {
   /**
    * Extract the body, or body property to the decorated argument
    */
-  Body: typeof Body
+  Body: RouteParamAnnotation
   /**
    * Extract the path parameters, or specific paramter to the decorated argument
    */
-  Path: typeof Path
+  Path: RouteParamAnnotation
   /**
    * Extract the query parameters, or specific query parameter to the decorated argument
    */
-  Query: typeof Query
+  Query: RouteParamAnnotation
   /**
    * Extract the specific header to the decorated argument
    */
@@ -167,11 +170,14 @@ export interface Route extends PathFactory {
    */
   Context: typeof Context
   /**
-   * Use Custom Parsing (stream or buffer) as a middleware annotation
+   * Use Custom Parsing as a middleware annotation
    */
-  Parse: typeof ParseBody
+  Parse: typeof Parse
 }
 
+/**
+ * @public
+ */
 export const Route = methods.reduce(
   (set, method) => {
     set[method] = (path: string, ...otherMethods: Array<PathFactory | string>) => {
@@ -186,8 +192,26 @@ export const Route = methods.reduce(
     Query,
     Header,
     Context,
-    Parse: ParseBody,
+    Parse,
   }) as any
 ) as Route
 
-export { RouteAnnotation, Annotation }
+export {
+  RouteAnnotation,
+  Annotation,
+  Parse,
+  Header,
+  Context,
+  /**
+   * @public
+   */
+  Query,
+  /**
+   * @public
+   */
+  Path,
+  /**
+   * @public
+   */
+  Body,
+}

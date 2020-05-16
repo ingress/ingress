@@ -1,4 +1,4 @@
-import { RouteAnnotation, Route } from './route-annotation'
+import { RouteAnnotation, Route } from './route.annotation'
 
 describe('Route annotations', () => {
   const parent = new RouteAnnotation('/parent/path'),
@@ -33,7 +33,7 @@ describe('Route annotations', () => {
     expect(path.methods).toEqual(['GET', 'POST'])
   })
 
-  it('should ignore extranious leading and trailing slashes', () => {
+  it('should ignore extraneous leading and trailing slashes', () => {
     const parent = new RouteAnnotation('parent/path////'),
       child = new RouteAnnotation('////child/path/'),
       path = parent.resolvePath('///', child)

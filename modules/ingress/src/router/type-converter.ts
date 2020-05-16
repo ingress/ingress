@@ -1,17 +1,24 @@
-export interface Type<T> {
-  new (...args: any[]): T
-}
+import { Type } from './controller-annotation'
 
+/**
+ * @public
+ */
 export interface ExactTypeConverter<T> {
   type: Type<T>
   convert(value: any, paramType: Function): T
 }
 
+/**
+ * @public
+ */
 export interface PredicateTypeConverter<T> {
   typePredicate: (type: Function) => boolean
   convert(value: any, paramType: Function): T
 }
 
+/**
+ * @public
+ */
 export type TypeConverter<T> = ExactTypeConverter<T> | PredicateTypeConverter<T>
 
 export const defaultTypeConverters: TypeConverter<any>[] = [
