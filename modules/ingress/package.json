@@ -2,19 +2,22 @@
   "name": "ingress",
   "version": "4.0.0-alpha.0",
   "description": "Composable nodejs applications",
-  "main": "lib/ingress.js",
+  "main": "lib/main.js",
+  "types:": "lib/ingress.d.ts",
   "files": [
-    "lib",
+    "lib/ingress.d.ts",
+    "lib/*/**.js",
     "!**/*.spec.js"
   ],
   "scripts": {
     "lint": "eslint \"src/**/*.ts\" --fix",
+    "api": "api-extractor run --local --diagnostics",
     "prepublish": "npm run build",
-    "build": "rm -rf lib && npm run lint && tsc",
+    "build": "rm -rf lib && npm run lint && tsc && npm run api",
     "watch:typescript": "tsc -w",
     "watch:test": "jest --watchAll --detectOpenHandles",
     "watch": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
-    "test": "jest --passWithNoTests"
+    "test": "jest"
   },
   "repository": {
     "directory": "modules/ingress",
@@ -89,16 +92,17 @@
     "websocket": "~1.0.31"
   },
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.8.1",
     "@types/destroy": "~1.0.0",
-    "@types/jest": "^25.2.1",
-    "@types/node": "^13.13.5",
+    "@types/jest": "^25.2.2",
+    "@types/node": "^14.0.1",
     "@types/on-finished": "~2.3.1",
     "@types/route-recognizer": "0.3.0",
-    "@types/sinon": "^9.0.0",
+    "@types/sinon": "^9.0.1",
     "@types/uuid": "^7.0.3",
     "@types/websocket": "~1.0.0",
-    "@typescript-eslint/eslint-plugin": "^2.31.0",
-    "@typescript-eslint/parser": "^2.31.0",
+    "@typescript-eslint/eslint-plugin": "^2.33.0",
+    "@typescript-eslint/parser": "^2.33.0",
     "concurrently": "^5.2.0",
     "cross-fetch": "~3.0.4",
     "eslint": "^7.0.0",
@@ -110,6 +114,6 @@
     "prettier": "^2.0.5",
     "reflect-metadata": "^0.1.13",
     "sinon": "^9.0.2",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.2"
   }
 }

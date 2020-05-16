@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import ingress, { Route, IngressApp } from '../ingress'
+import ingress, { IngressApp } from '../app'
+import { Route } from './router'
 import * as sinon from 'sinon'
 import getPortAsync from 'get-port'
 import { getAsync, postAsync } from './test.util.spec'
@@ -58,12 +59,12 @@ describe('Routing', () => {
       @M1()
       @M2()
       @Route.Get('test', Route.Post, Route.Put)
-      someroute() {
+      someRoute() {
         routeSpy()
         return expectedResponse
       }
       @Route.Get('$test')
-      localprefix() {
+      localPrefix() {
         routeSpy()
         return expectedResponse
       }
@@ -188,7 +189,7 @@ describe('Routing', () => {
   })
 
   it('should allow a custom body parser', async () => {
-    await postAsync(path('/base/route/test-buffer'), { data: 'asdf' })
+    await postAsync(path('/base/route/test-buffer'), { data: 'hello' })
     sinon.assert.calledOnce(routeSpy)
   })
 })

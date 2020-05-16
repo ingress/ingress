@@ -50,7 +50,6 @@ describe('DI Container', () => {
       assert.ok(context1.scope.get(Context) === context1, 'Expected to be able to retrieve current context')
 
       const testA = context1.scope.get(TestA),
-        testB = context1.scope.get(TestB),
         testC = context1.scope.get(TestC),
         testD = context1.scope.get(TestD)
 

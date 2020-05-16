@@ -1,10 +1,10 @@
-import ingress, { Ingress } from './ingress'
+import ingress, { IngressApp } from './app'
 import { Readable } from 'stream'
 import getPort from 'get-port'
 import fetch from 'cross-fetch'
 
 describe('default ingress responses', () => {
-  let app: Ingress
+  let app: IngressApp
 
   beforeEach(() => {
     app = ingress()

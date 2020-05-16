@@ -1,6 +1,6 @@
 import { StatusCode } from '@ingress/http-status'
 import { ServerResponse } from 'http'
-import { Middleware, BaseAuthContext, BaseContext, DefaultContext, Body, Response, Request } from './context'
+import { Middleware, BaseAuthContext, BaseContext, DefaultContext, Response, Request } from './context'
 import { Buffer } from 'buffer'
 import { Stream } from 'stream'
 import onFinished = require('on-finished')
@@ -15,7 +15,7 @@ const looksLikeHtmlRE = /^\s*</,
   },
   isStatusCode = (x: any) => typeof x === 'number' && x <= 500,
   isString = (str: any): str is string => typeof str === 'string' || str instanceof String,
-  isStreamLike = (body: Body): body is Stream =>
+  isStreamLike = (body: any): body is Stream =>
     Boolean((body && typeof (body as Stream).pipe === 'function') || body instanceof Stream),
   ensureErrorHandler = (stream: Stream, handler: (error: Error) => any) => {
     stream.listeners('error').indexOf(handler) === -1 && stream.on('error', handler)
@@ -50,7 +50,7 @@ export class DefaultMiddleware<
     res.setHeader('Content-Type', value)
   }
 
-  private _statusResponse(status: number, message: string, res: ServerResponse, body?: Body) {
+  private _statusResponse(status: number, message: string, res: ServerResponse, body?: any) {
     res.statusCode = status || 404
     res.statusMessage = message = message || StatusCode[res.statusCode] || StatusCode[500]
     body = isString(body) ? body : message

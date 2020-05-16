@@ -1,8 +1,14 @@
+/**
+ * @public
+ */
 export const Type = Function
+/**
+ * @public
+ */
 export interface Type<T> {
   new (...args: any[]): T
 }
-import { Route } from './route-annotation'
+import { Route } from './route.annotation'
 
 export interface ControllerOptions {
   routePrefix?: string
@@ -35,6 +41,7 @@ export class ControllerCollector {
           this._collector(target)
         }) as ClassDecorator
       }
+
       return this._collector(options) as ClassDecorator
     }) as ControllerDependencyCollector
   }

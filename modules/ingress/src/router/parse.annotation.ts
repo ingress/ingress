@@ -2,17 +2,23 @@ import { parse, SubtextOptions } from '@hapi/subtext'
 import { BaseContext } from '../context'
 import { createAnnotationFactory, Annotation } from 'reflect-annotations'
 
-export interface ParseBodyOptions {
+/**
+ * @public
+ */
+export interface ParseOptions {
   maxBytes?: number
   buffer?: boolean
   stream?: boolean
   parse?: boolean
 }
 
-export class ParseBodyAnnotation {
+/**
+ * @public
+ */
+export class ParseAnnotation {
   public readonly isBodyParser = true
   private options: SubtextOptions
-  constructor(options?: ParseBodyOptions) {
+  constructor(options?: ParseOptions) {
     options = options || {}
     this.options = {
       parse: options.parse || false,
@@ -34,8 +40,7 @@ export class ParseBodyAnnotation {
 
 /**
  * Apply Custom (stream or buffer) Parsing as middleware
+ * @public
  */
-const ParseBody = createAnnotationFactory(ParseBodyAnnotation) as (
-  options?: ParseBodyOptions
-) => Annotation<ParseBodyAnnotation>
-export { ParseBody }
+const Parse = createAnnotationFactory(ParseAnnotation) as (options?: ParseOptions) => Annotation<ParseAnnotation>
+export { Parse }
