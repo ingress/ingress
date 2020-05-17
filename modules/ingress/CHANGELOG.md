@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0-beta.0](https://github.com/ingress/ingress/compare/ingress@4.0.0-alpha.0...ingress@4.0.0-beta.0) (2020-05-17)
+
+
+### Bug Fixes
+
+* error when function arity is less than two ([a1a0257](https://github.com/ingress/ingress/commit/a1a025775066efec9a286188f9d98154161f8b24))
+
+
+### Features
+
+* public api ([a77fad1](https://github.com/ingress/ingress/commit/a77fad13d62ecc39cf4c7427325d144344106af5))
+
+
+
+
+
 # [4.0.0-alpha.0](https://github.com/ingress/ingress/compare/ingress@3.12.0...ingress@4.0.0-alpha.0) (2020-05-07)
 
 
