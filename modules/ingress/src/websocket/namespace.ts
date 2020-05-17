@@ -53,9 +53,7 @@ export class Connection {
   }
 
   leave(name: string) {
-    //remove channel reference from connection
     this.channels.delete(name)
-    //remove connection from channel, and maybe release channel if empty
     this.namespace.removeFromChannel(name, this)
     return this
   }
@@ -80,7 +78,7 @@ export class Connection {
   }
 
   private _onError(e: Error) {
-    void e
+    return e
   }
 
   private _onMessage(message: IMessage) {

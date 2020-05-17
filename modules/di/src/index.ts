@@ -14,10 +14,16 @@ import { Type, DependencyCollectorList } from './collector'
 export * from './collector'
 export { ReflectiveInjector, Injector, Provider, Injectable }
 
+/**
+ * @public
+ */
 export interface ContainerContext {
   scope: Injector
 }
 
+/**
+ * @public
+ */
 export interface ContainerOptions {
   contextToken?: Record<string, any>
   singletons?: Provider[]
@@ -29,6 +35,9 @@ const EMPTY_DEPS: Array<any> = [],
 
 export { ContextToken }
 
+/**
+ * @public
+ */
 export class Container<T extends ContainerContext = ContainerContext> implements Injector {
   private rootInjector: ReflectiveInjector | undefined
   private resolvedChildProviders: ResolvedReflectiveProvider[] = []
@@ -40,10 +49,10 @@ export class Container<T extends ContainerContext = ContainerContext> implements
   public singletons: Provider[] = []
   public services: Provider[] = []
 
-  get SingletonService() {
+  public get SingletonService() {
     return this.singletonCollector.collect
   }
-  get Service() {
+  public get Service() {
     return this.serviceCollector.collect
   }
 
@@ -70,12 +79,12 @@ export class Container<T extends ContainerContext = ContainerContext> implements
     }
   }
   get<T>(token: any, notFoundValue?: any): T
-  get<T>(token: T, notFoundValue?: any): T {
+  public get<T>(token: T, notFoundValue?: any): T {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.rootInjector!.get(token, notFoundValue)
   }
 
-  createChild(...providers: Array<ResolvedReflectiveProvider>): Injector {
+  private createChild(...providers: Array<ResolvedReflectiveProvider>): Injector {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.rootInjector!.createChildFromResolved(this.resolvedChildProviders.concat(providers))
   }
@@ -100,6 +109,10 @@ export class Container<T extends ContainerContext = ContainerContext> implements
   }
 }
 
+/**
+ * @public
+ * @param options
+ */
 export default function createContainer(options: ContainerOptions) {
   return new Container(options)
 }
