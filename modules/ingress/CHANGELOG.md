@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0-beta.1](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.0...ingress@4.0.0-beta.1) (2020-05-19)
+
+
+### Bug Fixes
+
+* **di:** use Set for collectors ([9c919f6](https://github.com/ingress/ingress/commit/9c919f6d40d4d68a383d536e46fd0b7c2130c998))
+
+
+
+
+
 # [4.0.0-beta.0](https://github.com/ingress/ingress/compare/ingress@4.0.0-alpha.0...ingress@4.0.0-beta.0) (2020-05-17)
 
 
