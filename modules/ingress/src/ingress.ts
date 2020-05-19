@@ -1,6 +1,16 @@
 import { AppBuilder, Middleware, compose, functionList } from 'app-builder'
 import { BaseContext, DefaultContext, BaseAuthContext } from './context'
+import { Annotation, isAnnotationFactory } from 'reflect-annotations'
 import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
+
+function isMiddlewareFunction(thing: any): thing is Function {
+  if ('function' !== typeof thing) {
+    return false
+  }
+  //ensure this is not a class constructor.
+  const props = Object.getOwnPropertyNames(thing)
+  return !props.includes('prototype') || props.includes('arguments')
+}
 
 /**
  * @public
@@ -15,27 +25,45 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
   private teardowns: SetupTeardown[] = []
   public server?: HttpServer
 
-  constructor({ server }: { server?: HttpServer } = {}) {
-    if (server) {
-      this.server = server
+  constructor(options?: { server?: HttpServer }) {
+    if (options?.server) {
+      this.server = options.server
     }
   }
 
-  use(usable: Addon<T>) {
+  use(usable: Addon<T>): this {
+    let used = false
+    if ('annotationInstance' in usable) {
+      return this.use(usable.annotationInstance)
+    }
     if ('middleware' in usable) {
       const mw = usable.middleware
       mw && this.use(mw)
+      used = true
     }
     if ('start' in usable && 'function' === typeof usable.start) {
       this.setups.push(usable.start.bind(usable))
       usable.stop && this.teardowns.push(usable.stop.bind(usable))
+      used = true
     }
-    if ('function' === typeof usable) {
+    if (isMiddlewareFunction(usable)) {
       if (usable.length < 2) {
         throw new TypeError('middleware function must have at least an arity of two')
       }
       this.appBuilder.use(usable)
+      used = true
     }
+
+    if (isAnnotationFactory(usable)) {
+      used = true
+      //unwrap factory...
+      return this.use(usable().annotationInstance)
+    }
+
+    if (!used) {
+      throw new TypeError('ingress was unable to use: ' + usable)
+    }
+
     return this
   }
 
@@ -105,6 +133,7 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
     } finally {
       this.starting = false
     }
+    return this.server.address()
   }
 }
 
@@ -126,7 +155,7 @@ export interface Usable<T> {
 /**
  * @public
  */
-export type Addon<T> = (Usable<T> | (Usable<T> & Middleware<T>)) & { [key: string]: any }
+export type Addon<T> = (Annotation<Usable<T>> | Usable<T> | (Usable<T> & Middleware<T>)) & { [key: string]: any }
 /**
  * @public
  */

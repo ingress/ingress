@@ -94,9 +94,8 @@ export class Container<T extends ContainerContext = ContainerContext> implements
   }
 
   public start() {
-    this.singletons = this.singletons.concat(this.singletonCollector.items)
-    this.services = this.services.concat(this.serviceCollector.items)
-
+    this.singletons = Array.from(new Set([...this.singletons, ...this.singletonCollector.items]))
+    this.services = Array.from(new Set([...this.services, ...this.serviceCollector.items]))
     this.rootInjector = ReflectiveInjector.resolveAndCreate(this.singletons)
     this.resolvedChildProviders = ReflectiveInjector.resolve(this.services)
   }

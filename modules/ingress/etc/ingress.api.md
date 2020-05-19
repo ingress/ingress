@@ -7,6 +7,7 @@
 import { AnnotatedPropertyDescription } from 'reflect-annotations';
 import { Annotation } from 'reflect-annotations';
 import { Container } from '@ingress/di';
+import { createAnnotationFactory } from 'reflect-annotations';
 import { EventEmitter } from 'events';
 import { IncomingMessage } from 'http';
 import { Middleware } from 'app-builder';
@@ -15,14 +16,9 @@ import { ServerResponse } from 'http';
 import { Url } from 'url';
 
 // @public (undocumented)
-export type Addon<T> = (Usable<T> | (Usable<T> & Middleware<T>)) & {
+export type Addon<T> = (Annotation<Usable<T>> | Usable<T> | (Usable<T> & Middleware<T>)) & {
     [key: string]: any;
 };
-
-// Warning: (ae-incompatible-release-tags) The symbol "AuthContextFactory" is marked as @public, but its signature references "BaseContext" which is marked as @internal
-//
-// @public (undocumented)
-export type AuthContextFactory<T extends BaseContext<T, A> = BaseContext<any, any>, A extends BaseAuthContext = BaseAuthContext> = (options: T) => Promise<A> | A;
 
 // @public (undocumented)
 export interface BaseAuthContext {
@@ -99,6 +95,8 @@ export class ContextParamAnnotation implements ParamAnnotation {
     extractValue(context: DefaultContext): DefaultContext;
 }
 
+export { createAnnotationFactory }
+
 // Warning: (ae-incompatible-release-tags) The symbol "DefaultContext" is marked as @public, but its signature references "BaseContext" which is marked as @internal
 //
 // @public (undocumented)
@@ -155,7 +153,7 @@ export class HeaderParamAnnotation implements ParamAnnotation {
 //
 // @public (undocumented)
 export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends BaseAuthContext = BaseAuthContext> {
-    constructor({ server }?: {
+    constructor(options?: {
         server?: Server;
     });
     // (undocumented)
@@ -163,7 +161,7 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
     // (undocumented)
     createContext(req: IncomingMessage, res: ServerResponse): T;
     // (undocumented)
-    listen(options?: ListenOptions | number): Promise<void>;
+    listen(options?: ListenOptions | number): Promise<string | import("net").AddressInfo | null>;
     // (undocumented)
     get middleware(): import("app-builder").ContinuationMiddleware<T>;
     // (undocumented)
@@ -176,26 +174,13 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
     use(usable: Addon<T>): this;
 }
 
+// Warning: (ae-forgotten-export) The symbol "IngressOptions" needs to be exported by the entry point main.d.ts
 // Warning: (ae-incompatible-release-tags) The symbol "ingress" is marked as @public, but its signature references "BaseContext" which is marked as @internal
 //
 // @public (undocumented)
-function ingress<T extends BaseContext<T, A> = DefaultContext, A extends BaseAuthContext = BaseAuthContext>({ preRoute, authContextFactory: authenticator, onError, contextToken, router, }?: {
-    preRoute?: Addon<T>;
-    authContextFactory?: AuthContextFactory;
-    contextToken?: any;
-    onError?: (context: T) => Promise<any>;
-    router?: {
-        routes?: Type<any>[];
-        baseUrl?: string;
-        typeConverters?: TypeConverter<any>[];
-    };
-}): Ingress<T, A> & {
+function ingress<T extends BaseContext<T, A> = DefaultContext, A extends BaseAuthContext = BaseAuthContext>(options?: IngressOptions<T>): Ingress<T, A> & {
     container: Container<import("@ingress/di").ContainerContext>;
-    router: {
-        routes?: Type<any>[] | undefined;
-        baseUrl?: string | undefined;
-        typeConverters?: TypeConverter<any>[] | undefined;
-    } | undefined;
+    router: RouterAddon<T>;
     Controller: import("./router/controller-annotation").ControllerDependencyCollector;
     Service: import("@ingress/di").DependencyCollector;
     SingletonService: import("@ingress/di").DependencyCollector;
@@ -347,6 +332,10 @@ export interface Usable<T> {
     stop?: SetupTeardown;
 }
 
+
+// Warnings were encountered during analysis:
+//
+// lib/app.d.ts:34:5 - (ae-forgotten-export) The symbol "RouterAddon" needs to be exported by the entry point main.d.ts
 
 // (No @packageDocumentation comment for this package)
 

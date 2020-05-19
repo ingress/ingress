@@ -21,14 +21,12 @@ export interface Controller {
 export type ControllerDependencyCollector = Controller & ClassDecorator
 
 export class ControllerCollector {
-  public items: Array<Type<any>> = []
+  public items = new Set<Type<any>>()
   public collect: ControllerDependencyCollector
   private _collector: ClassDecorator
   constructor() {
     this._collector = (target: any) => {
-      if (!this.items.includes(target)) {
-        this.items.push(target)
-      }
+      this.items.add(target)
     }
     this.collect = ((options?: ControllerOptions | any) => {
       if (!options) {

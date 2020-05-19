@@ -8,14 +8,6 @@ import { Ingress, Addon } from './ingress'
 /**
  * @public
  */
-export type AuthContextFactory<
-  T extends BaseContext<T, A> = BaseContext<any, any>,
-  A extends BaseAuthContext = BaseAuthContext
-> = (options: T) => Promise<A> | A
-
-/**
- * @public
- */
 export class Context extends BaseContext<Context, BaseAuthContext> {}
 
 /**
@@ -26,51 +18,62 @@ export type IngressApp = ReturnType<typeof ingress>
 /**
  * @public
  */
-export default function ingress<
-  T extends BaseContext<T, A> = DefaultContext,
-  A extends BaseAuthContext = BaseAuthContext
->({
-  preRoute,
-  authContextFactory: authenticator,
-  onError,
-  contextToken,
-  router,
-}: {
+export type IngressConfiguration<T> = {
   preRoute?: Addon<T>
-  authContextFactory?: AuthContextFactory
   contextToken?: any
   onError?: (context: T) => Promise<any>
   router?: { routes?: Type<any>[]; baseUrl?: string; typeConverters?: TypeConverter<any>[] }
-} = {}) {
-  const controllers = router?.routes ?? [],
-    routeRoot = router?.baseUrl ?? '/',
-    defaultMiddleware = onError ? new DefaultMiddleware<T, A>({ onError }) : new DefaultMiddleware<T, A>(),
-    server = new Ingress<T, A>(),
-    authContextFactory = authenticator || (() => ({ authenticated: false })),
-    container = new Container({ contextToken: contextToken || Context }),
-    routerAddon = new RouterAddon<T>({ controllers, typeConverters: router?.typeConverters ?? [], baseUrl: routeRoot })
+}
+
+export type IngressOptions<T> =
+  | (Type<any> & IngressConfiguration<T>)
+  | (Type<any> | IngressConfiguration<T>)
+  | Type<any>[]
+
+/**
+ * @public
+ */
+export default function ingress<
+  T extends BaseContext<T, A> = DefaultContext,
+  A extends BaseAuthContext = BaseAuthContext
+>(options: IngressOptions<T> = {}) {
+  const server = new Ingress<T, A>(),
+    preRoute = 'preRoute' in options ? options.preRoute : null,
+    onError = 'onError' in options && options.onError ? { onError: options.onError } : undefined,
+    defaultMiddleware = new DefaultMiddleware(onError),
+    contextToken = 'contextToken' in options ? options.contextToken : Context,
+    container = new Container({ contextToken }),
+    baseUrl = ('router' in options && options.router?.baseUrl) || '/',
+    router = new RouterAddon<T>({ baseUrl }),
+    collect = router.controllerCollector.collect
+
+  if (typeof options === 'function') {
+    collect(options)
+  }
+  if (Array.isArray(options)) {
+    options.forEach(collect)
+  }
+  if ('router' in options) {
+    ;(options.router?.routes ?? []).forEach(collect)
+  }
 
   server
     .use(defaultMiddleware)
     .use({
-      //Copy routes from router, and register them with the DI container
+      //Register Collected Routes with DI
       start() {
-        container.serviceCollector.items.push(...routerAddon.controllerCollector.items)
+        container.services.push(...router.controllerCollector.items)
       },
     })
     .use(container)
-    .use(async (context, next) => {
-      context.authContext = (await authContextFactory(context)) as A
-      return next()
-    })
 
   preRoute && server.use(preRoute)
-  server.use(routerAddon)
+  server.use(router)
 
   return Object.assign(server, {
     container,
     router,
-    Controller: routerAddon.Controller,
+    Controller: router.Controller,
     Service: container.Service,
     SingletonService: container.SingletonService,
   })

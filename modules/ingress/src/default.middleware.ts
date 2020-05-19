@@ -38,7 +38,8 @@ export class DefaultMiddleware<
   public inflight = 0
   private onError: (context: T) => Promise<any> | any
 
-  constructor(options: DefaultOptions<T> = { onError: logError }) {
+  constructor(options?: DefaultOptions<T>) {
+    options = options || { onError: logError }
     this.onError = options.onError
   }
 
