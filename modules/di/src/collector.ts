@@ -9,14 +9,14 @@ export interface DependencyCollector {
 }
 
 export class DependencyCollectorList {
-  public items: Array<Type<any>> = []
+  public items = new Set<Type<any>>()
   public collect: DependencyCollector
   constructor() {
     this.collect = (target?: any): any => {
       if (!target) {
         return this.collect
       }
-      this.items.push(target)
+      this.items.add(target)
     }
   }
 }

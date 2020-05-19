@@ -45,18 +45,6 @@ describe('ingress', () => {
     await app.listen(PORT)
   })
 
-  it('authenticate requests', async () => {
-    const PORT = await getPort()
-    app = ingress({
-      authContextFactory({ req }) {
-        void req
-        return { authenticated: true, id: '' }
-      },
-    })
-
-    await app.listen(PORT)
-  })
-
   it('should close', async () => {
     const PORT = await getPort()
     await app.listen(PORT)

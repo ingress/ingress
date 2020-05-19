@@ -31,7 +31,7 @@ export class RouterAddon<T extends BaseContext<any, any>> {
   private initialized = false
 
   public controllerCollector = new ControllerCollector()
-  public controllers: Type<any>[] = this.controllerCollector.items
+  public controllers: Type<any>[] = []
   public handlers: Handler[] = []
   /**
    * Load decorated class as a Controller into the app
@@ -56,7 +56,7 @@ export class RouterAddon<T extends BaseContext<any, any>> {
     }
 
     const { baseUrl } = this.options,
-      controllers = Array.from(new Set(this.controllerCollector.items.concat(this.controllers)))
+      controllers = Array.from(new Set([...this.controllerCollector.items, ...this.controllers]))
 
     this.handlers.push(
       ...controllers

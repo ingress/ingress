@@ -1,6 +1,6 @@
 import { reflectClassProperties } from './reflect-class'
 import { createAnnotationFactory, getAnnotations } from './annotations'
-import { reflectAnnotations } from './index'
+import { reflectAnnotations, isAnnotationFactory } from './index'
 
 class MiddlewareFixture {
   middleware(ctx: any, next: Function) {
@@ -107,9 +107,13 @@ describe('reflect-annotations', () => {
   })
 
   describe('createAnnotationFactory', () => {
-    it('should expose the annotationInstnace', () => {
+    it('should expose the annotationInstance', () => {
       const instance = FixtureAnnotation().annotationInstance
       expect(instance).toBeInstanceOf(Fixture)
+    })
+    it('should be detectable', () => {
+      expect(isAnnotationFactory(FixtureAnnotation)).toEqual(true)
+      expect(isAnnotationFactory({})).toEqual(false)
     })
   })
 

@@ -5,6 +5,10 @@ const ANNOTATIONS = 'annotations',
   PARAMETER_TYPES = 'design:paramtypes',
   RETURN_TYPE = 'design:returntype'
 
+export const AnnotationFactory = Symbol.for('reflect-annotations.factory')
+export function isAnnotationFactory(thing: any): thing is (...args: any[]) => Annotation<any> {
+  return typeof thing === 'function' && thing[AnnotationFactory] === true
+}
 export interface Constructor<T> {
   new (...args: any[]): T
 }
@@ -92,20 +96,23 @@ export function createAnnotationFactory<T, A1, A2, A3, A4, A5, A6, A7, A8, A9>(
 ): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9) => Annotation<T>
 export function createAnnotationFactory<T>(Type: Constructor<T>): (...args: any[]) => Annotation<T>
 export function createAnnotationFactory<T>(Type: Constructor<T>) {
-  return function (...args: any[]): Annotation<T> {
-    const annotationInstance = new Type(...args)
-    const annotation = (target: any, key?: string | symbol, descriptorOrParamIndex?: PropertyDescriptor | number) => {
-      if (key && typeof descriptorOrParamIndex === 'number') {
-        const annotations = getParameterAnnotations(target, key)
-        annotations[descriptorOrParamIndex] = annotationInstance
-        setParameterAnnotations(target, key, annotations)
-      } else {
-        const annotations = getAnnotations(target, key)
-        annotations.push(annotationInstance)
-        setAnnotations(target, key, annotations)
+  return Object.assign(
+    function annotationFactory(...args: any[]): Annotation<T> {
+      const annotationInstance = new Type(...args)
+      const annotation = (target: any, key?: string | symbol, descriptorOrParamIndex?: PropertyDescriptor | number) => {
+        if (key && typeof descriptorOrParamIndex === 'number') {
+          const annotations = getParameterAnnotations(target, key)
+          annotations[descriptorOrParamIndex] = annotationInstance
+          setParameterAnnotations(target, key, annotations)
+        } else {
+          const annotations = getAnnotations(target, key)
+          annotations.push(annotationInstance)
+          setAnnotations(target, key, annotations)
+        }
       }
-    }
-    annotation.annotationInstance = annotationInstance
-    return annotation
-  }
+      annotation.annotationInstance = annotationInstance
+      return annotation
+    },
+    { [AnnotationFactory]: true }
+  )
 }
