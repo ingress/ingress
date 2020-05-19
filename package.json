@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "scripts": {
-    "postinstall": "lerna exec npm install",
+    "postinstall": "lerna bootstrap",
     "test": "lerna run test",
     "lint": "lerna run lint",
     "check-updates": "ls -1 modules | while read line ; do npx npm-check-updates --packageFile modules/$line/package.json ; done",

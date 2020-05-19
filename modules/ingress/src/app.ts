@@ -8,6 +8,11 @@ import { Ingress, Addon } from './ingress'
 /**
  * @public
  */
+export { Container } from '@ingress/di'
+
+/**
+ * @public
+ */
 export class Context extends BaseContext<Context, BaseAuthContext> {}
 
 /**
@@ -71,7 +76,7 @@ export default function ingress<
   server.use(router)
 
   return Object.assign(server, {
-    container,
+    container: container as Container,
     router,
     Controller: router.Controller,
     Service: container.Service,
