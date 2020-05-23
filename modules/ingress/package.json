@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "lint": "eslint \"src/**/*.ts\" --fix",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "build": "rm -rf lib && npm run lint && tsc",
     "watch:typescript": "tsc -w",
     "watch:test": "jest --watchAll --detectOpenHandles",
@@ -88,25 +88,25 @@
     "reflect-annotations": "^3.0.0-beta.2",
     "route-recognizer": "0.3.4",
     "rxjs": "~6.5.5",
-    "uuid": "^8.0.0",
+    "uuid": "^8.1.0",
     "websocket": "~1.0.31",
     "ws": "^7.3.0"
   },
   "devDependencies": {
     "@types/destroy": "~1.0.0",
     "@types/jest": "^25.2.3",
-    "@types/node": "^14.0.3",
+    "@types/node": "^14.0.5",
     "@types/on-finished": "~2.3.1",
     "@types/route-recognizer": "0.3.0",
-    "@types/sinon": "^9.0.3",
+    "@types/sinon": "^9.0.4",
     "@types/uuid": "^8.0.0",
     "@types/websocket": "~1.0.0",
     "@types/ws": "^7.2.4",
-    "@typescript-eslint/eslint-plugin": "^2.34.0",
-    "@typescript-eslint/parser": "^2.34.0",
+    "@typescript-eslint/eslint-plugin": "^3.0.0",
+    "@typescript-eslint/parser": "^3.0.0",
     "concurrently": "^5.2.0",
     "cross-fetch": "~3.0.4",
-    "eslint": "^7.0.0",
+    "eslint": "^7.1.0",
     "eslint-config-prettier": "~6.11.0",
     "eslint-plugin-prettier": "^3.1.3",
     "eslint-watch": "^6.0.1",
@@ -115,6 +115,6 @@
     "prettier": "^2.0.5",
     "reflect-metadata": "^0.1.13",
     "sinon": "^9.0.2",
-    "typescript": "^3.9.2"
+    "typescript": "^3.9.3"
   }
 }

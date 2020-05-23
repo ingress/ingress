@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc --declaration",
-    "prepublish": "npm run build"
+    "prepare": "npm run build"
   },
   "prettier": {
     "parser": "typescript",
@@ -21,8 +21,8 @@
   "author": "Caleb Boyd <caleb.boyd@hotmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^14.0.3",
+    "@types/node": "^14.0.5",
     "prettier": "^2.0.5",
-    "typescript": "^3.9.2"
+    "typescript": "^3.9.3"
   }
 }

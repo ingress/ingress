@@ -7,7 +7,7 @@ import { identity } from './lang'
 
 export { Middleware } from 'app-builder'
 
-const empty = (): object => Object.create(null)
+const empty = (): Record<string, any> => Object.create(null)
 
 /**
  * @public
