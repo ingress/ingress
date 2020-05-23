@@ -1,11 +1,13 @@
+import { Constructor } from './annotations'
+
 function uniqueNotConstructor(names: Array<string>, name: string) {
   ~names.indexOf(name) || (name !== 'constructor' && names.push(name))
   return names
 }
 
-export function reflectClassProperties(source: Function) {
+export function reflectClassProperties<T>(source: Constructor<T>) {
   const properties: string[] = [],
-    constructors: Function[] = []
+    constructors: Constructor<T>[] = []
 
   let current = source
 

@@ -3,7 +3,7 @@ import { createAnnotationFactory, getAnnotations } from './annotations'
 import { reflectAnnotations, isAnnotationFactory } from './index'
 
 class MiddlewareFixture {
-  middleware(ctx: any, next: Function) {
+  middleware(ctx: any, next: (...args: any[]) => any) {
     ctx.fixture = true
     return next()
   }

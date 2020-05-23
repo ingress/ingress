@@ -8,6 +8,7 @@ import {
   createAnnotationFactory,
   Annotation,
   isAnnotationFactory,
+  Constructor,
 } from './annotations'
 import { reflectClassProperties } from './reflect-class'
 
@@ -37,7 +38,7 @@ function addMethodAnnotation(property: AnnotatedPropertyDescription, annotation:
   return property
 }
 
-function collectPropertyAnnotations(property: AnnotatedPropertyDescription, ctor: Function) {
+function collectPropertyAnnotations<T = any>(property: AnnotatedPropertyDescription, ctor: Constructor<T>) {
   const methodAnnotations = property.name in ctor.prototype ? getAnnotations(ctor.prototype, property.name) : [],
     order = property.declaredOrder ? 'reduceRight' : 'reduce'
   property = getAnnotations(ctor)[order]<AnnotatedPropertyDescription>(
@@ -51,7 +52,10 @@ function collectPropertyAnnotations(property: AnnotatedPropertyDescription, ctor
   return property
 }
 
-function reflectAnnotations(source: Function, options: { declaredOrder: boolean } = { declaredOrder: true }) {
+function reflectAnnotations<T = any>(
+  source: Constructor<T>,
+  options: { declaredOrder: boolean } = { declaredOrder: true }
+) {
   const classMetadata = reflectClassProperties(source)
 
   return classMetadata.properties.reduce<AnnotatedPropertyDescription[]>((properties, propertyName) => {

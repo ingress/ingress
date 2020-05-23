@@ -3,7 +3,7 @@ import { BaseContext, DefaultContext, BaseAuthContext } from './context'
 import { Annotation, isAnnotationFactory } from 'reflect-annotations'
 import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
 
-function isMiddlewareFunction(thing: any): thing is Function {
+function isMiddlewareFunction(thing: any): thing is (...args: any[]) => any {
   if ('function' !== typeof thing) {
     return false
   }

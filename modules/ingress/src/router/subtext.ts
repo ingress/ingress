@@ -10,8 +10,8 @@ declare module '@hapi/subtext' {
     timeout?: number
     qs?: Record<string, any>
     uploads?: string
-    decoders?: { [key: string]: Function }
-    compression?: { [key: string]: Function }
+    decoders?: { [key: string]: (...args: any[]) => any }
+    compression?: { [key: string]: (...args: any[]) => any }
   }
   function parse(
     request: IncomingMessage,

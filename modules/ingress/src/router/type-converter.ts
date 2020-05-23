@@ -5,15 +5,15 @@ import { Type } from './controller-annotation'
  */
 export interface ExactTypeConverter<T> {
   type: Type<T>
-  convert(value: any, paramType: Function): T
+  convert(value: any, paramType: (...args: any[]) => any): T
 }
 
 /**
  * @public
  */
 export interface PredicateTypeConverter<T> {
-  typePredicate: (type: Function) => boolean
-  convert(value: any, paramType: Function): T
+  typePredicate: (type: (...args: any[]) => any) => boolean
+  convert(value: any, paramType: (...args: any[]) => any): T
 }
 
 /**
