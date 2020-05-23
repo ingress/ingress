@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0-beta.3](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.2...ingress@4.0.0-beta.3) (2020-05-23)
+
+
+### Features
+
+* allow paramter types to be a type converter and paramter extractors ([010ad7d](https://github.com/ingress/ingress/commit/010ad7db075e121da8e0b9c3290fae95c6051b54))
+
+
+
+
+
 # [4.0.0-beta.2](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.1...ingress@4.0.0-beta.2) (2020-05-19)
 
 
