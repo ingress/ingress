@@ -52,13 +52,6 @@ function resolveParameters(params: ParamResolver[], context: BaseContext<any, an
   return Promise.all(resolvedParameters)
 }
 
-function extractParameter(annotation: ParamAnnotation): ParamResolver {
-  if (!annotation?.extractValue) {
-    return pickRequest
-  }
-  return (context) => annotation.extractValue(context)
-}
-
 export interface ParamResolver {
   (context: BaseContext<any, any>): any
 }
@@ -80,43 +73,11 @@ function resolveRouteMiddleware<T extends BaseContext<any, any>>(handler: {
       e.statusCode = e.statusCode || 400
       throw e
     }
-    context.body =
-      context.body || (await Promise.resolve(controllerMethod.call(context.route.controllerInstance, ...params)))
-    return next()
-  }
-}
-
-function convertType(
-  paramResolver: ParamResolver,
-  paramIndex: number,
-  source: RouteMetadata,
-  typeConverters: TypeConverter<any>[]
-): ParamResolver {
-  const paramType = source.types.parameters && source.types.parameters[paramIndex]
-  if (!paramType) {
-    return paramResolver
-  }
-  let typeConverter: TypeConverter<any> | undefined = undefined
-  for (const c of typeConverters) {
-    if (('type' in c && c.type === paramType) || ('typePredicate' in c && c.typePredicate(paramType))) {
-      typeConverter = c
-      break
+    const result = await Promise.resolve(controllerMethod.call(context.route.controllerInstance, ...params))
+    if (result !== undefined) {
+      context.body = result
     }
-  }
-
-  if ('convert' in paramType) {
-    typeConverter = paramType
-  }
-  if (!typeConverter) {
-    throw new Error(
-      `No type converter found for: ${source.controller.name}.${source.name} at parameter ${paramIndex}:${
-        paramType.name || paramType
-      }`
-    )
-  }
-  return (context) => {
-    const value = paramResolver(context)
-    return typeConverter?.convert(value, paramType)
+    return next()
   }
 }
 
@@ -135,10 +96,53 @@ export interface Handler {
   paramAnnotations: ParamAnnotation[]
 }
 
+function createParamResolver(
+  source: RouteMetadata,
+  annotation: ParamAnnotation | undefined,
+  index: number,
+  typeConverters: TypeConverter<any>[]
+): ParamResolver {
+  const paramType = source.types?.parameters?.[index],
+    pick = annotation?.extractValue?.bind(annotation) || paramType?.extractValue?.bind(paramType) || pickRequest
+  if (!annotation && !paramType) {
+    return pick
+  }
+
+  if ('convert' in paramType) {
+    return (context) => paramType.convert(pick(context))
+  }
+
+  let typeConverter: TypeConverter<any> | undefined = undefined
+  for (const c of typeConverters) {
+    if (('type' in c && c.type === paramType) || ('typePredicate' in c && c.typePredicate(paramType))) {
+      typeConverter = c
+      break
+    }
+  }
+
+  if (!typeConverter) {
+    throw new Error(
+      `No type converter found for: ${source.controller.name}.${source.name} at parameter ${index}:${
+        paramType.name || paramType
+      }`
+    )
+  }
+  const converter = typeConverter
+
+  return (context) => {
+    const value = pick(context)
+    return converter.convert(value, paramType)
+  }
+}
+
 export function createHandler(source: RouteMetadata, baseUrl = '/', typeConverters: TypeConverter<any>[]) {
   const paths = resolvePaths(baseUrl, source),
-    paramAnnotations = source.parameterAnnotations.length ? source.parameterAnnotations : [undefined],
-    paramResolvers = paramAnnotations.map(extractParameter).map((x, i) => convertType(x, i, source, typeConverters))
+    paramAnnotations: ParamAnnotation[] = source.parameterAnnotations.length
+      ? source.parameterAnnotations
+      : [undefined],
+    paramResolvers = paramAnnotations.map((annotation, index) =>
+      createParamResolver(source, annotation, index, typeConverters)
+    )
 
   let handlerRef: any
   const handler = {

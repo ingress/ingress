@@ -1,15 +1,9 @@
-import {
-  server as WebsocketServer,
-  IServerConfig,
-  request as WebsocketRequest,
-  connection as WebsocketConnection,
-  IMessage,
-} from 'websocket'
-export { WebsocketServer, WebsocketRequest, IServerConfig }
+import WebSocket from 'ws'
 import { Subject, fromEvent, Observable } from 'rxjs'
 import { Ack } from './ack'
 import { map } from 'rxjs/operators'
 import { createBackChannel } from './backchannel'
+import { noop, once } from '../lang'
 
 const DefaultExclusions: Exclusions = Object.create(null)
 export interface Exclusions {
@@ -38,10 +32,10 @@ export class Connection {
   onClose = fromEvent(this.conn as any, 'close').pipe(map(() => this._onClose()))
   onError = fromEvent<Error>(this.conn as any, 'error').pipe(map((e) => this._onError(e)))
 
-  constructor(public id: string, private conn: WebsocketConnection | null, private namespace: Namespace) {}
+  constructor(public id: string, private conn: WebSocket, private namespace: Namespace) {}
 
   send(message: Buffer | string, cb?: (...args: any[]) => void) {
-    this.conn?.send(message, cb)
+    this.conn.send(message, cb)
   }
 
   join(name: string) {
@@ -60,7 +54,7 @@ export class Connection {
 
   end() {
     this.closing = true
-    this.conn?.close()
+    this.conn.close()
   }
 
   private _dispose() {
@@ -70,7 +64,6 @@ export class Connection {
     for (const x of this.channels.keys()) {
       this.leave(x)
     }
-    this.conn = null
   }
 
   private _onPong() {
@@ -81,8 +74,8 @@ export class Connection {
     return e
   }
 
-  private _onMessage(message: IMessage) {
-    return new SocketMessage(JSON.parse(message.utf8Data ?? 'null'), this)
+  private _onMessage(message: string | Buffer) {
+    return new SocketMessage(JSON.parse(message.toString() ?? 'null'), this)
   }
 
   private _onClose() {
@@ -127,7 +120,7 @@ export class Namespace {
     this.backchannelTimeout = options.timeout
   }
 
-  createConnection<T>(id: string, conn: WebsocketConnection, extensions: T): Connection & T {
+  createConnection<T>(id: string, conn: WebSocket, extensions: T): Connection & T {
     return Object.assign(new Connection(id, conn, this), extensions)
   }
 
@@ -166,25 +159,30 @@ export class Namespace {
     exclusions: Exclusions | null
     ack: Acknowledgement | null
   }) {
-    const toExclude = exclusions ?? DefaultExclusions,
+    const toExclude = exclusions || DefaultExclusions,
       sentTo = new Set<string>()
     let payload = '',
       i = channels.length,
       canAck = false
 
+    const sendAck = ack
+      ? once(() => {
+          if (canAck) {
+            const bcmAck: BackChannelMessage = ['__ack__', [], [ack], null, null]
+            this.backchannel.next(bcmAck)
+          }
+        })
+      : noop
+
     while (i--) {
       const channel = this.channels.get(channels[i]) || this.empty
       for (const connection of channel.values()) {
         if (!sentTo.has(connection.id) && !(connection.id in toExclude)) {
-          connection.send(payload || (payload = JSON.stringify(message)))
           canAck = true
+          connection.send(payload || (payload = JSON.stringify(message)), sendAck)
           sentTo.add(connection.id)
         }
       }
-    }
-    if (ack && canAck) {
-      const bcmAck: BackChannelMessage = ['__ack__', [], [ack], null, null]
-      this.backchannel.next(bcmAck)
     }
   }
 

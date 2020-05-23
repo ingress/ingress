@@ -3,6 +3,7 @@ import { Url } from 'url'
 import { Middleware } from 'app-builder'
 import { EventEmitter } from 'events'
 import { Ingress } from './ingress'
+import { identity } from './lang'
 
 export { Middleware } from 'app-builder'
 
@@ -32,6 +33,8 @@ export interface Response<T> extends ServerResponse {
  * @internal
  */
 export class BaseContext<T extends BaseContext<T, A>, A extends BaseAuthContext> extends EventEmitter {
+  static extractValue = identity
+  static convert = identity
   handleError!: (error: Error | null) => any
   handleResponse!: () => any
 

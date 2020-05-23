@@ -28,6 +28,7 @@
   "jest": {
     "testRegex": ".*?\\.spec\\.js",
     "testPathIgnorePatterns": [
+      ".*?\\.spec\\.ts$",
       ".*?\\.util\\.spec\\.js$"
     ]
   },
@@ -53,7 +54,7 @@
       "@typescript-eslint/no-use-before-define": 0,
       "@typescript-eslint/no-explicit-any": 0,
       "@typescript-eslint/explicit-function-return-type": 0,
-      "no-warning-comments": 2,
+      "no-warning-comments": 1,
       "one-var": [
         "error",
         "consecutive"
@@ -88,7 +89,8 @@
     "route-recognizer": "0.3.4",
     "rxjs": "~6.5.5",
     "uuid": "^8.0.0",
-    "websocket": "~1.0.31"
+    "websocket": "~1.0.31",
+    "ws": "^7.3.0"
   },
   "devDependencies": {
     "@types/destroy": "~1.0.0",
@@ -99,6 +101,7 @@
     "@types/sinon": "^9.0.3",
     "@types/uuid": "^8.0.0",
     "@types/websocket": "~1.0.0",
+    "@types/ws": "^7.2.4",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
     "concurrently": "^5.2.0",
