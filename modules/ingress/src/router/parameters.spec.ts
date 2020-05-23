@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import ingress, { IngressApp } from '../app'
+import ingress, { IngressApp, Context } from '../app'
 import { Route } from '../router/router'
 import * as sinon from 'sinon'
 import getPortAsync from 'get-port'
@@ -20,7 +20,8 @@ describe('Parameters', () => {
     routeSpy: sinon.SinonSpy,
     path: (url: string) => string,
     errorStub: sinon.SinonStub,
-    expectedResponse: string
+    expectedResponse: string,
+    expectError = false
 
   class MyType {
     static convert(value: any) {
@@ -38,8 +39,12 @@ describe('Parameters', () => {
 
   beforeEach(async () => {
     const onError = (ctx: any) => {
-      //console.log('ERROR', ctx.error)
-      return errorStub(ctx)
+      if (expectError) {
+        return errorStub(ctx)
+      } else {
+        return errorStub(ctx)
+        console.error(ctx.error)
+      }
     }
     errorStub = sinon.stub()
     app = ingress({
@@ -70,6 +75,14 @@ describe('Parameters', () => {
       headerParam(@Route.Header('expected') result: string) {
         routeSpy()
         return expectedResponse
+      }
+
+      @Route.Post('context-param')
+      contextParam(context: Context) {
+        routeSpy()
+        context.res.statusCode = 201
+        context.body = expectedResponse
+        //do not return here...(mutable context test)
       }
 
       @Route.Post('type-conversion/booleans/:expected')
@@ -120,6 +133,7 @@ describe('Parameters', () => {
   })
 
   afterEach(() => {
+    expectError = false
     return app.close()
   })
 
@@ -147,7 +161,7 @@ describe('Parameters', () => {
       const res2 = await postAsync(path('/base/route/type-conversion/booleans/false?expected=false'), {
         headers: { expected: 'false' },
       })
-
+      expectError = true
       try {
         await postAsync(path('/base/route/type-conversion/booleans/wat'))
       } catch (e) {
@@ -163,7 +177,7 @@ describe('Parameters', () => {
         headers: { expected: '3' },
       })
       expect(JSON.parse(res)).toEqual([1, 2, 3])
-
+      expectError = true
       try {
         await postAsync(path('/base/route/type-conversion/numbers/foo'), {
           data: JSON.stringify(2),
@@ -174,7 +188,7 @@ describe('Parameters', () => {
         expect(e.statusCode).toEqual(400)
       }
       sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert "foo" to number' } }))
-
+      expectError = true
       try {
         await postAsync(path('/base/route/type-conversion/numbers/4'), {
           data: null,
@@ -185,7 +199,7 @@ describe('Parameters', () => {
         expect(e.statusCode).toEqual(400)
       }
       sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert null to number' } }))
-
+      expectError = true
       try {
         await postAsync(path('/base/route/type-conversion/numbers/4'), { data: '2' })
       } catch (e) {
@@ -202,7 +216,7 @@ describe('Parameters', () => {
       headers: { expected: 'three' },
     })
     expect(res).toEqual(JSON.stringify(['one', '2', 'three']))
-
+    expectError = true
     try {
       await postAsync(path('/base/route/type-conversion/strings/one'), {
         data: null,
@@ -231,6 +245,11 @@ describe('Parameters', () => {
   it('should allow a custom type converter based on type predicate', async () => {
     const res = await getAsync(path('/base/route/type-conversion/custom-predicate/64'))
     expect(res).toEqual(JSON.stringify(new PredicateType('predicate 64')))
+  })
+
+  it('should convert and extract types (context built in)', async () => {
+    const res = await postAsync(path('/base/route/context-param'))
+    expect(res).toEqual(expectedResponse)
   })
 
   it('should throw an error if a type converter cannot be determined for a type', async () => {

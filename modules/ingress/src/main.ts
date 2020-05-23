@@ -15,8 +15,6 @@ export { createAnnotationFactory } from 'reflect-annotations'
 
 export {
   PathFactory,
-  Context as ContextParam,
-  ContextParamAnnotation,
   Handler,
   Body,
   Header,

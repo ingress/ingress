@@ -80,7 +80,7 @@ export class RouterAddon<T extends BaseContext<any, any>> {
     this.initialized = true
   }
 
-  private match(method: string, pathname: string) {
+  public match(method: string, pathname: string) {
     const router = this.routers[method]
     return router && router.recognize(pathname)
   }

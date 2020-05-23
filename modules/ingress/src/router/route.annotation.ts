@@ -92,14 +92,6 @@ const Body = createParamAnnotationFactory('body'),
  * @public
  */
 export type RouteParamAnnotation = typeof Body
-/**
- * @public
- */
-export class ContextParamAnnotation implements ParamAnnotation {
-  extractValue(context: DefaultContext) {
-    return context
-  }
-}
 
 /**
  * @public
@@ -115,11 +107,7 @@ const methods = ['Get', 'Post', 'Put', 'Delete', 'Head', 'Patch'],
   /**
    * @public
    */
-  Header = createAnnotationFactory(HeaderParamAnnotation),
-  /**
-   * @public
-   */
-  Context = createAnnotationFactory(ContextParamAnnotation)
+  Header = createAnnotationFactory(HeaderParamAnnotation)
 
 /**
  * @public
@@ -166,10 +154,6 @@ export interface Route extends PathFactory {
    */
   Header: typeof Header
   /**
-   * Extract the context object to the decorated argument
-   */
-  Context: typeof Context
-  /**
    * Use Custom Parsing as a middleware annotation
    */
   Parse: typeof Parse
@@ -191,7 +175,6 @@ export const Route = methods.reduce(
     Path,
     Query,
     Header,
-    Context,
     Parse,
   }) as any
 ) as Route
@@ -201,7 +184,6 @@ export {
   Annotation,
   Parse,
   Header,
-  Context,
   /**
    * @public
    */
