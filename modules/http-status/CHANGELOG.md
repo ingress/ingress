@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-beta.2](https://me.github.com/ingress/ingress/compare/@ingress/http-status@2.0.0-beta.1...@ingress/http-status@2.0.0-beta.2) (2020-05-23)
+
+**Note:** Version bump only for package @ingress/http-status
+
+
+
+
+
 # [2.0.0-beta.1](https://me.github.com/ingress/ingress/compare/@ingress/http-status@2.0.0-beta.0...@ingress/http-status@2.0.0-beta.1) (2020-05-19)
 
 
