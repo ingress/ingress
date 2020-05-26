@@ -19,38 +19,16 @@ install: <code>npm i ingress</code><br><br>a utility for building applications u
 ```typescript
 import ingress, { Route } from "ingress";
 
-const app = ingress(),
-  { Controller, Service } = app;
-
-@Service
-class MyService {
-  greeting(name: string) {
-    return `hello ${name}`;
-  }
-}
-
-@Controller("prefix")
 class MyController {
-  constructor(private service: MyService) {}
   @Route.Get("input-json/:name")
   greeting(@Route.Path("name") name: string) {
-    return this.service.greeting(name);
-  }
-
-  @Route.Parse()
-  @Route.Get("input-buffer")
-  buffer(@Route.Body() buffer: typeof Buffer) {
-    return Buffer.isBuffer(buffer);
-  }
-
-  @Route.Parse({ stream: true })
-  @Route.Get("~input-stream")
-  stream(@Route.Body() stream: NodeJS.ReadableStream) {
-    return typeof stream.pipe === "function";
+    return `Hello ${name}`
   }
 }
 
-app.listen(1111);
+ingress(MyController)
+  .listen(1111)
+  .then(x => `Listening on ${x.port}`)
 ```
 
 ## Dependency Injection, Discovery, and IoC
