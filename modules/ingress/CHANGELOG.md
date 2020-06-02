@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0-beta.6](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.5...ingress@4.0.0-beta.6) (2020-06-02)
+
+
+### Bug Fixes
+
+* export statuscode ([b62e531](https://github.com/ingress/ingress/commit/b62e5319fb4fac4db385942d7e4aff2d39b039bf))
+
+
+
+
+
 # [4.0.0-beta.5](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.4...ingress@4.0.0-beta.5) (2020-06-02)
 
 
