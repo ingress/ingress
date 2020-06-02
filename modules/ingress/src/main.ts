@@ -6,6 +6,7 @@ import { Ingress, ListenOptions, Addon, Usable, SetupTeardown } from './ingress'
 export default ingress
 export { IngressApp, Route, Ingress, Context }
 export { ListenOptions, Addon, Usable, SetupTeardown }
+export { StatusCode } from '@ingress/http-status'
 
 //Supporting Symbols
 export { BaseContext, DefaultContext, BaseAuthContext, Request, Response } from './context'
