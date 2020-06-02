@@ -98,7 +98,7 @@ export type RouteParamAnnotation = typeof Body
  */
 export class HeaderParamAnnotation implements ParamAnnotation {
   constructor(private paramName: string) {}
-  extractValue(context: DefaultContext) {
+  extractValue(context: DefaultContext): any {
     return context.req.headers[this.paramName]
   }
 }

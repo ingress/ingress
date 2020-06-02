@@ -1,6 +1,7 @@
 import { parse, SubtextOptions } from '@hapi/subtext'
-import { BaseContext } from '../context'
+import { Middleware, DefaultContext } from '../context'
 import { createAnnotationFactory, Annotation } from 'reflect-annotations'
+import { Func } from '../lang'
 
 /**
  * @public
@@ -27,9 +28,9 @@ export class ParseAnnotation {
     }
   }
 
-  get middleware() {
+  get middleware(): Middleware<DefaultContext> {
     const options = this.options
-    return async (context: BaseContext<any, any>, next: any) => {
+    return async (context: DefaultContext, next: Func<Promise<any>>): Promise<any> => {
       const result = await parse(context.req, null, options)
       context.route.parserResult = result
       context.route.body = result.payload

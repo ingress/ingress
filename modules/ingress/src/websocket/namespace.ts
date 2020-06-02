@@ -34,11 +34,11 @@ export class Connection {
 
   constructor(public id: string, private conn: WebSocket, private namespace: Namespace) {}
 
-  send(message: Buffer | string, cb?: (...args: any[]) => void) {
+  send(message: Buffer | string, cb?: (...args: any[]) => void): void {
     this.conn.send(message, cb)
   }
 
-  join(name: string) {
+  join(name: string): this {
     if (this.closing) {
       return this
     }
@@ -46,13 +46,13 @@ export class Connection {
     return this
   }
 
-  leave(name: string) {
+  leave(name: string): this {
     this.channels.delete(name)
     this.namespace.removeFromChannel(name, this)
     return this
   }
 
-  end() {
+  end(): void {
     this.closing = true
     this.conn.close()
   }
@@ -89,7 +89,7 @@ export class Channel extends Map<string, Connection> {
   constructor(public name: string, public namespace: Namespace) {
     super()
   }
-  send(message: any, exclusions: Exclusions = {}) {
+  send(message: AnyJson, exclusions: Exclusions = {}): Promise<any> {
     return this.namespace.send({ message, channels: [this.name], exclusions })
   }
 }
@@ -124,7 +124,7 @@ export class Namespace {
     return Object.assign(new Connection(id, conn, this), extensions)
   }
 
-  addToChannel(name: string, ...connections: Connection[]) {
+  addToChannel(name: string, ...connections: Connection[]): Channel {
     let channel = this.channels.get(name)
     if (!channel) {
       channel = new Channel(name, this)
@@ -135,7 +135,7 @@ export class Namespace {
     return channel
   }
 
-  removeFromChannel(name: string, ...connections: Connection[]) {
+  removeFromChannel(name: string, ...connections: Connection[]): void {
     const channel = this.channels.get(name)
     if (!channel) {
       return
@@ -158,7 +158,7 @@ export class Namespace {
     channels: ToChannels
     exclusions: Exclusions | null
     ack: Acknowledgement | null
-  }) {
+  }): void {
     const toExclude = exclusions || DefaultExclusions,
       sentTo = new Set<string>()
     let payload = '',

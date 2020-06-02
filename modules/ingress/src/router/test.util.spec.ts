@@ -1,7 +1,7 @@
 import { get, request, IncomingMessage } from 'http'
 import { parse } from 'url'
 
-export function getAsync(url: string) {
+export function getAsync(url: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     get(url, (x) => parseResponse(x).then(resolve, reject))
   })

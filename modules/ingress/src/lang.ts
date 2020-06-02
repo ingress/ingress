@@ -1,16 +1,15 @@
-export function noop() {
-  void 0
-}
+export const noop = (): void => void 0
+export const identity = <T = any>(x: T): T => x
+export type Func<T = any> = (...args: any[]) => T
 
-export function identity<T = any>(x: any): x is T {
-  return x
-}
-
-export function once(fn: any, after: any = noop) {
+/**
+ * Execute {fn} one time and [after=noop] for every subsequent invocation
+ */
+export function once<T extends Func>(fn: T, after: Func = noop): T {
   const one = function (this: any, ...args: any[]) {
     const res = fn.call(this, ...args)
-    fn = after
+    fn = after as any
     return res
   }
-  return one
+  return one as T
 }
