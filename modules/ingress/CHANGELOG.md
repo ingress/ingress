@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0-beta.7](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.6...ingress@4.0.0-beta.7) (2020-06-02)
+
+
+### Bug Fixes
+
+* middleware function detection ([cee2543](https://github.com/ingress/ingress/commit/cee254330fb219f1b9e41991bbc2c065e592bb40))
+
+
+
+
+
 # [4.0.0-beta.6](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.5...ingress@4.0.0-beta.6) (2020-06-02)
 
 
