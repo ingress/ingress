@@ -30,6 +30,11 @@ export interface Response<T> extends ServerResponse {
 }
 
 /**
+ * @public
+ */
+export type Body = any
+
+/**
  * @internal
  */
 export class BaseContext<T extends BaseContext<T, A>, A extends BaseAuthContext> extends EventEmitter {
@@ -57,11 +62,11 @@ export class BaseContext<T extends BaseContext<T, A>, A extends BaseAuthContext>
     handler: { invokeAsync: Middleware<any> }
   }
 
-  get body() {
+  get body(): Body {
     return this.route.response
   }
 
-  set body(value: any) {
+  set body(value: Body) {
     this.route.response = value
   }
 

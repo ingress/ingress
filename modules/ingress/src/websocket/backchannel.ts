@@ -69,7 +69,10 @@ export class BackChannel<T> extends Subject<T> {
     })
   }
 
-  next(value: T) {
+  /**
+   * @override
+   */
+  next(value: T): void {
     this.transport.notify(this.transport.encode({ value, nodeId: this.nodeId }))
     super.next(value)
   }

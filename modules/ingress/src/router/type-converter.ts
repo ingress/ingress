@@ -24,7 +24,7 @@ export type TypeConverter<T> = ExactTypeConverter<T> | PredicateTypeConverter<T>
 export const defaultTypeConverters: TypeConverter<any>[] = [
   {
     type: Number,
-    convert: (value) => {
+    convert: (value: number): number => {
       if (value === null || isNaN(value)) {
         throw new Error(`cannot convert ${JSON.stringify(value)} to number`)
       }
@@ -33,7 +33,7 @@ export const defaultTypeConverters: TypeConverter<any>[] = [
   },
   {
     type: Boolean,
-    convert(value) {
+    convert(value: boolean | string | null | undefined): boolean {
       if (value === 'true' || value === true) {
         return true
       }
@@ -45,7 +45,7 @@ export const defaultTypeConverters: TypeConverter<any>[] = [
   },
   {
     type: String,
-    convert: (value) => {
+    convert: (value: string): string => {
       if (value === null || value === undefined) {
         throw new Error(`cannot convert ${JSON.stringify(value)} to string`)
       }
@@ -54,7 +54,7 @@ export const defaultTypeConverters: TypeConverter<any>[] = [
   },
   {
     type: Date,
-    convert: (value) => {
+    convert: (value: string | Date): Date => {
       const date = new Date(value)
 
       if (date.toString() === 'Invalid Date') {
@@ -66,7 +66,7 @@ export const defaultTypeConverters: TypeConverter<any>[] = [
   },
   {
     type: Object,
-    convert(value) {
+    convert<T>(value: T): T {
       return value
     },
   },

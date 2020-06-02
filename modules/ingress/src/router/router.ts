@@ -5,7 +5,8 @@ import { parse as parseUrl } from 'url'
 import { TypeConverter, defaultTypeConverters } from './type-converter'
 import { Type, ControllerCollector, ControllerDependencyCollector } from './controller-annotation'
 import { BaseContext } from '../context'
-import RouteRecognizer from 'route-recognizer'
+import RouteRecognizer, { Results } from 'route-recognizer'
+import { Func } from '../lang'
 
 //Exports
 export { ParseJson } from './json-parser'
@@ -50,9 +51,9 @@ export class RouterAddon<T extends BaseContext<any, any>> {
     }
   }
 
-  start() {
+  start(): Promise<any> {
     if (this.initialized) {
-      return
+      return Promise.resolve()
     }
 
     const { baseUrl } = this.options,
@@ -78,15 +79,16 @@ export class RouterAddon<T extends BaseContext<any, any>> {
         })
     )
     this.initialized = true
+    return Promise.resolve()
   }
 
-  public match(method: string, pathname: string) {
+  public match(method: string, pathname: string): Results | undefined {
     const router = this.routers[method]
     return router && router.recognize(pathname)
   }
 
   get middleware(): Middleware<T> {
-    return (context, next) => {
+    return (context: T, next: Func<Promise<any>>): Promise<any> => {
       const req = context.req,
         url = context.route.url || (context.route.url = parseUrl(req.url ?? '')),
         route = req.method && url.pathname && this.match(req.method, url.pathname + (url.search ?? '')),

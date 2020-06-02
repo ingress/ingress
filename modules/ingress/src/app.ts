@@ -1,9 +1,10 @@
-import { Container } from '@ingress/di'
+import { Container, DependencyCollector } from '@ingress/di'
 import { TypeConverter } from './router/type-converter'
 import { RouterAddon, Type } from './router/router'
 import { BaseContext, DefaultContext, BaseAuthContext } from './context'
 import { DefaultMiddleware } from './default.middleware'
 import { Ingress, Addon } from './ingress'
+import { ControllerDependencyCollector } from './router/controller-annotation'
 
 /**
  * @public
@@ -14,11 +15,6 @@ export { Container } from '@ingress/di'
  * @public
  */
 export class Context extends BaseContext<Context, BaseAuthContext> {}
-
-/**
- * @public
- */
-export type IngressApp = ReturnType<typeof ingress>
 
 /**
  * @public
@@ -41,7 +37,7 @@ export type IngressOptions<T> =
 export default function ingress<
   T extends BaseContext<T, A> = DefaultContext,
   A extends BaseAuthContext = BaseAuthContext
->(options: IngressOptions<T> = {}) {
+>(options: IngressOptions<T> = {}): IngressApp<T, A> {
   const server = new Ingress<T, A>(),
     preRoute = 'preRoute' in options ? options.preRoute : null,
     onError = 'onError' in options && options.onError ? { onError: options.onError } : undefined,
@@ -75,11 +71,22 @@ export default function ingress<
   preRoute && server.use(preRoute)
   server.use(router)
 
-  return Object.assign(server, {
+  return Object.assign(server as any, {
     container: container as Container,
     router,
     Controller: router.Controller,
     Service: container.Service,
     SingletonService: container.SingletonService,
   })
+}
+
+export type IngressApp<
+  T extends BaseContext<T, A> = DefaultContext,
+  A extends BaseAuthContext = BaseAuthContext
+> = Ingress & {
+  router: RouterAddon<T>
+  container: Container
+  Controller: ControllerDependencyCollector
+  Service: DependencyCollector
+  SingletonService: DependencyCollector
 }

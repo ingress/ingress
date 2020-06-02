@@ -1,6 +1,7 @@
 import { createAnnotationFactory } from 'reflect-annotations'
 import { StatusCode } from '@ingress/http-status'
 import { Middleware, DefaultContext } from '../context'
+import { Func } from '../lang'
 
 export interface ParseJsonBodyOptions {
   maxBytes: number
@@ -14,7 +15,7 @@ export class ParseJsonAnnotation {
 
   get middleware(): Middleware<DefaultContext> {
     const options = this.options
-    return (context, next) => {
+    return (context: DefaultContext, next: Func<Promise<any>>): any => {
       const {
         req: { headers, method },
       } = context

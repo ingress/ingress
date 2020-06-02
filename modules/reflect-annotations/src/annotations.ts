@@ -6,6 +6,7 @@ const ANNOTATIONS = 'annotations',
   RETURN_TYPE = 'design:returntype'
 
 export const AnnotationFactory = Symbol.for('reflect-annotations.factory')
+export type AnnotationFactory<T> = (...args: any[]) => Annotation<T>
 export function isAnnotationFactory(thing: any): thing is (...args: any[]) => Annotation<any> {
   return typeof thing === 'function' && thing[AnnotationFactory] === true
 }
@@ -94,8 +95,8 @@ export function createAnnotationFactory<T, A1, A2, A3, A4, A5, A6, A7, A8>(
 export function createAnnotationFactory<T, A1, A2, A3, A4, A5, A6, A7, A8, A9>(
   Type: Constructor9<T, A1, A2, A3, A4, A5, A6, A7, A8, A9>
 ): (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9) => Annotation<T>
-export function createAnnotationFactory<T>(Type: Constructor<T>): (...args: any[]) => Annotation<T>
-export function createAnnotationFactory<T>(Type: Constructor<T>) {
+export function createAnnotationFactory<T>(Type: Constructor<T>): AnnotationFactory<T>
+export function createAnnotationFactory<T>(Type: Constructor<T>): AnnotationFactory<T> {
   return Object.assign(
     function annotationFactory(...args: any[]): Annotation<T> {
       const annotationInstance = new Type(...args)

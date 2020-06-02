@@ -13,7 +13,7 @@ enum MiddlewarePriority {
   'BeforeBodyParser' = 'BeforeBodyParser',
 }
 
-export function isRoutable(maybeRoute: AnnotatedPropertyDescription) {
+export function isRoutable(maybeRoute: AnnotatedPropertyDescription): boolean {
   const annotations = maybeRoute.classAnnotations.concat(maybeRoute.methodAnnotations),
     hasMethod = annotations.some((x) => x.isRouteAnnotation),
     hasRoute = annotations.some((x) => x.isHttpMethodAnnotation)
@@ -135,7 +135,7 @@ function createParamResolver(
   }
 }
 
-export function createHandler(source: RouteMetadata, baseUrl = '/', typeConverters: TypeConverter<any>[]) {
+export function createHandler(source: RouteMetadata, baseUrl = '/', typeConverters: TypeConverter<any>[]): Handler {
   const paths = resolvePaths(baseUrl, source),
     paramAnnotations: ParamAnnotation[] = source.parameterAnnotations.length
       ? source.parameterAnnotations

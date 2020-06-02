@@ -1,4 +1,4 @@
-import { AppBuilder, Middleware, compose, functionList } from 'app-builder'
+import { AppBuilder, Middleware, compose, functionList, ContinuationMiddleware } from 'app-builder'
 import { BaseContext, DefaultContext, BaseAuthContext } from './context'
 import { Annotation, isAnnotationFactory } from 'reflect-annotations'
 import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
@@ -73,7 +73,7 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
     return context
   }
 
-  get middleware() {
+  get middleware(): ContinuationMiddleware<T> {
     return this.appBuilder.build()
   }
 
@@ -91,7 +91,7 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
     this.started = true
   }
 
-  public close() {
+  public close(): Promise<any> {
     return this.stop()
   }
 
@@ -109,7 +109,7 @@ export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends Bas
     }
   }
 
-  public async listen(options?: ListenOptions | number) {
+  public async listen(options?: ListenOptions | number): Promise<any> {
     if (!this.server) {
       this.server = new HttpServer()
     }

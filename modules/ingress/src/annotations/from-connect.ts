@@ -1,21 +1,19 @@
-import { createAnnotationFactory } from 'reflect-annotations'
-import { Middleware } from 'app-builder'
+import { createAnnotationFactory, AnnotationFactory } from 'reflect-annotations'
 import { DefaultContext } from '../context'
+import { once } from '../lang'
 
-export function fromConnect(fn: any) {
+export function fromConnect<T>(fn: (...args: any[]) => void): AnnotationFactory<T> {
   return createAnnotationFactory(
     class {
-      get middleware(): Middleware<any> {
-        return (context: DefaultContext, next: any) =>
-          new Promise((resolve, reject) => {
-            fn(context.req, context.res, (error?: Error) => {
-              if (error) {
-                reject(error)
-              } else {
-                resolve(next())
-              }
-            })
+      middleware(context: DefaultContext, next: () => Promise<void>): Promise<void> {
+        return new Promise((resolve, reject) => {
+          const nxt = once((error?: Error) => (error ? reject(error) : resolve(next())))
+          //this is contestable, should we fallthrough if the response is handled?
+          context.once('response-finished', ({ error }) => {
+            nxt(error)
           })
+          fn(context.req, context.res, nxt)
+        })
       }
     }
   )()

@@ -1,6 +1,7 @@
 import { BaseContext } from '../context'
 import { compose, Middleware } from 'app-builder'
 import { createAnnotationFactory } from 'reflect-annotations'
+import { Func } from '../lang'
 
 export type AfterRequestHandler = Middleware<BaseContext<any, any>>
 
@@ -11,7 +12,7 @@ export class AfterRequestAnnotation {
   }
   get middleware(): Middleware<BaseContext<any, any>> {
     const fn = compose(this.afterReqList)
-    return (context, next) => {
+    return (context: BaseContext<any, any>, next: Func<Promise<any>>): Promise<any> => {
       context.once('response-finished', async ({ context, error }) => {
         try {
           await fn(context)

@@ -5,6 +5,7 @@ import { Buffer } from 'buffer'
 import { Stream } from 'stream'
 import onFinished = require('on-finished')
 import destroy = require('destroy')
+import { Func } from './lang'
 
 const internalError = new Error('Internal Server Error') as Error & { statusCode: number }
 internalError.statusCode = 500
@@ -134,7 +135,7 @@ export class DefaultMiddleware<
         }
       }
 
-    return (context, next) => {
+    return (context: T, next: Func<Promise<any>>): Promise<any> => {
       context.emit('request-started', { context })
       this.inflight++
       context.handleError = (error: Error | null) => {

@@ -9,6 +9,7 @@ import {
   Annotation,
   isAnnotationFactory,
   Constructor,
+  AnnotationFactory,
 } from './annotations'
 import { reflectClassProperties } from './reflect-class'
 
@@ -79,4 +80,5 @@ export {
   setParameterAnnotations,
   createAnnotationFactory,
   isAnnotationFactory,
+  AnnotationFactory,
 }
