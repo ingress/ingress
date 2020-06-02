@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "4.0.0-beta.4",
+  "version": "4.0.0-beta.5",
   "description": "Composable nodejs applications",
   "main": "lib/main.js",
   "files": [
