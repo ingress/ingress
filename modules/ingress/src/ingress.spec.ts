@@ -1,10 +1,13 @@
 import ingress, { IngressApp } from './app'
+import { compose } from 'app-builder'
 import getPort from 'get-port'
+
+const noop = compose((x, next) => next())
 
 describe('ingress', () => {
   let app: IngressApp
 
-  beforeEach(() => (app = ingress()))
+  beforeEach(() => (app = ingress().use(noop)))
 
   afterEach(async () => {
     try {

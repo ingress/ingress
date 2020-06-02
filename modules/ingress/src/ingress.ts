@@ -3,13 +3,8 @@ import { BaseContext, DefaultContext, BaseAuthContext } from './context'
 import { Annotation, isAnnotationFactory } from 'reflect-annotations'
 import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
 
-function isMiddlewareFunction(thing: any): thing is (...args: any[]) => any {
-  if ('function' !== typeof thing) {
-    return false
-  }
-  //ensure this is not a class constructor.
-  const props = Object.getOwnPropertyNames(thing)
-  return !props.includes('prototype') || props.includes('arguments')
+function isMiddlewareFunction(value: any): value is (...args: any[]) => any {
+  return typeof value === 'function' && value.toString().indexOf('class') !== 0
 }
 
 /**
