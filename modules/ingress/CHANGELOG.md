@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0-beta.8](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.7...ingress@4.0.0-beta.8) (2020-06-03)
+
+
+### Features
+
+* usableForwardRef ([7445806](https://github.com/ingress/ingress/commit/744580640944193a980910e5d675a1a17a0c612c))
+
+
+
+
+
 # [4.0.0-beta.7](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.6...ingress@4.0.0-beta.7) (2020-06-02)
 
 
