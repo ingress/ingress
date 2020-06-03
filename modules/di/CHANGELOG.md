@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-beta.5](https://github.com/ingress/ingress/compare/@ingress/di@2.0.0-beta.4...@ingress/di@2.0.0-beta.5) (2020-06-03)
+
+
+### Bug Fixes
+
+* usableForwardRef types ([a6eb99f](https://github.com/ingress/ingress/commit/a6eb99f238ad97018650f8140cadb58e8821fc24))
+
+
+
+
+
 # [2.0.0-beta.4](https://github.com/ingress/ingress/compare/@ingress/di@2.0.0-beta.3...@ingress/di@2.0.0-beta.4) (2020-06-02)
 
 
