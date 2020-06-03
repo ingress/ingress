@@ -2,8 +2,9 @@ import { AppBuilder, Middleware, compose, functionList, ContinuationMiddleware }
 import { BaseContext, DefaultContext, BaseAuthContext } from './context'
 import { Annotation, isAnnotationFactory } from 'reflect-annotations'
 import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
+import { Func } from './lang'
 
-function isMiddlewareFunction(value: any): value is (...args: any[]) => any {
+function isMiddlewareFunction(value: any): value is Func {
   return typeof value === 'function' && value.toString().indexOf('class') !== 0
 }
 
