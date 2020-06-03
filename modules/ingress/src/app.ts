@@ -32,7 +32,7 @@ export type IngressOptions<T> =
   | (Type<any> | IngressConfiguration<T>)
   | Type<any>[]
 
-export function usableForwardRef(ref: Func): any {
+export function usableForwardRef(ref: Func | Type<any>): any {
   return {
     start(app: { container: Container }): Promise<any> {
       return Promise.resolve((app.container.get(ref) as any).start(app))
