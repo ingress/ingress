@@ -1,18 +1,20 @@
 //API
-import ingress, { IngressApp, Context } from './app'
+import ingress, { IngressApp, Context, usableForwardRef } from './app'
 import { Route } from './router/router'
 import { Ingress, ListenOptions, Addon, Usable, SetupTeardown } from './ingress'
 
 export default ingress
-export { IngressApp, Route, Ingress, Context }
+export { IngressApp, Route, Ingress, Context, usableForwardRef }
 export { ListenOptions, Addon, Usable, SetupTeardown }
 export { StatusCode } from '@ingress/http-status'
 
 //Supporting Symbols
 export { BaseContext, DefaultContext, BaseAuthContext, Request, Response } from './context'
+
 export { Authenticate } from './annotations/authenticate'
 export { fromConnect } from './annotations/from-connect'
 export { AfterRequest } from './annotations/after-request'
+
 export { compose } from 'app-builder'
 
 //SOMEDAY: alias this
