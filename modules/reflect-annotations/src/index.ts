@@ -56,7 +56,7 @@ function collectPropertyAnnotations<T = any>(property: AnnotatedPropertyDescript
 function reflectAnnotations<T = any>(
   source: Constructor<T>,
   options: { declaredOrder: boolean } = { declaredOrder: true }
-) {
+): AnnotatedPropertyDescription[] {
   const classMetadata = reflectClassProperties(source)
 
   return classMetadata.properties.reduce<AnnotatedPropertyDescription[]>((properties, propertyName) => {

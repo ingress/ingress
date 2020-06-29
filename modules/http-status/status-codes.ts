@@ -128,7 +128,7 @@ const codes = {
   509: 'Bandwidth Limit Exceeded',
   510: 'Not Extended',
   511: 'Network Authentication Required',
-  Empty: { 204: 'No Content', 205: 'Reset Content', 304: 'Not Modified' }
+  Empty: { 204: 'No Content', 205: 'Reset Content', 304: 'Not Modified' },
 }
 
 type StatusCode = typeof codes & { [key: string]: number | undefined } & {
