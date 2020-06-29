@@ -1,11 +1,12 @@
-import { reflectAnnotations, AnnotatedPropertyDescription } from 'reflect-annotations'
+import { sync as glob } from 'globby'
 import { Middleware } from 'app-builder'
-import { createHandler, Handler } from './handler'
+import { reflectAnnotations, AnnotatedPropertyDescription } from 'reflect-annotations'
 import { parse as parseUrl } from 'url'
+import RouteRecognizer, { Results } from 'route-recognizer'
+import { createHandler, Handler } from './handler'
 import { TypeConverter, defaultTypeConverters } from './type-converter'
 import { Type, ControllerCollector, ControllerDependencyCollector } from './controller-annotation'
 import { BaseContext } from '../context'
-import RouteRecognizer, { Results } from 'route-recognizer'
 import { Func } from '../lang'
 
 //Exports
@@ -26,7 +27,7 @@ const defaultOptions: RouterOptions = {
   typeConverters: [],
 }
 
-export class RouterAddon<T extends BaseContext<any, any>> {
+export class Router<T extends BaseContext<any, any>> {
   private routers: { [key: string]: RouteRecognizer }
   private options: RouterOptions
   private initialized = false
@@ -80,6 +81,10 @@ export class RouterAddon<T extends BaseContext<any, any>> {
     )
     this.initialized = true
     return Promise.resolve()
+  }
+
+  public resolveControllers(...globs: string[]): void {
+    glob(globs).forEach((x) => require(x))
   }
 
   public match(method: string, pathname: string): Results | undefined {

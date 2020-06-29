@@ -1,6 +1,6 @@
 import { Container, DependencyCollector } from '@ingress/di'
 import { TypeConverter } from './router/type-converter'
-import { RouterAddon, Type } from './router/router'
+import { Router, Type } from './router/router'
 import { BaseContext, DefaultContext, BaseAuthContext } from './context'
 import { DefaultMiddleware } from './default.middleware'
 import { Ingress, Addon } from './ingress'
@@ -57,7 +57,7 @@ export default function ingress<
     contextToken = 'contextToken' in options ? options.contextToken : Context,
     container = new Container({ contextToken }),
     baseUrl = ('router' in options && options.router?.baseUrl) || '/',
-    router = new RouterAddon<T>({ baseUrl }),
+    router = new Router<T>({ baseUrl }),
     collect = router.controllerCollector.collect
 
   if (typeof options === 'function') {
@@ -96,7 +96,7 @@ export type IngressApp<
   T extends BaseContext<T, A> = DefaultContext,
   A extends BaseAuthContext = BaseAuthContext
 > = Ingress & {
-  router: RouterAddon<T>
+  router: Router<T>
   container: Container
   Controller: ControllerDependencyCollector
   Service: DependencyCollector
