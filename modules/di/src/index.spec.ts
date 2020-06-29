@@ -60,6 +60,10 @@ describe('DI Container', () => {
       assert.ok(testD.testC === testC)
     })
 
+    //Should compile
+    const testB = container.get(TestB)
+    void testB.testA
+
     middleware(context2, () => {
       assert.ok(context2.scope !== context1.scope, 'Expected subsequent contexts to not be equal')
 

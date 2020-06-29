@@ -9,7 +9,7 @@ import {
   ReflectiveKey,
 } from 'injection-js'
 
-import { Type, DependencyCollectorList } from './collector'
+import { Type, DependencyCollectorList, DependencyCollector } from './collector'
 
 export * from './collector'
 export { ReflectiveInjector, Injector, Provider, Injectable }
@@ -49,10 +49,10 @@ export class Container<T extends ContainerContext = ContainerContext> implements
   public singletons: Provider[] = []
   public services: Provider[] = []
 
-  public get SingletonService() {
+  public get SingletonService(): DependencyCollector {
     return this.singletonCollector.collect
   }
-  public get Service() {
+  public get Service(): DependencyCollector {
     return this.serviceCollector.collect
   }
 
@@ -78,8 +78,8 @@ export class Container<T extends ContainerContext = ContainerContext> implements
       }
     }
   }
-  get<T>(token: any, notFoundValue?: any): T
-  public get<T>(token: T, notFoundValue?: any): T {
+
+  public get<T = any>(token: Type<T> | InjectionToken<T>, notFoundValue?: T): T {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.rootInjector!.get(token, notFoundValue)
   }
@@ -89,11 +89,11 @@ export class Container<T extends ContainerContext = ContainerContext> implements
     return this.rootInjector!.createChildFromResolved(this.resolvedChildProviders.concat(providers))
   }
 
-  public resolveProviders() {
+  public resolveProviders(): void {
     this.start()
   }
 
-  public start() {
+  public start(): void {
     this.singletons = Array.from(new Set([...this.singletons, ...this.singletonCollector.items]))
     this.services = Array.from(new Set([...this.services, ...this.serviceCollector.items]))
     this.rootInjector = ReflectiveInjector.resolveAndCreate(this.singletons)
@@ -101,7 +101,7 @@ export class Container<T extends ContainerContext = ContainerContext> implements
   }
 
   get middleware() {
-    return (context: T, next: () => any) => {
+    return (context: T, next: () => any): Promise<any> => {
       context.scope = this.createChild(new this.ResolvedContextProvider(context))
       return next()
     }
@@ -112,6 +112,8 @@ export class Container<T extends ContainerContext = ContainerContext> implements
  * @public
  * @param options
  */
-export default function createContainer(options: ContainerOptions) {
-  return new Container(options)
+export default function createContainer<T extends ContainerContext = ContainerContext>(
+  options: ContainerOptions
+): Container<T> {
+  return new Container<T>(options)
 }
