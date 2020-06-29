@@ -5,7 +5,9 @@ function uniqueNotConstructor(names: Array<string>, name: string) {
   return names
 }
 
-export function reflectClassProperties<T>(source: Constructor<T>) {
+export function reflectClassProperties<T>(
+  source: Constructor<T>
+): { source: Constructor<T>; properties: string[]; constructors: Constructor<T>[] } {
   const properties: string[] = [],
     constructors: Constructor<T>[] = []
 

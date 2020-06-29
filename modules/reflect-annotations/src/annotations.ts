@@ -7,7 +7,9 @@ const ANNOTATIONS = 'annotations',
 
 export const AnnotationFactory = Symbol.for('reflect-annotations.factory')
 export type AnnotationFactory<T> = (...args: any[]) => Annotation<T>
-export function isAnnotationFactory(thing: any): thing is (...args: any[]) => Annotation<any> {
+export type Target = any
+export type MaybeAnnotationFactory = any
+export function isAnnotationFactory(thing: MaybeAnnotationFactory): thing is (...args: any[]) => Annotation<any> {
   return typeof thing === 'function' && thing[AnnotationFactory] === true
 }
 export interface Constructor<T> {
@@ -44,28 +46,28 @@ export interface Constructor9<T, A1, A2, A3, A4, A5, A6, A7, A8, A9> {
   new (a1: A1, a2: A2, a3: A3, a4: A4, a5: A5, a6: A6, a7: A7, a8: A8, a9: A9): T
 }
 
-export function getAnnotations(target: any, key?: string | symbol): Array<any> {
+export function getAnnotations(target: Target, key?: string | symbol): Array<any> {
   return Reflect.getMetadata(ANNOTATIONS, target, key as any) || []
 }
 
-export function setAnnotations(target: any, key?: string | symbol, annotations?: Array<any>) {
+export function setAnnotations(target: Target, key?: string | symbol, annotations?: Array<any>): void {
   Reflect.defineMetadata(ANNOTATIONS, annotations || [], target, key as any)
 }
 
-export function getParameterAnnotations(target: any, key: string | symbol): Array<any> {
+export function getParameterAnnotations(target: Target, key: string | symbol): Array<any> {
   const annotations = Reflect.getMetadata(PARAMETER_ANNOTATIONS, target, key)
   return annotations ? Array.from(annotations) : []
 }
 
-export function setParameterAnnotations(target: any, key: string | symbol, annotations: Array<any>) {
+export function setParameterAnnotations(target: Target, key: string | symbol, annotations: Array<any>): void {
   Reflect.defineMetadata(PARAMETER_ANNOTATIONS, annotations, target, key)
 }
 
-export function getParameterTypes(target: any, key: string | symbol): Array<any> | undefined {
+export function getParameterTypes(target: Target, key: string | symbol): Array<any> | undefined {
   return Reflect.getMetadata(PARAMETER_TYPES, target, key)
 }
 
-export function getReturnType(target: any, key: string | symbol): Array<any> | undefined {
+export function getReturnType(target: Target, key: string | symbol): Array<any> | undefined {
   return Reflect.getMetadata(RETURN_TYPE, target, key)
 }
 
