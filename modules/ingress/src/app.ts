@@ -73,7 +73,7 @@ export default function ingress<
   server
     .use(defaultMiddleware)
     .use({
-      //Register Collected Routes with DI
+      //register collected routes as services just in time
       start() {
         container.services.push(...router.controllerCollector.items)
       },
