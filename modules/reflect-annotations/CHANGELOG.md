@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-beta.6](https://github.com/ingress/ingress/compare/reflect-annotations@3.0.0-beta.5...reflect-annotations@3.0.0-beta.6) (2020-06-30)
+
+**Note:** Version bump only for package reflect-annotations
+
+
+
+
+
 # [3.0.0-beta.5](https://github.com/ingress/ingress/compare/reflect-annotations@3.0.0-beta.4...reflect-annotations@3.0.0-beta.5) (2020-06-03)
 
 
