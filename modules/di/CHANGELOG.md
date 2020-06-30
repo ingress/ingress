@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-beta.6](https://github.com/ingress/ingress/compare/@ingress/di@2.0.0-beta.5...@ingress/di@2.0.0-beta.6) (2020-06-30)
+
+
+### Bug Fixes
+
+* **di:** get typing ([9825184](https://github.com/ingress/ingress/commit/982518462384c112930ebf0b8be33f91d0f6c57e))
+
+
+### Features
+
+* **router:** websocket handling ([9ebfef9](https://github.com/ingress/ingress/commit/9ebfef96bb7173158b64dd6f140ac722e385e47e))
+
+
+
+
+
 # [2.0.0-beta.5](https://github.com/ingress/ingress/compare/@ingress/di@2.0.0-beta.4...@ingress/di@2.0.0-beta.5) (2020-06-03)
 
 

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0-beta.10](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.9...ingress@4.0.0-beta.10) (2020-06-30)
+
+
+### Bug Fixes
+
+* **di:** get typing ([9825184](https://github.com/ingress/ingress/commit/982518462384c112930ebf0b8be33f91d0f6c57e))
+
+
+### Features
+
+* **router:** websocket handling ([9ebfef9](https://github.com/ingress/ingress/commit/9ebfef96bb7173158b64dd6f140ac722e385e47e))
+* add upgrade annotation ([854f714](https://github.com/ingress/ingress/commit/854f7145dce66d449e457d8d66b34a04b02f253a))
+
+
+
+
+
 # [4.0.0-beta.9](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.8...ingress@4.0.0-beta.9) (2020-06-03)
 
 
