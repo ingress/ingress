@@ -1,7 +1,8 @@
 import { Container, DependencyCollector } from '@ingress/di'
 import { TypeConverter } from './router/type-converter'
 import { Router, Type } from './router/router'
-import { BaseContext, DefaultContext, BaseAuthContext } from './context'
+import { Websockets } from './websocket/upgrade'
+import { BaseContext, DefaultContext, BaseAuthContext, Middleware } from './context'
 import { DefaultMiddleware } from './default.middleware'
 import { Ingress, Addon } from './ingress'
 import { ControllerDependencyCollector } from './router/controller-annotation'
@@ -20,6 +21,7 @@ export class Context extends BaseContext<Context, BaseAuthContext> {}
  * @public
  */
 export type IngressConfiguration<T> = {
+  preUpgrade?: Middleware<T>
   preRoute?: Addon<T>
   contextToken?: any
   onError?: (context: T) => Promise<any>
@@ -51,6 +53,8 @@ export default function ingress<
 >(options: IngressOptions<T> = {}): IngressApp<T, A> {
   const server = new Ingress<T, A>(),
     preRoute = 'preRoute' in options ? options.preRoute : null,
+    preUpgrade: Middleware<any> =
+      'preUpgrade' in options ? (options.preUpgrade as Middleware<any>) : (_, next) => next(),
     onError = 'onError' in options && options.onError ? { onError: options.onError } : undefined,
     defaultMiddleware = new DefaultMiddleware(onError),
     contextToken = 'contextToken' in options ? options.contextToken : Context,
@@ -81,6 +85,7 @@ export default function ingress<
 
   preRoute && server.use(preRoute)
   server.use(router)
+  server.use(new Websockets(preUpgrade, router, container))
 
   return Object.assign(server as any, {
     container: container as Container,

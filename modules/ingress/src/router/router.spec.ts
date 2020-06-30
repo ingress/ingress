@@ -2,16 +2,19 @@
 import ingress, { IngressApp } from '../app'
 import { Route } from './router'
 import * as sinon from 'sinon'
+import Websocket from 'ws'
 import getPortAsync from 'get-port'
 import { getAsync, postAsync } from './test.util.spec'
 import { createAnnotationFactory } from 'reflect-annotations'
+import { UpgradeBody } from '../websocket/upgrade'
+import { StatusCode } from '@ingress/http-status'
 
 async function getPort() {
   const port = await getPortAsync()
   return {
     port,
-    path(uri: string) {
-      return `http://localhost:${port}${uri}`
+    path(uri: string, protocol = 'http') {
+      return `${protocol}://localhost:${port}${uri}`
     },
   }
 }
@@ -20,7 +23,7 @@ describe('Routing', () => {
   let app: IngressApp,
     routeSpy: sinon.SinonSpy,
     orderedSpies: sinon.SinonSpy[],
-    path: (url: string) => string,
+    path: (url: string, protocol?: string) => string,
     // errorStub: sinon.SinonStub,
     expectedResponse: string
 
@@ -48,10 +51,22 @@ describe('Routing', () => {
       )
 
     @app.Controller()
-    class WebSockets {
+    class WebsocketController {
       @Route.Upgrade('something')
-      handleUpgrade() {
-        void 0
+      async handleUpgrade(@Route.Body() body: UpgradeBody) {
+        await body.accept()
+      }
+      @Route.Upgrade('something/rejectMe')
+      async handleRejectUpgrade(@Route.Body() body: UpgradeBody) {
+        body.reject()
+      }
+      @Route.Upgrade('something/unhandled')
+      async unhandledUpgrade(@Route.Body() body: UpgradeBody) {
+        void body
+      }
+      @Route.Upgrade('something/forbidden')
+      async handleForbiddenUpgrade(@Route.Body() body: UpgradeBody) {
+        body.reject(StatusCode.Forbidden)
       }
     }
     @app.Controller('route')
@@ -120,6 +135,45 @@ describe('Routing', () => {
     const getResponse = await getAsync(path('/base/route/test'))
     expect(getResponse).toEqual(expectedResponse)
     sinon.assert.calledOnce(routeSpy)
+  })
+
+  it('should allow a websocket connection', async () => {
+    const url = path('/base/something', 'ws'),
+      socket = new Websocket(url)
+    while (socket.readyState !== Websocket.OPEN) {
+      await new Promise((res) => setTimeout(res, 100))
+    }
+    socket.close()
+  })
+
+  it('should enable denying a websocket connection', async () => {
+    const url = path('/base/something/rejectMe', 'ws'),
+      socket = new Websocket(url),
+      error: Error = await new Promise((resolve) => {
+        socket.on('error', resolve)
+      })
+    expect(error.message).toEqual('Unexpected server response: 404')
+    socket.close()
+  })
+
+  it('should 404 a websocket connection if the upgrade route does not handle it', async () => {
+    const url = path('/base/something/unhandled', 'ws'),
+      socket = new Websocket(url),
+      error: Error = await new Promise((resolve) => {
+        socket.on('error', resolve)
+      })
+    expect(error.message).toEqual('Unexpected server response: 404')
+    socket.close()
+  })
+
+  it('should enable denying a websocket connection with a code', async () => {
+    const url = path('/base/something/forbidden', 'ws'),
+      socket = new Websocket(url),
+      error: Error = await new Promise((resolve) => {
+        socket.on('error', resolve)
+      })
+    expect(error.message).toEqual('Unexpected server response: 403')
+    socket.close()
   })
 
   it('should route with special characters', async () => {

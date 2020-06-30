@@ -20,6 +20,10 @@ export { compose } from 'app-builder'
 //SOMEDAY: alias this
 export { createAnnotationFactory } from 'reflect-annotations'
 
+export * from './websocket/namespace'
+export * from './websocket/upgrade'
+export * from './websocket/backchannel'
+
 export {
   PathFactory,
   Handler,
@@ -31,6 +35,8 @@ export {
   ParseOptions,
   ParseAnnotation,
   HeaderParamAnnotation,
+  UpgradeRouteAnnotation,
+  Upgrade,
   RouteParamAnnotation,
   Type,
   TypeConverter,

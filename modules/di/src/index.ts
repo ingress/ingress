@@ -89,6 +89,10 @@ export class Container<T extends ContainerContext = ContainerContext> implements
     return this.rootInjector!.createChildFromResolved(this.resolvedChildProviders.concat(providers))
   }
 
+  public createChildWithContext<T = any>(context: T): Injector {
+    return this.createChild(new this.ResolvedContextProvider(context))
+  }
+
   public resolveProviders(): void {
     this.start()
   }
@@ -102,7 +106,7 @@ export class Container<T extends ContainerContext = ContainerContext> implements
 
   get middleware() {
     return (context: T, next: () => any): Promise<any> => {
-      context.scope = this.createChild(new this.ResolvedContextProvider(context))
+      context.scope = this.createChildWithContext(context)
       return next()
     }
   }
