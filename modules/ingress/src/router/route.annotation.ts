@@ -108,7 +108,10 @@ export class HeaderParamAnnotation implements ParamAnnotation {
  */
 export class UpgradeRouteAnnotation extends RouteAnnotation {
   isBodyParser = true
-  middleware(_: DefaultContext, next: any): any {
+  middleware(context: DefaultContext, next: any): any {
+    if (context.req.method === 'UPGRADE') {
+      context.req.method = 'GET'
+    }
     return next()
   }
   constructor(path: string) {

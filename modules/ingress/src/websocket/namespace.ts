@@ -14,8 +14,9 @@ export type AnyJsonObject = { [key: string]: AnyJson }
 export type AnyJsonArray = AnyJson[]
 export type AnyJson = AnyJsonPrimitive | AnyJsonObject | AnyJsonArray
 
-type Acknowledgement = string
-type ChannelGroupName = string
+export { Ack }
+export type Acknowledgement = string
+export type ChannelGroupName = string
 export type ToChannels = string[]
 export type Message = AnyJson
 export type BackChannelMessage = [ChannelGroupName, ToChannels, Message, Exclusions | null, Acknowledgement | null]
