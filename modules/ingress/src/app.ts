@@ -5,7 +5,6 @@ import { BaseContext, DefaultContext, BaseAuthContext } from './context'
 import { DefaultMiddleware } from './default.middleware'
 import { Ingress, Addon } from './ingress'
 import { ControllerDependencyCollector } from './router/controller-annotation'
-import { Func } from './lang'
 
 /**
  * @public
@@ -32,7 +31,7 @@ export type IngressOptions<T> =
   | (Type<any> | IngressConfiguration<T>)
   | Type<any>[]
 
-export function usableForwardRef(ref: Func | Type<any>): any {
+export function usableForwardRef(ref: Type<any>): any {
   return {
     start(app: { container: Container }): Promise<any> {
       return Promise.resolve((app.container.get(ref) as any).start(app))

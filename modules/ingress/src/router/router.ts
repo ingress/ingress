@@ -8,6 +8,8 @@ import { TypeConverter, defaultTypeConverters } from './type-converter'
 import { Type, ControllerCollector, ControllerDependencyCollector } from './controller-annotation'
 import { BaseContext } from '../context'
 import { Func } from '../lang'
+import { Server } from 'http'
+import { Ingress } from '../ingress'
 
 //Exports
 export { ParseJson } from './json-parser'
@@ -31,6 +33,7 @@ export class Router<T extends BaseContext<any, any>> {
   private routers: { [key: string]: RouteRecognizer }
   private options: RouterOptions
   private initialized = false
+  private server: Server | null = null
 
   public controllerCollector = new ControllerCollector()
   public controllers: Type<any>[] = []
@@ -52,11 +55,11 @@ export class Router<T extends BaseContext<any, any>> {
     }
   }
 
-  start(): Promise<any> {
+  start(app: Ingress): Promise<any> {
     if (this.initialized) {
       return Promise.resolve()
     }
-
+    this.server = app.server as Server
     const { baseUrl } = this.options,
       controllers = Array.from(new Set([...this.controllerCollector.items, ...this.controllers]))
 
@@ -88,7 +91,7 @@ export class Router<T extends BaseContext<any, any>> {
   }
 
   public match(method: string, pathname: string): Results | undefined {
-    const router = this.routers[method]
+    const router = this.routers[method.toUpperCase()]
     return router && router.recognize(pathname)
   }
 
