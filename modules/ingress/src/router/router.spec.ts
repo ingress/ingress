@@ -47,6 +47,13 @@ describe('Routing', () => {
         }
       )
 
+    @app.Controller()
+    class WebSockets {
+      @Route.Upgrade('something')
+      handleUpgrade() {
+        void 0
+      }
+    }
     @app.Controller('route')
     class TestController {
       constructor() {

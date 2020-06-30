@@ -16,7 +16,7 @@ const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
 /**
  * @public
  */
-class RouteAnnotation {
+export class RouteAnnotation {
   public path: string
   public methods: string[] = []
   public ignoreParentPrefix: boolean
@@ -30,15 +30,15 @@ class RouteAnnotation {
     this.methods = Array.from(new Set(methods.map(upper)))
   }
 
-  get isHttpMethodAnnotation() {
+  get isHttpMethodAnnotation(): boolean {
     return Boolean(this.methods.length)
   }
 
-  get isRouteAnnotation() {
+  get isRouteAnnotation(): true {
     return true
   }
 
-  resolvePath(prefix: string, suffix?: RouteAnnotation) {
+  resolvePath(prefix: string, suffix?: RouteAnnotation): string {
     prefix = trim(prefix)
     if (!suffix) {
       return result(this.ignoreAllPrefix ? this.path : prefix + '/' + this.path)
@@ -103,11 +103,28 @@ export class HeaderParamAnnotation implements ParamAnnotation {
   }
 }
 
+/**
+ * @public
+ */
+export class UpgradeRouteAnnotation extends RouteAnnotation {
+  isBodyParser = true
+  middleware(_: DefaultContext, next: any): any {
+    return next()
+  }
+  constructor(path: string) {
+    super(path, 'Upgrade')
+  }
+}
+
 const methods = ['Get', 'Post', 'Put', 'Delete', 'Head', 'Patch'],
   /**
    * @public
    */
-  Header = createAnnotationFactory(HeaderParamAnnotation)
+  Header = createAnnotationFactory(HeaderParamAnnotation),
+  /**
+   * @public
+   */
+  Upgrade = createAnnotationFactory(UpgradeRouteAnnotation)
 
 /**
  * @public
@@ -157,6 +174,10 @@ export interface Route extends PathFactory {
    * Use Custom Parsing as a middleware annotation
    */
   Parse: typeof Parse
+  /**
+   * Accept HTTP UPGRADE Requests
+   */
+  Upgrade: typeof Upgrade
 }
 
 /**
@@ -175,14 +196,15 @@ export const Route = methods.reduce(
     Path,
     Query,
     Header,
+    Upgrade,
     Parse,
   }) as any
 ) as Route
 
 export {
-  RouteAnnotation,
   Annotation,
   Parse,
+  Upgrade,
   Header,
   /**
    * @public
