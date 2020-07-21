@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 3.0.0-beta.7 (2020-07-21)
+
+
+### Bug Fixes
+
+* provide default type for Annotation ([154dc85](https://github.com/ingress/ingress/commit/154dc85a338ccf9a98e922e6c09578d635ae1f6b))
+* route-recognizer uri regex encoding ([52cd56b](https://github.com/ingress/ingress/commit/52cd56b1cd16ae9c5039b3c12a98aeb85b979d09))
+* type references ([2d4335e](https://github.com/ingress/ingress/commit/2d4335e7e360d8e95d3fa3115edb75a807ccfca8))
+* usableForwardRef types ([ce9f173](https://github.com/ingress/ingress/commit/ce9f173a011886641f8e8e04579ba03706eb5c58))
+* **di:** use Set for collectors ([1367451](https://github.com/ingress/ingress/commit/1367451b6ab708e8608e6d162a629dcc5b6e8969))
+* **reflect-annoations:** export Annotations type ([075b94f](https://github.com/ingress/ingress/commit/075b94f70bf842e3f8aa42a2e2b76fd926246a45))
+
+
+### Features
+
+* expose annotationInstnace on annotations ([4543480](https://github.com/ingress/ingress/commit/45434801c42b6ff4ca5bfeab56ba28075f955423))
+* ingress package ([2889abb](https://github.com/ingress/ingress/commit/2889abb9668e38a7b5b7769c6b77da3b419eed0d))
+* public api ([c3c4ddf](https://github.com/ingress/ingress/commit/c3c4ddf8105304d32b4217fda32676e165cc1246))
+* type as converter ([f11268c](https://github.com/ingress/ingress/commit/f11268ccf7bae5cd51e0e82ba7eb7eedcacc0843))
+* type updates, api pruning ([a5f9b2f](https://github.com/ingress/ingress/commit/a5f9b2f660663875d09dbea921e1e25c1eb500b5))
+* **router:** remove subtext dependency ([47b31a4](https://github.com/ingress/ingress/commit/47b31a4aa47e281b742d0c3505ea05c0838fbe04))
+
+
+
+
+
 # [3.0.0-beta.6](https://github.com/ingress/ingress/compare/reflect-annotations@3.0.0-beta.5...reflect-annotations@3.0.0-beta.6) (2020-06-30)
 
 **Note:** Version bump only for package reflect-annotations

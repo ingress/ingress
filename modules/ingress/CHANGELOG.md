@@ -3,6 +3,58 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 4.0.0-beta.11 (2020-07-21)
+
+
+### Bug Fixes
+
+* **di:** get typing ([db535a6](https://github.com/ingress/ingress/commit/db535a6dc6fdc380bf0fe827fcf98153ef1b736f))
+* add new default type converter ([7725b1f](https://github.com/ingress/ingress/commit/7725b1f49c77c3dd74f73ee905d5f018e023b145))
+* adjust exports for portability ([517ef60](https://github.com/ingress/ingress/commit/517ef60e363af789570ed3181cba4a27f0d74b7d))
+* better handling of falsy body values ([8afc23d](https://github.com/ingress/ingress/commit/8afc23d3b4f1dc5bbb784d60aaf7892c1549c266))
+* default value for typeconverters ([1715508](https://github.com/ingress/ingress/commit/1715508f790be287b7c1410cab999065386abb37))
+* don't set default host on listen ([a6c7200](https://github.com/ingress/ingress/commit/a6c720024753577b67a04c04efaa1ed1a92de1e8))
+* ensure unique controller set ([c3dfd7b](https://github.com/ingress/ingress/commit/c3dfd7b5b40f6a98efc741892e7b0eb7c49e2a14))
+* error when function arity is less than two ([b368003](https://github.com/ingress/ingress/commit/b36800323bee953312e66307f6c117ae15f052e0))
+* export additional annotations ([ccfde1d](https://github.com/ingress/ingress/commit/ccfde1dd3aee95cf0c00a5d51699075d64313a36))
+* export BaseAuthContext as an interface ([7f8a0d3](https://github.com/ingress/ingress/commit/7f8a0d34a3c8ad129b185776813e6885016b0436))
+* export context token type and value ([f60c2b7](https://github.com/ingress/ingress/commit/f60c2b7f52dd3f37f270bebd32a9f38ab8f0aee5))
+* export di ([9f92521](https://github.com/ingress/ingress/commit/9f92521ca5cd85e0680f9cde5f1b13894555d3d8))
+* export statuscode ([220449c](https://github.com/ingress/ingress/commit/220449c35709eba9da23f0f42c02c01d61e6aef6))
+* include search in url for route ([be19fec](https://github.com/ingress/ingress/commit/be19fec488b1fd4ffa78c38f5e82684a5d895279))
+* loosen types for fromConnect ([fe47e95](https://github.com/ingress/ingress/commit/fe47e954e182839f162c03d40f0ea1ae0c72deb2))
+* middleware function detection ([ab39b38](https://github.com/ingress/ingress/commit/ab39b3832a80e944b53e0cbeae426258c9eaa2db))
+* only use defaulttypeconverters if non are provided ([9651d43](https://github.com/ingress/ingress/commit/9651d43119d8722ec00a7380cd1d319154fee3e2))
+* route-recognizer uri regex encoding ([52cd56b](https://github.com/ingress/ingress/commit/52cd56b1cd16ae9c5039b3c12a98aeb85b979d09))
+* type references ([2d4335e](https://github.com/ingress/ingress/commit/2d4335e7e360d8e95d3fa3115edb75a807ccfca8))
+* usableForwardRef types ([ce9f173](https://github.com/ingress/ingress/commit/ce9f173a011886641f8e8e04579ba03706eb5c58))
+* **di:** use Set for collectors ([1367451](https://github.com/ingress/ingress/commit/1367451b6ab708e8608e6d162a629dcc5b6e8969))
+* use statusCode property of error ([5c5425e](https://github.com/ingress/ingress/commit/5c5425e0cc734802d49056d2c9f70670b58f16ac))
+* **annotation:** allow multiple methods per route annotation ([c7daef3](https://github.com/ingress/ingress/commit/c7daef308f2e5bb7cbf06601f372c464ce4f0a72))
+
+
+### Features
+
+* **router:** websocket handling ([b494f17](https://github.com/ingress/ingress/commit/b494f171c29690cf64111887899e485fe0e22663))
+* add context param annotation ([f2ad69f](https://github.com/ingress/ingress/commit/f2ad69f3392eeffda319203a4f17049d544ba173))
+* add upgrade annotation ([2914241](https://github.com/ingress/ingress/commit/2914241f453dea418f926cb0de49701f93668dd2))
+* allow paramter types to be a type converter and paramter extractors ([458f83e](https://github.com/ingress/ingress/commit/458f83e659a6174787b5fbabcb38edee1b344ac7))
+* authenticate annotation ([a8b58ab](https://github.com/ingress/ingress/commit/a8b58ab0c1f29c047970062d302d5f2e0d585b4a))
+* enable async parameter resolution ([6b34040](https://github.com/ingress/ingress/commit/6b34040a40432ad854dfec7f8c807bf2568f7fd1))
+* fromConnect annotation ([5f804cd](https://github.com/ingress/ingress/commit/5f804cd8b9184938fbe47356738b5cda69f37671))
+* ingress package ([2889abb](https://github.com/ingress/ingress/commit/2889abb9668e38a7b5b7769c6b77da3b419eed0d))
+* lazy parse url ([78eb858](https://github.com/ingress/ingress/commit/78eb8588d73984bad2d41192477d9ff1e3dcd09c))
+* public api ([c3c4ddf](https://github.com/ingress/ingress/commit/c3c4ddf8105304d32b4217fda32676e165cc1246))
+* set 400 status code for failed parameter validation ([c71bdbe](https://github.com/ingress/ingress/commit/c71bdbe4430523c389ff75fc38251c6ce23a3f87))
+* support prioritizing middleware ([c2e91c6](https://github.com/ingress/ingress/commit/c2e91c66b141dbb08d665de22b5756a13762255f))
+* type as converter ([f11268c](https://github.com/ingress/ingress/commit/f11268ccf7bae5cd51e0e82ba7eb7eedcacc0843))
+* type updates, api pruning ([a5f9b2f](https://github.com/ingress/ingress/commit/a5f9b2f660663875d09dbea921e1e25c1eb500b5))
+* usableForwardRef ([d8e7eef](https://github.com/ingress/ingress/commit/d8e7eef8e5b26ed167241abef600ae28dd12cf0a))
+
+
+
+
+
 # [4.0.0-beta.10](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.9...ingress@4.0.0-beta.10) (2020-06-30)
 
 

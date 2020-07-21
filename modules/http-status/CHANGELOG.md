@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 2.0.0-beta.6 (2020-07-21)
+
+
+### Bug Fixes
+
+* route-recognizer uri regex encoding ([52cd56b](https://me.github.com/ingress/ingress/commit/52cd56b1cd16ae9c5039b3c12a98aeb85b979d09))
+* type references ([2d4335e](https://me.github.com/ingress/ingress/commit/2d4335e7e360d8e95d3fa3115edb75a807ccfca8))
+* usableForwardRef types ([ce9f173](https://me.github.com/ingress/ingress/commit/ce9f173a011886641f8e8e04579ba03706eb5c58))
+
+
+### Features
+
+* fromConnect annotation ([5f804cd](https://me.github.com/ingress/ingress/commit/5f804cd8b9184938fbe47356738b5cda69f37671))
+* public api ([c3c4ddf](https://me.github.com/ingress/ingress/commit/c3c4ddf8105304d32b4217fda32676e165cc1246))
+* type as converter ([f11268c](https://me.github.com/ingress/ingress/commit/f11268ccf7bae5cd51e0e82ba7eb7eedcacc0843))
+* type updates, api pruning ([a5f9b2f](https://me.github.com/ingress/ingress/commit/a5f9b2f660663875d09dbea921e1e25c1eb500b5))
+
+
+
+
+
 # [2.0.0-beta.5](https://me.github.com/ingress/ingress/compare/@ingress/http-status@2.0.0-beta.4...@ingress/http-status@2.0.0-beta.5) (2020-06-30)
 
 **Note:** Version bump only for package @ingress/http-status

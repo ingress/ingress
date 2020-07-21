@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "4.0.0-beta.10",
+  "version": "4.0.0-beta.11",
   "description": "Composable nodejs applications",
   "main": "lib/main.js",
   "files": [
@@ -80,14 +80,14 @@
   },
   "dependencies": {
     "@hapi/subtext": "~7.0.3",
-    "@ingress/di": "^2.0.0-beta.6",
-    "@ingress/http-status": "^2.0.0-beta.5",
+    "@ingress/di": "^2.0.0-beta.7",
+    "@ingress/http-status": "^2.0.0-beta.6",
     "app-builder": "^6.2.2",
     "destroy": "~1.0.4",
     "globby": "^11.0.1",
     "on-finished": "~2.3.0",
     "parseurl": "^1.3.3",
-    "reflect-annotations": "^3.0.0-beta.6",
+    "reflect-annotations": "^3.0.0-beta.7",
     "route-recognizer": "0.3.4",
     "rxjs": "~6.6.0",
     "uuid": "^8.2.0",
