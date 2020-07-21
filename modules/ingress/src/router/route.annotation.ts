@@ -1,6 +1,7 @@
 import { createAnnotationFactory, Annotation } from 'reflect-annotations'
 import { Parse } from './parse.annotation'
 import { DefaultContext } from '../context'
+import { Func } from '../lang'
 
 const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
   result = (x: string) => '/' + trim(x),
@@ -108,7 +109,7 @@ export class HeaderParamAnnotation implements ParamAnnotation {
  */
 export class UpgradeRouteAnnotation extends RouteAnnotation {
   isBodyParser = true
-  middleware(context: DefaultContext, next: any): any {
+  middleware(context: DefaultContext, next: Func<Promise<any>>): any {
     if (context.req.method === 'UPGRADE') {
       context.req.method = 'GET'
     }
