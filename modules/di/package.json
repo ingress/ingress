@@ -91,5 +91,6 @@
       "@typescript-eslint/explicit-function-return-type": 0,
       "@typescript-eslint/no-use-before-define": 0
     }
-  }
+  },
+  "gitHead": "cadec1351b12db9aca612ba584b8267c76834683"
 }
