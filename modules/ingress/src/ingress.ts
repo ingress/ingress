@@ -11,7 +11,10 @@ function isMiddlewareFunction(value: any): value is Func {
 /**
  * @public
  */
-export class Ingress<T extends BaseContext<T, A> = DefaultContext, A extends BaseAuthContext = BaseAuthContext> {
+export class Ingress<
+  T extends BaseContext<T, A> = DefaultContext,
+  A extends BaseAuthContext = BaseAuthContext
+> {
   private appBuilder = new AppBuilder<T>()
   private stopping = false
   private starting = false
@@ -151,7 +154,9 @@ export interface Usable<T> {
 /**
  * @public
  */
-export type Addon<T> = (Annotation<Usable<T>> | Usable<T> | (Usable<T> & Middleware<T>)) & { [key: string]: any }
+export type Addon<T> = (Annotation<Usable<T>> | Usable<T> | (Usable<T> & Middleware<T>)) & {
+  [key: string]: any
+}
 /**
  * @public
  */

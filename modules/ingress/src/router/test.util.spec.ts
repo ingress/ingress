@@ -1,5 +1,19 @@
 import { get, request, IncomingMessage } from 'http'
 import { parse } from 'url'
+import getPortAsync from 'get-port'
+
+export async function getPort(): Promise<{
+  port: number
+  path: (uri: string, protocol?: string) => string
+}> {
+  const port = await getPortAsync()
+  return {
+    port,
+    path(uri: string, protocol = 'http') {
+      return `${protocol}://localhost:${port}${uri}`
+    },
+  }
+}
 
 export function getAsync(url: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {

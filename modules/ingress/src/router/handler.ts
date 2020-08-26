@@ -39,7 +39,9 @@ function extractMiddleware<T>(route: RouteMetadata): Array<Middleware<T>> {
 }
 
 function extractBodyParser(route: RouteMetadata) {
-  const bodyParser = route.classAnnotations.concat(route.methodAnnotations).find((x) => x.isBodyParser)
+  const bodyParser = route.classAnnotations
+    .concat(route.methodAnnotations)
+    .find((x) => x.isBodyParser)
   return bodyParser ? bodyParser.middleware : parseJson
 }
 
@@ -73,7 +75,9 @@ function resolveRouteMiddleware<T extends BaseContext<any, any>>(handler: {
       e.statusCode = e.statusCode || 400
       throw e
     }
-    const result = await Promise.resolve(controllerMethod.call(context.route.controllerInstance, ...params))
+    const result = await Promise.resolve(
+      controllerMethod.call(context.route.controllerInstance, ...params)
+    )
     if (result !== undefined) {
       context.body = result
     }
@@ -103,7 +107,11 @@ function createParamResolver(
   typeConverters: TypeConverter<any>[]
 ): ParamResolver {
   const paramType = source.types?.parameters?.[index],
-    pick = annotation?.extractValue?.bind(annotation) || paramType?.extractValue?.bind(paramType) || pickRequest
+    pick =
+      annotation?.extractValue?.bind(annotation) ||
+      paramType?.extractValue?.bind(paramType) ||
+      pickRequest
+
   if (!annotation && !paramType) {
     return pick
   }
@@ -114,7 +122,10 @@ function createParamResolver(
 
   let typeConverter: TypeConverter<any> | undefined = undefined
   for (const c of typeConverters) {
-    if (('type' in c && c.type === paramType) || ('typePredicate' in c && c.typePredicate(paramType))) {
+    if (
+      ('type' in c && c.type === paramType) ||
+      ('typePredicate' in c && c.typePredicate(paramType))
+    ) {
       typeConverter = c
       break
     }
@@ -122,9 +133,9 @@ function createParamResolver(
 
   if (!typeConverter) {
     throw new Error(
-      `No type converter found for: ${source.controller.name}.${source.name} at parameter ${index}:${
-        paramType.name || paramType
-      }`
+      `No type converter found for: ${source.controller.name}.${
+        source.name
+      } at parameter ${index}:${paramType.name || paramType}`
     )
   }
   const converter = typeConverter
@@ -135,15 +146,21 @@ function createParamResolver(
   }
 }
 
-export function createHandler(source: RouteMetadata, baseUrl = '/', typeConverters: TypeConverter<any>[]): Handler {
+export function createHandler(
+  source: RouteMetadata,
+  baseUrl = '/',
+  typeConverters: TypeConverter<any>[]
+): Handler {
   const paths = resolvePaths(baseUrl, source),
-    paramAnnotations: ParamAnnotation[] = source.parameterAnnotations.length
-      ? source.parameterAnnotations
-      : [undefined],
+    paramAnnotations: ParamAnnotation[] = Array.from(
+      Array(source.types.parameters?.length),
+      (x, i) => {
+        return source.parameterAnnotations[i] || undefined
+      }
+    ),
     paramResolvers = paramAnnotations.map((annotation, index) =>
       createParamResolver(source, annotation, index, typeConverters)
     )
-
   let handlerRef: any
   const handler = {
     path: '',

@@ -26,10 +26,25 @@
     "registry": "http://registry.npmjs.org/"
   },
   "jest": {
-    "testRegex": ".*?\\.spec\\.js",
+    "testRegex": ".*?\\.spec\\.ts",
     "testPathIgnorePatterns": [
-      ".*?\\.spec\\.ts$",
-      ".*?\\.util\\.spec\\.js$"
+      ".*?\\.util\\.spec\\.ts$"
+    ]
+  },
+  "babel": {
+    "presets": [
+      ["@babel/preset-env", { "targets": { "node": "current" }}],
+      "@babel/preset-typescript"
+    ],
+    "plugins": [
+      "babel-plugin-transform-typescript-metadata",
+      [
+        "@babel/plugin-proposal-decorators",
+        {
+          "legacy": true
+        }
+      ],
+      "@babel/plugin-proposal-class-properties"
     ]
   },
   "eslintConfig": {
@@ -76,7 +91,7 @@
     "parser": "typescript",
     "semi": false,
     "singleQuote": true,
-    "printWidth": 120
+    "printWidth": 100
   },
   "dependencies": {
     "@hapi/subtext": "~7.0.3",
@@ -84,35 +99,38 @@
     "@ingress/http-status": "^2.0.0-beta.8",
     "app-builder": "^6.2.2",
     "destroy": "~1.0.4",
-    "globby": "^11.0.1",
     "on-finished": "~2.3.0",
-    "parseurl": "^1.3.3",
     "reflect-annotations": "^3.0.0-beta.9",
     "route-recognizer": "0.3.4",
-    "rxjs": "~6.6.0",
-    "uuid": "^8.2.0",
+    "rxjs": "~6.6.2",
+    "uuid": "^8.3.0",
     "ws": "^7.3.1"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-decorators": "^7.10.5",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-typescript": "^7.10.4",
     "@types/destroy": "~1.0.0",
-    "@types/jest": "^26.0.7",
-    "@types/node": "^14.0.25",
+    "@types/jest": "^26.0.8",
+    "@types/node": "^14.0.27",
     "@types/on-finished": "~2.3.1",
     "@types/route-recognizer": "0.3.0",
     "@types/sinon": "^9.0.4",
     "@types/uuid": "^8.0.0",
     "@types/websocket": "~1.0.1",
     "@types/ws": "^7.2.6",
-    "@typescript-eslint/eslint-plugin": "^3.7.0",
-    "@typescript-eslint/parser": "^3.7.0",
+    "@typescript-eslint/eslint-plugin": "^3.7.1",
+    "@typescript-eslint/parser": "^3.7.1",
+    "babel-plugin-transform-typescript-metadata": "^0.3.0",
     "concurrently": "^5.2.0",
     "cross-fetch": "~3.0.5",
-    "eslint": "^7.5.0",
+    "eslint": "^7.6.0",
     "eslint-config-prettier": "~6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-watch": "^7.0.0",
     "get-port": "~5.1.1",
-    "jest": "^26.1.0",
+    "jest": "^26.2.2",
     "prettier": "^2.0.5",
     "reflect-metadata": "^0.1.13",
     "sinon": "^9.0.2",

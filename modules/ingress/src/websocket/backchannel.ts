@@ -58,7 +58,9 @@ export class BackChannel<T> extends Subject<T> {
     this.transport = Object.assign(transport, {
       encode: 'encode' in transport ? transport.encode.bind(transport) : JSON.stringify,
       decode:
-        'decode' in transport ? transport.decode.bind(transport) : (e: Buffer | string) => JSON.parse(e.toString()),
+        'decode' in transport
+          ? transport.decode.bind(transport)
+          : (e: Buffer | string) => JSON.parse(e.toString()),
     })
     BackChannel.instances[this.channel] = this
     this.transport.listen((message) => {

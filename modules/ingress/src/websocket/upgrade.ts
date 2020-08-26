@@ -21,7 +21,11 @@ export type UpgradeBody = {
 export class Websockets {
   private server = new Server({ noServer: true, clientTracking: false })
   private onUpgrade: Func | null = null
-  constructor(private preUpgrade: Middleware<any>, private router: Router<any>, private container: Container<any>) {}
+  constructor(
+    private preUpgrade: Middleware<any>,
+    private router: Router<any>,
+    private container: Container<any>
+  ) {}
 
   setupUpgradeHandler(app: Ingress): void {
     let handled = false

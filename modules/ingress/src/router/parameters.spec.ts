@@ -78,7 +78,7 @@ describe('Parameters', () => {
       }
 
       @Route.Post('context-param')
-      contextParam(context: Context) {
+      contextParam(@Route.Header('host') host: string, context: Context) {
         routeSpy()
         context.res.statusCode = 201
         context.body = expectedResponse
@@ -148,7 +148,9 @@ describe('Parameters', () => {
   })
 
   it('should look up a header', async () => {
-    const res = await postAsync(path('/base/route/header'), { headers: { expected: expectedResponse } })
+    const res = await postAsync(path('/base/route/header'), {
+      headers: { expected: expectedResponse },
+    })
     expect(res).toEqual(expectedResponse)
   })
 
@@ -158,9 +160,12 @@ describe('Parameters', () => {
         headers: { expected: 'true' },
       })
       expect(JSON.parse(res)).toEqual([true, true, true])
-      const res2 = await postAsync(path('/base/route/type-conversion/booleans/false?expected=false'), {
-        headers: { expected: 'false' },
-      })
+      const res2 = await postAsync(
+        path('/base/route/type-conversion/booleans/false?expected=false'),
+        {
+          headers: { expected: 'false' },
+        }
+      )
       expectError = true
       try {
         await postAsync(path('/base/route/type-conversion/booleans/wat'))
@@ -168,7 +173,10 @@ describe('Parameters', () => {
         expect(e.statusMessage).toEqual('Bad Request')
         expect(e.statusCode).toEqual(400)
       }
-      sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to boolean' } }))
+      sinon.assert.calledWith(
+        errorStub,
+        sinon.match({ error: { message: 'cannot convert undefined to boolean' } })
+      )
     })
 
     it('should convert a Number parameter', async () => {
@@ -187,7 +195,10 @@ describe('Parameters', () => {
         expect(e.statusMessage).toEqual('Bad Request')
         expect(e.statusCode).toEqual(400)
       }
-      sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert "foo" to number' } }))
+      sinon.assert.calledWith(
+        errorStub,
+        sinon.match({ error: { message: 'cannot convert "foo" to number' } })
+      )
       expectError = true
       try {
         await postAsync(path('/base/route/type-conversion/numbers/4'), {
@@ -198,7 +209,10 @@ describe('Parameters', () => {
         expect(e.statusMessage).toEqual('Bad Request')
         expect(e.statusCode).toEqual(400)
       }
-      sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert null to number' } }))
+      sinon.assert.calledWith(
+        errorStub,
+        sinon.match({ error: { message: 'cannot convert null to number' } })
+      )
       expectError = true
       try {
         await postAsync(path('/base/route/type-conversion/numbers/4'), { data: '2' })
@@ -206,7 +220,10 @@ describe('Parameters', () => {
         expect(e.statusMessage).toEqual('Bad Request')
         expect(e.statusCode).toEqual(400)
       }
-      sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to number' } }))
+      sinon.assert.calledWith(
+        errorStub,
+        sinon.match({ error: { message: 'cannot convert undefined to number' } })
+      )
     })
   })
 
@@ -226,7 +243,10 @@ describe('Parameters', () => {
       expect(e.statusMessage).toEqual('Bad Request')
       expect(e.statusCode).toEqual(400)
     }
-    sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert null to string' } }))
+    sinon.assert.calledWith(
+      errorStub,
+      sinon.match({ error: { message: 'cannot convert null to string' } })
+    )
 
     try {
       await postAsync(path('/base/route/type-conversion/strings/one'))
@@ -234,7 +254,10 @@ describe('Parameters', () => {
       expect(e.statusMessage).toEqual('Bad Request')
       expect(e.statusCode).toEqual(400)
     }
-    sinon.assert.calledWith(errorStub, sinon.match({ error: { message: 'cannot convert undefined to string' } }))
+    sinon.assert.calledWith(
+      errorStub,
+      sinon.match({ error: { message: 'cannot convert undefined to string' } })
+    )
   })
 
   it('should allow a custom type converter', async () => {
@@ -271,6 +294,8 @@ describe('Parameters', () => {
       error = e
     }
     //reflective error message
-    expect(error?.message).toEqual('No type converter found for: Routes.somePath at parameter 0:SomeType')
+    expect(error?.message).toEqual(
+      'No type converter found for: Routes.somePath at parameter 0:SomeType'
+    )
   })
 })

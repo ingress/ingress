@@ -228,7 +228,9 @@ describe('Routing', () => {
     const expectedQuery = { a: 'b', b: 'c' },
       expectedParams = { a: '1', b: '2', c: '3' },
       expectedBody = { hello: 'world' },
-      response = await postAsync(path('/base/route/parameterized/1/2/3?a=b&b=c'), { data: expectedBody })
+      response = await postAsync(path('/base/route/parameterized/1/2/3?a=b&b=c'), {
+        data: expectedBody,
+      })
 
     expect(JSON.parse(response)).toEqual({
       body: expectedBody,

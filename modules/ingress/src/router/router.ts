@@ -1,4 +1,3 @@
-import { sync as glob } from 'globby'
 import { Middleware } from 'app-builder'
 import { reflectAnnotations, AnnotatedPropertyDescription } from 'reflect-annotations'
 import { parse as parseUrl } from 'url'
@@ -53,7 +52,7 @@ export class Router<T extends BaseContext<any, any>> {
   }
 
   public handlesUpgrade(): boolean {
-    return Boolean(this.routers['UPGRADE'])
+    return Boolean(this.routers.UPGRADE)
   }
 
   start(): Promise<any> {
@@ -67,7 +66,9 @@ export class Router<T extends BaseContext<any, any>> {
       ...controllers
         .reduce<AnnotatedPropertyDescription[]>(
           (routes, controller) =>
-            routes.concat(...reflectAnnotations(controller).map((x) => Object.assign(x, { controller }))),
+            routes.concat(
+              ...reflectAnnotations(controller).map((x) => Object.assign(x, { controller }))
+            ),
           []
         )
         .map((route: any) => {
@@ -86,10 +87,6 @@ export class Router<T extends BaseContext<any, any>> {
     return Promise.resolve()
   }
 
-  public resolveControllers(...globs: string[]): void {
-    glob(globs).forEach((x) => require(x))
-  }
-
   public match(method: string, pathname: string): Results | undefined {
     const router = this.routers[method.toUpperCase()]
     return router && router.recognize(pathname)
@@ -99,7 +96,8 @@ export class Router<T extends BaseContext<any, any>> {
     return (context: T, next: Func<Promise<any>>): Promise<any> => {
       const req = context.req,
         url = context.route.url || (context.route.url = parseUrl(req.url ?? '')),
-        route = req.method && url.pathname && this.match(req.method, url.pathname + (url.search ?? '')),
+        route =
+          req.method && url.pathname && this.match(req.method, url.pathname + (url.search ?? '')),
         match = route && route[0],
         handler = match && (match.handler as Handler)
 
@@ -112,7 +110,6 @@ export class Router<T extends BaseContext<any, any>> {
         controllerInstance: context.scope.get(handler.controller),
         parserResult: null,
       })
-
       context.res.statusCode = 200
       context.route.query = (route as any).queryParams || Object.create(null)
       context.route.params = match.params || Object.create(null)

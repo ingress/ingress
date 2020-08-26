@@ -1,6 +1,6 @@
 export class TimeoutError extends Error {
   public name = 'TimeoutError'
-  constructor(...args: any[]) {
+  constructor(public ackId: string, ...args: any[]) {
     super(...args)
     Error.captureStackTrace(this, TimeoutError)
   }
@@ -15,7 +15,7 @@ export class Ack<T = any> {
   promise: Promise<T>
   constructor(pending: Map<string, Ack>, public id: string, public timeout: number) {
     this.promise = new Promise((resolve, reject) => {
-      const timer = setTimeout(() => this.reject(new TimeoutError()), timeout)
+      const timer = setTimeout(() => this.reject(new TimeoutError(id)), timeout)
       this.resolve = (x) => {
         pending.delete(id)
         clearTimeout(timer)

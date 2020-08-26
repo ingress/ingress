@@ -50,7 +50,12 @@ function jsonParse(body: string) {
   }
 }
 
-function parseJsonReq(context: DefaultContext, contentLength: number, next: () => any, options: ParseJsonBodyOptions) {
+function parseJsonReq(
+  context: DefaultContext,
+  contentLength: number,
+  next: () => any,
+  options: ParseJsonBodyOptions
+) {
   const { maxBytes } = options,
     { req } = context
   let byteLength = 0,

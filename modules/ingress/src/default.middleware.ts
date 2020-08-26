@@ -1,10 +1,17 @@
 import { StatusCode } from '@ingress/http-status'
 import { ServerResponse } from 'http'
-import { Middleware, BaseAuthContext, BaseContext, DefaultContext, Response, Request } from './context'
+import {
+  Middleware,
+  BaseAuthContext,
+  BaseContext,
+  DefaultContext,
+  Response,
+  Request,
+} from './context'
 import { Buffer } from 'buffer'
 import { Stream } from 'stream'
-import onFinished = require('on-finished')
-import destroy = require('destroy')
+import onFinished from 'on-finished'
+import destroy from 'destroy'
 import { Func } from './lang'
 
 const internalError = new Error('Internal Server Error') as Error & { statusCode: number }
@@ -96,7 +103,8 @@ export class DefaultMiddleware<
     }
 
     if (isString(body)) {
-      !hasContentType && this._contentType(res, 'text/' + (looksLikeHtmlRE.test(body) ? 'html' : 'plain'))
+      !hasContentType &&
+        this._contentType(res, 'text/' + (looksLikeHtmlRE.test(body) ? 'html' : 'plain'))
       this._contentLength(res, Buffer.byteLength(body))
       return res.end(body)
     }

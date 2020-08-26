@@ -51,4 +51,6 @@ interface AuthenticateAnnotationFactory {
   (options?: Authenticator<any> | AuthenticateOptions): Annotation<AuthenticateAnnotation<any>>
 }
 
-export const Authenticate: AuthenticateAnnotationFactory = createAnnotationFactory(AuthenticateAnnotation)
+export const Authenticate: AuthenticateAnnotationFactory = createAnnotationFactory(
+  AuthenticateAnnotation
+)

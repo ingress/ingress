@@ -1,7 +1,7 @@
 import WebSocket from 'ws'
-import { Subject, fromEvent, Observable } from 'rxjs'
+import { Subject, fromEvent, merge, Observable, SubscriptionLike, Subscription } from 'rxjs'
 import { Ack } from './ack'
-import { map } from 'rxjs/operators'
+import { map, takeUntil, take } from 'rxjs/operators'
 import { createBackChannel } from './backchannel'
 import { noop, once } from '../lang'
 
@@ -16,11 +16,19 @@ export type AnyJson = AnyJsonPrimitive | AnyJsonObject | AnyJsonArray
 
 export { Ack }
 export type Acknowledgement = string
-export type ChannelGroupName = string
+export type ChannelNamespace = string
 export type ToChannels = string[]
 export type Message = AnyJson
-export type BackChannelMessage = [ChannelGroupName, ToChannels, Message, Exclusions | null, Acknowledgement | null]
+export type BackChannelMessage = [
+  ChannelNamespace,
+  ToChannels,
+  Message,
+  Exclusions | null,
+  Acknowledgement | null
+]
 export type LocalMessage = [ToChannels, Message, Exclusions | null, Acknowledgement | null]
+
+const AckChannelNamespace = '__ack__'
 export class SocketMessage {
   constructor(public message: Message, public connection: Connection) {}
 }
@@ -29,9 +37,16 @@ export class Connection {
   channels = new Map<string, Channel>()
   private closing = false
   onPong = fromEvent(this.conn as any, 'pong').pipe(map(() => this._onPong()))
-  onMessage = fromEvent(this.conn as any, 'message').pipe(map((x: any) => this._onMessage(x)))
-  onClose = fromEvent(this.conn as any, 'close').pipe(map(() => this._onClose()))
-  onError = fromEvent<Error>(this.conn as any, 'error').pipe(map((e) => this._onError(e)))
+  onClose = fromEvent<WebSocket.MessageEvent>(this.conn as any, 'close').pipe(
+    map(() => this._onClose())
+  )
+  onError: Observable<{ error: Error; connection: Connection }> = fromEvent<Error>(
+    this.conn as any,
+    'error'
+  ).pipe(map((e) => this._onError(e)))
+  onMessage = fromEvent(this.conn, 'message').pipe(
+    map((x: any) => this._onMessage(x), takeUntil(merge(this.onError, this.onClose)))
+  )
 
   constructor(public id: string, private conn: WebSocket, private namespace: Namespace) {}
 
@@ -72,11 +87,11 @@ export class Connection {
   }
 
   private _onError(e: Error) {
-    return e
+    return { error: e, connection: this }
   }
 
-  private _onMessage(message: string | Buffer) {
-    return new SocketMessage(JSON.parse(message.toString() ?? 'null'), this)
+  private _onMessage(message: WebSocket.MessageEvent) {
+    return new SocketMessage(JSON.parse(message.data.toString() ?? 'null'), this)
   }
 
   private _onClose() {
@@ -104,10 +119,12 @@ export class Namespace {
   public channels = new Map<string, Channel>()
   private backchannel = new Subject<BackChannelMessage>()
   private backchannelTimeout = 1000
-  public onMessage = new Observable<SocketMessage>()
-  public onPong = new Observable<Connection>()
-  public onError = new Observable<Connection>()
-  public onClose = new Observable<Connection>()
+  private backChannelConnection?: SubscriptionLike
+  public onMessage = new Subject<SocketMessage>()
+  public onExpiredAck = new Subject<string>()
+  public onPong = new Subject<Connection>()
+  public onError = new Subject<{ connection: Connection; error: Error }>()
+  public onClose = new Subject<Connection>()
   private empty = new Channel('__empty__', this)
   private pendingAcks = new Map<string, Ack>()
   constructor(
@@ -122,13 +139,44 @@ export class Namespace {
   }
 
   createConnection<T>(id: string, conn: WebSocket, extensions: T): Connection & T {
-    return Object.assign(new Connection(id, conn, this), extensions)
+    const connection = Object.assign(new Connection(id, conn, this), extensions)
+    connection.join(id)
+    const subs = new Subscription()
+    subs.add(connection.onMessage.subscribe(this.onMessage))
+    subs.add(connection.onError.subscribe(this.onError))
+    subs.add(connection.onPong.subscribe(this.onPong))
+    connection.onClose.pipe(take(1)).subscribe(() => {
+      subs.unsubscribe()
+    })
+    return connection
+  }
+
+  start(): void {
+    if (this.backChannelConnection) {
+      return
+    }
+    this.backChannelConnection = this.backchannel.subscribe((bcm: BackChannelMessage) => {
+      const [namespace, channels, message, exclusions, ack] = bcm
+      if (namespace === AckChannelNamespace) {
+        const pendingAck = this.pendingAcks.get(message as string)
+        if (!pendingAck) {
+          this.onExpiredAck.next(message as string)
+        }
+      } else if (namespace === this.name) {
+        this.sendLocal({ message, channels, exclusions, ack })
+      }
+    })
+  }
+
+  stop(): void {
+    this.backChannelConnection?.unsubscribe()
   }
 
   addToChannel(name: string, ...connections: Connection[]): Channel {
     let channel = this.channels.get(name)
     if (!channel) {
       channel = new Channel(name, this)
+      this.channels.set(name, channel)
     }
     for (const conn of connections) {
       channel.set(conn.id, conn)
@@ -159,7 +207,7 @@ export class Namespace {
     channels: ToChannels
     exclusions: Exclusions | null
     ack: Acknowledgement | null
-  }): void {
+  }) {
     const toExclude = exclusions || DefaultExclusions,
       sentTo = new Set<string>()
     let payload = '',
@@ -169,7 +217,7 @@ export class Namespace {
     const sendAck = ack
       ? once(() => {
           if (canAck) {
-            const bcmAck: BackChannelMessage = ['__ack__', [], [ack], null, null]
+            const bcmAck: BackChannelMessage = [AckChannelNamespace, [], ack, null, null]
             this.backchannel.next(bcmAck)
           }
         })

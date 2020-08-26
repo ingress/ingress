@@ -43,5 +43,7 @@ export class ParseAnnotation {
  * Apply Custom (stream or buffer) Parsing as middleware
  * @public
  */
-const Parse = createAnnotationFactory(ParseAnnotation) as (options?: ParseOptions) => Annotation<ParseAnnotation>
+const Parse = createAnnotationFactory(ParseAnnotation) as (
+  options?: ParseOptions
+) => Annotation<ParseAnnotation>
 export { Parse }

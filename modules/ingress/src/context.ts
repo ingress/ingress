@@ -37,12 +37,15 @@ export type Body = any
 /**
  * @internal
  */
-export class BaseContext<T extends BaseContext<T, A>, A extends BaseAuthContext> extends EventEmitter {
+export class BaseContext<
+  T extends BaseContext<T, A>,
+  A extends BaseAuthContext
+> extends EventEmitter {
   static extractValue = identity
   static convert = identity
   handleError!: (error: Error | null) => any
   handleResponse!: () => any
-
+  public id = Date.now().toString(36) + Math.random().toString(36).slice(2)
   public authContext!: A
   public scope!: {
     get: <T>(symbol: T, valueInstead?: any) => T
