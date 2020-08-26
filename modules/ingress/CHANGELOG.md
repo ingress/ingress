@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.13...ingress@4.0.0) (2020-08-26)
+
+
+### Features
+
+* websocket support ([d013c7a](https://github.com/ingress/ingress/commit/d013c7a3e1ea2f388dbe6a73cc17d573b08c1943))
+
+
+
+
+
 # [4.0.0-beta.13](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.12...ingress@4.0.0-beta.13) (2020-07-24)
 
 **Note:** Version bump only for package ingress

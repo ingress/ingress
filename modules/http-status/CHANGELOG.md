@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://me.github.com/ingress/ingress/compare/@ingress/http-status@2.0.0-beta.8...@ingress/http-status@2.0.0) (2020-08-26)
+
+
+### Features
+
+* websocket support ([d013c7a](https://me.github.com/ingress/ingress/commit/d013c7a3e1ea2f388dbe6a73cc17d573b08c1943))
+
+
+
+
+
 # [2.0.0-beta.8](https://me.github.com/ingress/ingress/compare/@ingress/http-status@2.0.0-beta.7...@ingress/http-status@2.0.0-beta.8) (2020-07-24)
 
 **Note:** Version bump only for package @ingress/http-status
