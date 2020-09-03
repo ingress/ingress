@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.2](https://github.com/ingress/ingress/compare/ingress@4.0.1...ingress@4.0.2) (2020-09-03)
+
+
+### Bug Fixes
+
+* use InstanceType helper ([a41b357](https://github.com/ingress/ingress/commit/a41b357bd833574851795b6ff7995389eb2945de))
+
+
+
+
+
 ## [4.0.1](https://github.com/ingress/ingress/compare/ingress@4.0.0...ingress@4.0.1) (2020-09-03)
 
 
