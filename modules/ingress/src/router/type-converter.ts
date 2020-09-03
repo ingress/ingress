@@ -1,5 +1,5 @@
-import { Type } from './controller-annotation'
-
+import { Type } from '@ingress/di'
+export { Type }
 /**
  * @public
  */

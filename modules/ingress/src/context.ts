@@ -4,8 +4,11 @@ import { Middleware } from 'app-builder'
 import { EventEmitter } from 'events'
 import { Ingress } from './ingress'
 import { identity } from './lang'
+import { Type } from '@ingress/di'
 
 export { Middleware } from 'app-builder'
+
+export { Type }
 
 const empty = (): Record<string, any> => Object.create(null)
 
@@ -48,7 +51,7 @@ export class BaseContext<
   public id = Date.now().toString(36) + Math.random().toString(36).slice(2)
   public authContext!: A
   public scope!: {
-    get: <T>(symbol: T, valueInstead?: any) => T
+    get: <T>(symbol: Type<T>, valueInstead?: any) => T
   }
   public app!: Ingress<T, A>
   public req: Request<T>

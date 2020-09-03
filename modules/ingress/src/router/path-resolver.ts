@@ -1,4 +1,4 @@
-import { Type } from './controller-annotation'
+import { Type } from '@ingress/di'
 import { RouteAnnotation } from './route.annotation'
 import { AnnotatedPropertyDescription } from 'reflect-annotations'
 

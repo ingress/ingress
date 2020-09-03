@@ -1,14 +1,5 @@
-/**
- * @public
- */
-export const Type = Function
-/**
- * @public
- */
-export interface Type<T> {
-  new (...args: any[]): T
-}
 import { Route } from './route.annotation'
+import { Type } from '@ingress/di'
 
 export interface ControllerOptions {
   routePrefix?: string

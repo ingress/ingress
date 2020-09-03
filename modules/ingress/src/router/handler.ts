@@ -3,7 +3,7 @@ import { AnnotatedPropertyDescription } from 'reflect-annotations'
 import { parseJson } from './json-parser'
 import { BaseContext } from '../context'
 import { ParamAnnotation } from './route.annotation'
-import { Type } from './controller-annotation'
+import { Type } from '@ingress/di'
 import { TypeConverter } from './type-converter'
 import { resolvePaths, RouteMetadata } from './path-resolver'
 

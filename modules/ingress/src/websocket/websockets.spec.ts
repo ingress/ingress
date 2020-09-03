@@ -2,7 +2,7 @@
 import ingress, { IngressApp, Context } from '../app'
 import { Route } from '../router/route.annotation'
 import WebSocket from 'ws'
-import { getAsync, postAsync, getPort } from '../router/test.util.spec'
+import { postAsync, getPort } from '../router/test.util.spec'
 import { UpgradeBody } from '../websocket/upgrade'
 import { Namespace } from './namespace'
 

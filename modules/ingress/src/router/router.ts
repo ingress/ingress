@@ -3,8 +3,8 @@ import { reflectAnnotations, AnnotatedPropertyDescription } from 'reflect-annota
 import { parse as parseUrl } from 'url'
 import RouteRecognizer, { Results } from 'route-recognizer'
 import { createHandler, Handler } from './handler'
-import { TypeConverter, defaultTypeConverters } from './type-converter'
-import { Type, ControllerCollector, ControllerDependencyCollector } from './controller-annotation'
+import { TypeConverter, defaultTypeConverters, Type } from './type-converter'
+import { ControllerCollector, ControllerDependencyCollector } from './controller-annotation'
 import { BaseContext } from '../context'
 import { Func } from '../lang'
 
