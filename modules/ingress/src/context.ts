@@ -51,7 +51,7 @@ export class BaseContext<
   public id = Date.now().toString(36) + Math.random().toString(36).slice(2)
   public authContext!: A
   public scope!: {
-    get: <T>(symbol: Type<T>, valueInstead?: any) => T
+    get: <T>(symbol: Type<T>, valueInstead?: any) => InstanceType<Type<T>>
   }
   public app!: Ingress<T, A>
   public req: Request<T>
