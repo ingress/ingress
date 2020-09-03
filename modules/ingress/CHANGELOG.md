@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.1](https://github.com/ingress/ingress/compare/ingress@4.0.0...ingress@4.0.1) (2020-09-03)
+
+
+### Bug Fixes
+
+* context injector interface ([6854cd3](https://github.com/ingress/ingress/commit/6854cd33ac4f52fe21a80d69def109f40835e9e9))
+
+
+
+
+
 # [4.0.0](https://github.com/ingress/ingress/compare/ingress@4.0.0-beta.13...ingress@4.0.0) (2020-08-26)
 
 
