@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.1.0](https://github.com/ingress/ingress/compare/ingress@4.0.2...ingress@4.1.0) (2020-09-14)
+
+
+### Features
+
+* support middleware on forwardRefs ([907306c](https://github.com/ingress/ingress/commit/907306ca883c07d1678d27a4911ead25ebb4d70d))
+
+
+
+
+
 ## [4.0.2](https://github.com/ingress/ingress/compare/ingress@4.0.1...ingress@4.0.2) (2020-09-03)
 
 
