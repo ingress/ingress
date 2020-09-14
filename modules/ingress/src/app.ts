@@ -6,6 +6,7 @@ import { BaseContext, DefaultContext, BaseAuthContext, Middleware } from './cont
 import { DefaultMiddleware } from './default.middleware'
 import { Ingress, Addon } from './ingress'
 import { ControllerDependencyCollector } from './router/controller-annotation'
+import { Func } from './lang'
 
 /**
  * @public
@@ -33,8 +34,32 @@ export type IngressOptions<T> =
   | (Type<any> | IngressConfiguration<T>)
   | Type<any>[]
 
+/**
+ * @public
+ * A wrapper to bind a singleton dependency that has not been created yet, to the lifecycle of the application.
+ * This method implies that the reference to an instance to be used is not yet available but will be available via the container at runtime.
+ *
+ * For example, database or cache connection management that has setup/teardown and middleware that manages transaction or inflight requests.
+ * This pattern avoids the need to "new" up and "initialize" a dependency at app start time and instead lets the IoC Container handle it.
+ */
 export function usableForwardRef(ref: Type<any>): any {
+  let middlewareRef: null | Middleware<any> | false = null
   return {
+    get middleware() {
+      return (context: DefaultContext, next: Func<Promise<void>>) => {
+        if (middlewareRef === false) {
+          return next()
+        }
+        if (!middlewareRef) {
+          middlewareRef = context.scope.get(ref).middleware
+        }
+        if (middlewareRef) {
+          return middlewareRef(context, next)
+        }
+        middlewareRef = false
+        return next()
+      }
+    },
     start(app: { container: Container }): Promise<any> {
       return Promise.resolve((app.container.get(ref) as any).start(app))
     },
