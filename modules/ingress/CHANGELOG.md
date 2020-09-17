@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.2.0](https://github.com/ingress/ingress/compare/ingress@4.1.0...ingress@4.2.0) (2020-09-17)
+
+
+### Features
+
+* bump dependencies ([7f6194a](https://github.com/ingress/ingress/commit/7f6194a259b2ccef56257c3354531dbd25f5a947))
+
+
+
+
+
 # [4.1.0](https://github.com/ingress/ingress/compare/ingress@4.0.2...ingress@4.1.0) (2020-09-14)
 
 

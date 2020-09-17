@@ -1,6 +1,6 @@
 {
   "name": "@ingress/http-status",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Ergonomic (typed) variant of node's http#STATUS_CODES constant",
   "main": "status-codes.js",
   "types": "status-codes.d.ts",

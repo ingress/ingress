@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/ingress/ingress/compare/@ingress/di@2.0.1...@ingress/di@2.1.0) (2020-09-17)
+
+
+### Features
+
+* bump dependencies ([7f6194a](https://github.com/ingress/ingress/commit/7f6194a259b2ccef56257c3354531dbd25f5a947))
+
+
+
+
+
 ## [2.0.1](https://github.com/ingress/ingress/compare/@ingress/di@2.0.0...@ingress/di@2.0.1) (2020-09-14)
 
 **Note:** Version bump only for package @ingress/di
