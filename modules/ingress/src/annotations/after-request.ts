@@ -13,11 +13,17 @@ export class AfterRequestAnnotation {
   get middleware(): Middleware<BaseContext<any, any>> {
     const fn = compose(this.afterReqList)
     return (context: BaseContext<any, any>, next: Func<Promise<any>>): Promise<any> => {
+      context.pendingAfterReqHandlers += 1
       context.once('response-finished', async ({ context, error }) => {
         try {
           await fn(context)
         } catch (e) {
           context.emit('error', { error, context })
+        } finally {
+          context.pendingAfterReqHandlers -= 1
+          if (!context.pendingAfterReqHandlers) {
+            context.emit('after-request-finished', { context })
+          }
         }
       })
       return next()

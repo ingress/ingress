@@ -53,18 +53,52 @@ export class BaseContext<
   public scope!: {
     get: <T>(symbol: Type<T>, valueInstead?: any) => InstanceType<Type<T>>
   }
+  /**
+   * Owning App instance
+   */
   public app!: Ingress<T, A>
+
   public req: Request<T>
   public res: Response<T>
+  public pendingAfterReqHandlers = 0
+
+  /**
+   * Any uncaught error occurring in the context is set here
+   */
   public error: Error | null | undefined
+  /**
+   * Holds data relating to the currently executing route.
+   */
   public route: {
     url: Url
-    query: { [key: string]: any }
-    params: { [key: string]: any }
+    /**
+     * Parsed Query parameters
+     */
+    query: Record<string, any>
+    /**
+     * Parsed Route parameters
+     */
+    params: Record<string, any>
+    /**
+     * Parsed Body
+     */
     body: any
+    /**
+     * The route's response body
+     */
     response: any
+    /**
+     * The Controller as instantiated by the DI Container
+     */
     controllerInstance: any
+    /**
+     * Raw Body Parser Result
+     * Useful when a custom body parser is used
+     */
     parserResult: any
+    /**
+     * The Route Handler
+     */
     handler: { invokeAsync: Middleware<any> }
   }
 
