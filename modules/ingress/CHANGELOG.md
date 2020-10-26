@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.3.0](https://github.com/ingress/ingress/compare/ingress@4.2.0...ingress@4.3.0) (2020-10-26)
+
+
+### Features
+
+* accept forwardRef on usable ([73272c8](https://github.com/ingress/ingress/commit/73272c8a155acc513bf4ff412d962f4d09132bf8))
+* **deps:** bump dependencies ([d13300a](https://github.com/ingress/ingress/commit/d13300ad2eaca69a7b9e2d910213dd3f0bd2d074))
+* after-request-finished event ([196c30e](https://github.com/ingress/ingress/commit/196c30e8d28322e50603251c9ae223d37edc0be0))
+
+
+
+
+
 # [4.2.0](https://github.com/ingress/ingress/compare/ingress@4.1.0...ingress@4.2.0) (2020-09-17)
 
 

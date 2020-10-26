@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/ingress/ingress/compare/@ingress/di@2.1.0...@ingress/di@2.2.0) (2020-10-26)
+
+
+### Features
+
+* **deps:** bump dependencies ([d13300a](https://github.com/ingress/ingress/commit/d13300ad2eaca69a7b9e2d910213dd3f0bd2d074))
+* after-request-finished event ([196c30e](https://github.com/ingress/ingress/commit/196c30e8d28322e50603251c9ae223d37edc0be0))
+
+
+
+
+
 # [2.1.0](https://github.com/ingress/ingress/compare/@ingress/di@2.0.1...@ingress/di@2.1.0) (2020-09-17)
 
 
