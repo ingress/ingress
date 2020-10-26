@@ -99,10 +99,12 @@ export class Router<T extends BaseContext<any, any>> {
         route =
           req.method && url.pathname && this.match(req.method, url.pathname + (url.search ?? '')),
         match = route && route[0],
-        handler = match && (match.handler as Handler)
-
+        handler = match && (match.handler as Handler),
+        event = { context }
       if (!route || !match || !handler) {
         context.res.statusCode = 404
+        context.emit('before-route', event)
+        context.emit('after-route', event)
         return next()
       }
       context.route = Object.assign(context.route, {
@@ -113,8 +115,11 @@ export class Router<T extends BaseContext<any, any>> {
       context.res.statusCode = 200
       context.route.query = (route as any).queryParams || Object.create(null)
       context.route.params = match.params || Object.create(null)
-
-      return handler.invokeAsync(context, next)
+      context.emit('before-route', event)
+      return handler.invokeAsync(context, () => {
+        context.emit('after-route', event)
+        return next()
+      })
     }
   }
 }
