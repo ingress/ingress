@@ -1,10 +1,10 @@
 //API
-import ingress, { IngressApp, Context, usableForwardRef } from './app'
+import ingress, { IngressApp, Context } from './app'
 import { Route } from './router/router'
-import { Ingress, ListenOptions, Addon, Usable, SetupTeardown } from './ingress'
+import { Ingress, ListenOptions, Addon, Usable, SetupTeardown, AppState } from './ingress'
 
 export default ingress
-export { IngressApp, Route, Ingress, Context, usableForwardRef }
+export { IngressApp, Route, Ingress, Context, AppState }
 export { ListenOptions, Addon, Usable, SetupTeardown }
 export { StatusCode } from '@ingress/http-status'
 
