@@ -28,7 +28,9 @@ describe('Routing', () => {
     expectedResponse: string
 
   beforeEach(async () => {
-    app = ingress({ router: { baseUrl: 'base' } })
+    app = ingress({
+      router: { baseUrl: 'base' },
+    })
     app.router
     routeSpy = sinon.spy()
     orderedSpies = Array.from(Array(2), () => sinon.spy())
@@ -67,6 +69,14 @@ describe('Routing', () => {
       @Route.Upgrade('something/forbidden')
       async handleForbiddenUpgrade(@Route.Body() body: UpgradeBody) {
         body.reject(StatusCode.Forbidden)
+      }
+      @Route.Upgrade('something/$money/:variable')
+      async handleRouteVariable(
+        @Route.Path('variable') something: string,
+        @Route.Body() body: UpgradeBody
+      ) {
+        routeSpy(something)
+        await body.accept()
       }
     }
     @app.Controller('route')
@@ -173,6 +183,17 @@ describe('Routing', () => {
         socket.on('error', resolve)
       })
     expect(error.message).toEqual('Unexpected server response: 403')
+    socket.close()
+  })
+
+  it('should work with route input', async () => {
+    const expectedInput = Math.random().toString(36).slice(2),
+      url = path(`/base/something/$money/${expectedInput}`, 'ws'),
+      socket = new Websocket(url)
+    while (socket.readyState !== Websocket.OPEN) {
+      await new Promise((res) => setTimeout(res, 100))
+    }
+    sinon.assert.calledWith(routeSpy, expectedInput)
     socket.close()
   })
 

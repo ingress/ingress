@@ -101,6 +101,7 @@
     "printWidth": 100
   },
   "dependencies": {
+    "@aurelia/route-recognizer": "^0.7.0",
     "@hapi/subtext": "~7.0.3",
     "@ingress/di": "^2.2.0",
     "@ingress/http-status": "^2.2.0",
@@ -108,7 +109,6 @@
     "destroy": "~1.0.4",
     "on-finished": "~2.3.0",
     "reflect-annotations": "^3.2.0",
-    "route-recognizer": "0.3.4",
     "rxjs": "~6.6.3",
     "uuid": "^8.3.1",
     "ws": "^7.3.1"
@@ -120,28 +120,27 @@
     "@babel/preset-typescript": "^7.12.1",
     "@types/destroy": "~1.0.0",
     "@types/jest": "^26.0.15",
-    "@types/node": "^14.14.3",
+    "@types/node": "^14.14.6",
     "@types/on-finished": "~2.3.1",
-    "@types/route-recognizer": "0.3.0",
     "@types/sinon": "^9.0.8",
     "@types/uuid": "^8.3.0",
     "@types/websocket": "~1.0.1",
-    "@types/ws": "^7.2.7",
-    "@typescript-eslint/eslint-plugin": "^4.5.0",
-    "@typescript-eslint/parser": "^4.5.0",
+    "@types/ws": "^7.2.9",
+    "@typescript-eslint/eslint-plugin": "^4.6.0",
+    "@typescript-eslint/parser": "^4.6.0",
     "babel-plugin-transform-typescript-metadata": "^0.3.1",
     "concurrently": "^5.3.0",
     "cross-fetch": "~3.0.6",
-    "eslint": "^7.12.0",
-    "eslint-config-prettier": "~6.14.0",
+    "eslint": "^7.12.1",
+    "eslint-config-prettier": "~6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-watch": "^7.0.0",
     "get-port": "~5.1.1",
     "jest": "^26.6.1",
     "prettier": "^2.1.2",
     "reflect-metadata": "^0.1.13",
-    "sinon": "^9.2.0",
-    "typescript": "^4.0.3"
+    "sinon": "^9.2.1",
+    "typescript": "^4.0.5"
   },
   "gitHead": "6296e5f924b953795fd7572963184bc8b6479c71"
 }

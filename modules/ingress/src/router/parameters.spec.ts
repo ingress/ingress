@@ -62,19 +62,22 @@ describe('Parameters', () => {
       @Route.Get('path/:expected')
       pathParam(@Route.Path('expected') result: string) {
         routeSpy()
-        return expectedResponse
+        return result
       }
 
       @Route.Get('query')
-      queryParam(@Route.Query('expected') result: string) {
+      queryParam(
+        @Route.Query('expected-this') exthis: string,
+        @Route.Query('expected-that') exthat: string
+      ) {
         routeSpy()
-        return expectedResponse
+        return exthis + exthat
       }
 
       @Route.Post('header')
       headerParam(@Route.Header('expected') result: string) {
         routeSpy()
-        return expectedResponse
+        return result
       }
 
       @Route.Post('context-param')
@@ -95,7 +98,7 @@ describe('Parameters', () => {
         return [h, q, p]
       }
 
-      @Route.Post('type-conversion/numbers/:expected')
+      @Route.Post('type-conversion/$numbers/:expected')
       typeConversionNumber(
         @Route.Header('expected') h: number,
         @Route.Body() b: number,
@@ -143,8 +146,10 @@ describe('Parameters', () => {
   })
 
   it('should look up a query param', async () => {
-    const res = await getAsync(path('/base/route/query?expected=' + expectedResponse))
-    expect(res).toEqual(expectedResponse)
+    const res = await getAsync(
+      path(`/base/route/query?expected-this=${expectedResponse}&expected-that=${expectedResponse}`)
+    )
+    expect(res).toEqual(expectedResponse + expectedResponse)
   })
 
   it('should look up a header', async () => {
@@ -180,14 +185,14 @@ describe('Parameters', () => {
     })
 
     it('should convert a Number parameter', async () => {
-      const res = await postAsync(path('/base/route/type-conversion/numbers/1'), {
+      const res = await postAsync(path('/base/route/type-conversion/$numbers/1'), {
         data: JSON.stringify(2),
         headers: { expected: '3' },
       })
       expect(JSON.parse(res)).toEqual([1, 2, 3])
       expectError = true
       try {
-        await postAsync(path('/base/route/type-conversion/numbers/foo'), {
+        await postAsync(path('/base/route/type-conversion/$numbers/foo'), {
           data: JSON.stringify(2),
           headers: { expected: '3' },
         })
@@ -201,7 +206,7 @@ describe('Parameters', () => {
       )
       expectError = true
       try {
-        await postAsync(path('/base/route/type-conversion/numbers/4'), {
+        await postAsync(path('/base/route/type-conversion/$numbers/4'), {
           data: null,
           headers: { expected: '3' },
         })
@@ -215,7 +220,7 @@ describe('Parameters', () => {
       )
       expectError = true
       try {
-        await postAsync(path('/base/route/type-conversion/numbers/4'), { data: '2' })
+        await postAsync(path('/base/route/type-conversion/$numbers/4'), { data: '2' })
       } catch (e) {
         expect(e.statusMessage).toEqual('Bad Request')
         expect(e.statusCode).toEqual(400)

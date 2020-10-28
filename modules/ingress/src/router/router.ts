@@ -1,7 +1,7 @@
 import { Middleware } from 'app-builder'
 import { reflectAnnotations, AnnotatedPropertyDescription } from 'reflect-annotations'
 import { parse as parseUrl } from 'url'
-import RouteRecognizer, { Results } from 'route-recognizer'
+import { RecognizedRoute, RouteRecognizer } from '@aurelia/route-recognizer'
 import { createHandler, Handler } from './handler'
 import { TypeConverter, defaultTypeConverters, Type } from './type-converter'
 import { ControllerCollector, ControllerDependencyCollector } from './controller-annotation'
@@ -27,7 +27,7 @@ const defaultOptions: RouterOptions = {
 }
 
 export class Router<T extends BaseContext<any, any>> {
-  private routers: { [key: string]: RouteRecognizer }
+  private routers: { [key: string]: RouteRecognizer<Handler> }
   private options: RouterOptions
   private initialized = false
 
@@ -87,7 +87,7 @@ export class Router<T extends BaseContext<any, any>> {
     return Promise.resolve()
   }
 
-  public match(method: string, pathname: string): Results | undefined {
+  public match(method: string, pathname: string): RecognizedRoute<Handler> | null {
     const router = this.routers[method.toUpperCase()]
     return router && router.recognize(pathname)
   }
@@ -98,23 +98,26 @@ export class Router<T extends BaseContext<any, any>> {
         url = context.route.url || (context.route.url = parseUrl(req.url ?? '')),
         route =
           req.method && url.pathname && this.match(req.method, url.pathname + (url.search ?? '')),
-        match = route && route[0],
-        handler = match && (match.handler as Handler),
         event = { context }
-      if (!route || !match || !handler) {
+      if (!route || !route.endpoint.route.handler) {
         context.res.statusCode = 404
         context.emit('before-route', event)
         context.emit('after-route', event)
         return next()
       }
+      const handler = route.endpoint.route.handler
       context.route = Object.assign(context.route, {
         handler,
         controllerInstance: context.scope.get(handler.controller),
         parserResult: null,
       })
       context.res.statusCode = 200
-      context.route.query = (route as any).queryParams || Object.create(null)
-      context.route.params = match.params || Object.create(null)
+      const query = Array.from(route.searchParams.entries()).reduce((obj, [key, value]) => {
+        obj[key] = value
+        return obj
+      }, Object.create(null) as Record<string, string>)
+      context.route.query = query
+      context.route.params = route.params || Object.create(null)
       context.emit('before-route', event)
       return handler.invokeAsync(context, () => {
         context.emit('after-route', event)
