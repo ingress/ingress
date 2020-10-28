@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.3.1](https://github.com/ingress/ingress/compare/ingress@4.3.0...ingress@4.3.1) (2020-10-28)
+
+
+### Bug Fixes
+
+* use aurelia route-recognizer fork ([950c832](https://github.com/ingress/ingress/commit/950c832994a6404823a20d7120fa686feda97258))
+
+
+
+
+
 # [4.3.0](https://github.com/ingress/ingress/compare/ingress@4.2.0...ingress@4.3.0) (2020-10-26)
 
 
