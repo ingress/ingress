@@ -1,5 +1,5 @@
 import { Ingress } from '../ingress'
-import Websocket, { Server } from 'ws'
+import ws, { Server } from 'ws'
 import { Router } from '../router/router'
 import { Func, once } from '../lang'
 import { WebsocketServerResponse } from './response'
@@ -16,6 +16,8 @@ export type UpgradeBody<T = DefaultContext> = {
   reject: (code?: number) => void
   accept: () => Promise<Websocket>
 }
+
+export type Websocket = ws
 
 export class Websockets {
   private server = new Server({ noServer: true, clientTracking: false })
