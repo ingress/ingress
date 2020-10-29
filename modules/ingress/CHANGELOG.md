@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.3.2](https://github.com/ingress/ingress/compare/ingress@4.3.1...ingress@4.3.2) (2020-10-29)
+
+
+### Bug Fixes
+
+* include default context on upgrade handler ([bd9b0f0](https://github.com/ingress/ingress/commit/bd9b0f0c05b933ca93b918d2c8527fb08dea63b1))
+
+
+
+
+
 ## [4.3.1](https://github.com/ingress/ingress/compare/ingress@4.3.0...ingress@4.3.1) (2020-10-28)
 
 
