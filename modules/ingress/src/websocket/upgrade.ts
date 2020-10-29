@@ -5,14 +5,13 @@ import { Func, once } from '../lang'
 import { WebsocketServerResponse } from './response'
 import { StatusCode } from '@ingress/http-status'
 import { Container } from '@ingress/di'
-import { IncomingMessage } from 'http'
 import { Socket } from 'net'
-import { Middleware } from '../context'
+import { DefaultContext, Middleware, Request } from '../context'
 import { compose } from 'app-builder'
 
-export type UpgradeBody = {
+export type UpgradeBody<T = DefaultContext> = {
   head: Buffer
-  req: IncomingMessage
+  req: Request<T>
   socket: Socket
   reject: (code?: number) => void
   accept: () => Promise<Websocket>
