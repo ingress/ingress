@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.3.4](https://github.com/ingress/ingress/compare/ingress@4.3.3...ingress@4.3.4) (2020-10-29)
+
+
+### Bug Fixes
+
+* expose usableForwardRef ([b9e093e](https://github.com/ingress/ingress/commit/b9e093edbdb6ec3d261a0d4d6b3cdca5066f4ef5))
+
+
+
+
+
 ## [4.3.3](https://github.com/ingress/ingress/compare/ingress@4.3.2...ingress@4.3.3) (2020-10-29)
 
 **Note:** Version bump only for package ingress
