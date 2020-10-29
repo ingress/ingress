@@ -1,11 +1,19 @@
 //API
 import ingress, { IngressApp, Context } from './app'
 import { Route } from './router/router'
-import { Ingress, ListenOptions, Addon, Usable, SetupTeardown, AppState } from './ingress'
+import {
+  Ingress,
+  ListenOptions,
+  Addon,
+  Usable,
+  SetupTeardown,
+  AppState,
+  usableForwardRef,
+} from './ingress'
 
 export default ingress
 export { IngressApp, Route, Ingress, Context, AppState }
-export { ListenOptions, Addon, Usable, SetupTeardown }
+export { ListenOptions, Addon, Usable, SetupTeardown, usableForwardRef }
 export { StatusCode } from '@ingress/http-status'
 
 //Supporting Symbols
