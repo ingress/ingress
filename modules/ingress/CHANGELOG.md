@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.4.0](https://github.com/ingress/ingress/compare/ingress@4.3.4...ingress@4.4.0) (2020-12-24)
+
+
+### Features
+
+* **router:** use find-my-way for routing ([a0085bb](https://github.com/ingress/ingress/commit/a0085bb5b5c46420845796ace175e8c56816176a))
+
+
+
+
+
 ## [4.3.4](https://github.com/ingress/ingress/compare/ingress@4.3.3...ingress@4.3.4) (2020-10-29)
 
 
