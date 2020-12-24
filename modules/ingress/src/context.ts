@@ -71,8 +71,10 @@ export class BaseContext<
    */
   public route: {
     url: Url
+    search: URLSearchParams
     /**
      * Parsed Query parameters
+     * @deprecated
      */
     query: Record<string, any>
     /**

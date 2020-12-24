@@ -5,7 +5,7 @@ import { BaseContext } from '../context'
 import { ParamAnnotation } from './route.annotation'
 import { Type } from '@ingress/di'
 import { TypeConverter } from './type-converter'
-import { resolvePaths, RouteMetadata } from './path-resolver'
+import { PathMap, resolvePaths, RouteMetadata } from './path-resolver'
 
 const pickRequest = (context: BaseContext<any, any>) => context.req
 
@@ -89,12 +89,13 @@ function resolveRouteMiddleware<T extends BaseContext<any, any>>(handler: {
  * @public
  */
 export interface Handler {
+  upgrade: boolean
   path: string
   handler: Handler
   invokeAsync: Middleware<any>
   source: RouteMetadata
   baseUrl: string
-  paths: { [method: string]: string[] }
+  paths: PathMap
   controller: Type<any>
   controllerMethod: string
   paramAnnotations: ParamAnnotation[]
@@ -163,6 +164,7 @@ export function createHandler(
     )
   let handlerRef: any
   const handler = {
+    upgrade: source.methodAnnotations.some((x) => x.upgrade),
     path: '',
     source,
     baseUrl,

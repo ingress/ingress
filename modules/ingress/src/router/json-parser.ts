@@ -2,6 +2,7 @@ import { createAnnotationFactory } from 'reflect-annotations'
 import { StatusCode } from '@ingress/http-status'
 import { Middleware, DefaultContext } from '../context'
 import { Func } from '../lang'
+import { parse } from 'secure-json-parse'
 
 export interface ParseJsonBodyOptions {
   maxBytes: number
@@ -42,9 +43,9 @@ export class ParseJsonAnnotation {
   }
 }
 
-function jsonParse(body: string) {
+function jsonParse(json: any) {
   try {
-    return JSON.parse(body)
+    return parse(json)
   } catch (e) {
     void e
   }
@@ -77,6 +78,11 @@ function parseJsonReq(
     rawBody += chunk.toString()
   }
 
+  function respond() {
+    deferred.resolve()
+    return context.handleResponse()
+  }
+
   function onReqEnd(error: Error | null, statusCode?: number) {
     req.removeListener('data', onChunk)
     req.removeListener('end', onReqEnd)
@@ -89,20 +95,20 @@ function parseJsonReq(
 
     if (statusCode) {
       context.res.statusCode = statusCode
-      return context.handleResponse()
+      return respond()
     }
 
     if (!Number.isNaN(contentLength) && byteLength !== contentLength) {
       context.res.statusCode = StatusCode.BadRequest
       context.res.statusMessage = 'Content Size Mismatch'
-      return context.handleResponse()
+      return respond()
     }
 
     const body = jsonParse(rawBody)
     if (rawBody && body === void 0) {
       context.res.statusCode = StatusCode.BadRequest
       context.res.statusMessage = 'Unexpected end of input'
-      return context.handleResponse()
+      return respond()
     }
     context.route.parserResult = rawBody
     context.route.body = body

@@ -26,32 +26,10 @@
     "registry": "http://registry.npmjs.org/"
   },
   "jest": {
-    "testRegex": ".*?\\.spec\\.ts",
+    "preset": "ts-jest",
     "testPathIgnorePatterns": [
-      ".*?\\.util\\.spec\\.ts$"
-    ]
-  },
-  "babel": {
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "targets": {
-            "node": "current"
-          }
-        }
-      ],
-      "@babel/preset-typescript"
-    ],
-    "plugins": [
-      "babel-plugin-transform-typescript-metadata",
-      [
-        "@babel/plugin-proposal-decorators",
-        {
-          "legacy": true
-        }
-      ],
-      "@babel/plugin-proposal-class-properties"
+      ".*\\.js",
+      ".*\\.util\\.spec"
     ]
   },
   "eslintConfig": {
@@ -101,20 +79,21 @@
     "printWidth": 100
   },
   "dependencies": {
-    "@aurelia/route-recognizer": "^0.7.0",
     "@hapi/subtext": "~7.0.3",
     "@ingress/di": "^2.2.1",
     "@ingress/http-status": "^2.2.1",
     "app-builder": "^6.2.2",
     "destroy": "~1.0.4",
+    "find-my-way": "^3.0.5",
     "on-finished": "~2.3.0",
     "reflect-annotations": "^3.2.1",
     "rxjs": "~6.6.3",
-    "uuid": "^8.3.1",
-    "ws": "^7.3.1"
+    "secure-json-parse": "^2.1.0",
+    "uuid": "^8.3.2",
+    "ws": "^7.4.1"
   },
   "peerDependencies": {
-    "@types/ws": "^7.2.9"
+    "@types/ws": "^7.4.0"
   },
   "peerDependenciesMeta": {
     "@types/ws": {
@@ -123,31 +102,33 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.12.1",
-    "@babel/plugin-proposal-decorators": "^7.12.1",
-    "@babel/preset-env": "^7.12.1",
-    "@babel/preset-typescript": "^7.12.1",
+    "@babel/plugin-proposal-decorators": "^7.12.12",
+    "@babel/preset-env": "^7.12.11",
+    "@babel/preset-typescript": "^7.12.7",
     "@types/destroy": "~1.0.0",
-    "@types/jest": "^26.0.15",
-    "@types/node": "^14.14.6",
+    "@types/jest": "^26.0.19",
+    "@types/node": "^14.14.16",
     "@types/on-finished": "~2.3.1",
-    "@types/sinon": "^9.0.8",
+    "@types/secure-json-parse": "^1.0.2",
+    "@types/sinon": "^9.0.10",
     "@types/uuid": "^8.3.0",
-    "@types/ws": "^7.2.9",
-    "@typescript-eslint/eslint-plugin": "^4.6.0",
-    "@typescript-eslint/parser": "^4.6.0",
+    "@types/ws": "^7.4.0",
+    "@typescript-eslint/eslint-plugin": "^4.11.0",
+    "@typescript-eslint/parser": "^4.11.0",
     "babel-plugin-transform-typescript-metadata": "^0.3.1",
     "concurrently": "^5.3.0",
     "cross-fetch": "~3.0.6",
-    "eslint": "^7.12.1",
-    "eslint-config-prettier": "~6.15.0",
-    "eslint-plugin-prettier": "^3.1.4",
+    "eslint": "^7.16.0",
+    "eslint-config-prettier": "~7.1.0",
+    "eslint-plugin-prettier": "^3.3.0",
     "eslint-watch": "^7.0.0",
     "get-port": "~5.1.1",
-    "jest": "^26.6.1",
-    "prettier": "^2.1.2",
+    "jest": "^26.6.3",
+    "prettier": "^2.2.1",
     "reflect-metadata": "^0.1.13",
-    "sinon": "^9.2.1",
-    "typescript": "^4.0.5"
+    "sinon": "^9.2.2",
+    "ts-jest": "^26.4.4",
+    "typescript": "^4.1.3"
   },
   "gitHead": "6296e5f924b953795fd7572963184bc8b6479c71"
 }

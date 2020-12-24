@@ -29,32 +29,17 @@ export class Websockets {
   ) {}
 
   setupUpgradeHandler(app: Ingress): void {
-    let handled = false
-    const handler = compose(
-      this.preUpgrade,
-      (context, next) => {
-        if (context.req.method === 'GET') {
-          //Set the method to upgrade, to trigger the correct routing
-          //This state is only visible to userland middleware if it is marked with 'BeforeBodyParser' priority
-          context.req.method = 'UPGRADE'
-        }
-        return next()
-      },
-      this.router.middleware,
-      (ctx, next) => {
-        if (ctx.res.statusCode !== 200) {
-          ctx.route.body.reject(ctx.res.statusCode)
-        }
-        if (!handled) {
-          ctx.route.body.reject()
-        }
-        return next()
-      }
-    )
+    const finish = compose(this.preUpgrade, this.router.middleware, (ctx, next) => {
+      //reject by default if not handled by this point
+      ctx.route.body.reject()
+      return next()
+    })
     this.onUpgrade = async (req, socket, head) => {
       const context = app.createContext(req, new WebsocketServerResponse(req)),
-        reject = once((code = 404) => {
-          handled = true
+        handle = once((success: boolean, code = 404) => {
+          if (success) {
+            return new Promise((resolve) => this.server.handleUpgrade(req, socket, head, resolve))
+          }
           socket.write(`HTTP/1.1 ${code} ${StatusCode[code]}\r\n\r\n`)
           socket.destroy()
         })
@@ -62,25 +47,22 @@ export class Websockets {
         req,
         socket,
         head,
-        reject,
-        accept: once(() => {
-          handled = true
-          return new Promise((resolve) => this.server.handleUpgrade(req, socket, head, resolve))
-        }),
+        reject: handle.bind(null, false),
+        accept: handle.bind(null, true),
       }
       context.scope = this.container.createChildWithContext(context)
-      handler(context)
+      finish(context)
     }
     app.server?.addListener('upgrade', this.onUpgrade)
   }
   start(app: Ingress): Promise<any> {
-    if (this.router.handlesUpgrade()) {
+    if (this.router.handlesUpgrade) {
       this.setupUpgradeHandler(app)
     }
     return Promise.resolve()
   }
   stop(app: Ingress): Promise<any> {
-    if (this.router.handlesUpgrade() && this.onUpgrade) {
+    if (this.router.handlesUpgrade && this.onUpgrade) {
       app.server?.removeListener('upgrade', this.onUpgrade)
     }
     return Promise.resolve()

@@ -121,11 +121,11 @@ export class Ingress<
 
     try {
       this.server?.on('request', handler)
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         this.server?.listen(options, (error?: Error) => (error ? reject(error) : resolve()))
       })
       this.teardowns.unshift((app) => {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
           app.server?.off('request', handler)
           app.server?.close((error?: Error) => (error ? reject(error) : resolve()))
         })

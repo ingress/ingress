@@ -1,6 +1,5 @@
 import { Container, DependencyCollector } from '@ingress/di'
-import { TypeConverter } from './router/type-converter'
-import { Router, Type } from './router/router'
+import { Router, RouterOptions, Type } from './router/router'
 import { Websockets } from './websocket/upgrade'
 import { BaseContext, DefaultContext, BaseAuthContext, Middleware } from './context'
 import { DefaultMiddleware } from './default.middleware'
@@ -25,7 +24,10 @@ export type IngressConfiguration<T> = {
   preRoute?: Addon<T>
   contextToken?: any
   onError?: (context: T) => Promise<any>
-  router?: { routes?: Type<any>[]; baseUrl?: string; typeConverters?: TypeConverter<any>[] }
+  router?: { routes?: Type<any>[] } & Pick<
+    RouterOptions,
+    'caseSensitive' | 'typeConverters' | 'baseUrl'
+  >
 }
 
 export type IngressOptions<T> =
@@ -59,13 +61,12 @@ export default function ingress<
     options.forEach(collect)
   }
   if ('router' in options) {
-    ;(options.router?.routes ?? []).forEach(collect)
+    options.router?.routes?.forEach(collect)
   }
 
   server
     .use(defaultMiddleware)
     .use({
-      //register collected routes as services just in time
       start() {
         container.services.push(...router.controllerCollector.items)
       },
