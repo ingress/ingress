@@ -90,7 +90,7 @@
     "rxjs": "~6.6.3",
     "secure-json-parse": "^2.1.0",
     "uuid": "^8.3.2",
-    "ws": "^7.4.1"
+    "ws": "^7.4.2"
   },
   "peerDependencies": {
     "@types/ws": "^7.4.0"
@@ -107,18 +107,18 @@
     "@babel/preset-typescript": "^7.12.7",
     "@types/destroy": "~1.0.0",
     "@types/jest": "^26.0.19",
-    "@types/node": "^14.14.16",
+    "@types/node": "^14.14.19",
     "@types/on-finished": "~2.3.1",
     "@types/secure-json-parse": "^1.0.2",
     "@types/sinon": "^9.0.10",
     "@types/uuid": "^8.3.0",
     "@types/ws": "^7.4.0",
-    "@typescript-eslint/eslint-plugin": "^4.11.0",
-    "@typescript-eslint/parser": "^4.11.0",
+    "@typescript-eslint/eslint-plugin": "^4.11.1",
+    "@typescript-eslint/parser": "^4.11.1",
     "babel-plugin-transform-typescript-metadata": "^0.3.1",
     "concurrently": "^5.3.0",
     "cross-fetch": "~3.0.6",
-    "eslint": "^7.16.0",
+    "eslint": "^7.17.0",
     "eslint-config-prettier": "~7.1.0",
     "eslint-plugin-prettier": "^3.3.0",
     "eslint-watch": "^7.0.0",

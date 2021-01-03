@@ -16,7 +16,6 @@ export { IngressApp, Route, Ingress, Context, AppState }
 export { ListenOptions, Addon, Usable, SetupTeardown, usableForwardRef }
 export { StatusCode } from '@ingress/http-status'
 
-//Supporting Symbols
 export { BaseContext, DefaultContext, BaseAuthContext, Request, Response, Type } from './context'
 
 export { Authenticate } from './annotations/authenticate'
