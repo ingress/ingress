@@ -27,5 +27,6 @@ export class Ack<T = any> {
         reject(reason)
       }
     })
+    pending.set(id, this)
   }
 }

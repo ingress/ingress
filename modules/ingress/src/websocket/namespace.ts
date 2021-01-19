@@ -161,6 +161,8 @@ export class Namespace {
         const pendingAck = this.pendingAcks.get(message as string)
         if (!pendingAck) {
           this.onExpiredAck.next(message as string)
+        } else {
+          pendingAck.resolve()
         }
       } else if (namespace === this.name) {
         this.sendLocal({ message, channels, exclusions, ack })
