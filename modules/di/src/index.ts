@@ -45,6 +45,7 @@ export class Container<T extends ContainerContext = ContainerContext> implements
 
   public singletonCollector = new DependencyCollectorList()
   public serviceCollector = new DependencyCollectorList()
+  public forwardRefCollector = new DependencyCollectorList()
   public ContextToken = ContextToken
   public singletons: Provider[] = []
   public services: Provider[] = []
@@ -54,6 +55,9 @@ export class Container<T extends ContainerContext = ContainerContext> implements
   }
   public get Service(): DependencyCollector {
     return this.serviceCollector.collect
+  }
+  public get UseSingleton(): DependencyCollector {
+    return this.forwardRefCollector.collect
   }
 
   constructor({ singletons = [], services = [], contextToken = ContextToken }: ContainerOptions = {}) {
@@ -93,15 +97,20 @@ export class Container<T extends ContainerContext = ContainerContext> implements
     return this.createChild(new this.ResolvedContextProvider(context))
   }
 
-  public resolveProviders(): void {
-    this.start()
-  }
-
-  public start(): void {
-    this.singletons = Array.from(new Set([...this.singletons, ...this.singletonCollector.items]))
-    this.services = Array.from(new Set([...this.services, ...this.serviceCollector.items]))
+  public start(app?: any): void {
+    this.singletons = [
+      ...new Set([...this.singletons, ...this.singletonCollector.items, ...this.forwardRefCollector.items]),
+    ]
+    this.services = [...new Set([...this.services, ...this.serviceCollector.items])]
     this.rootInjector = ReflectiveInjector.resolveAndCreate(this.singletons)
     this.resolvedChildProviders = ReflectiveInjector.resolve(this.services)
+
+    //forward any "collected" forwardRefs
+    if (app) {
+      for (const forward of this.forwardRefCollector.items) {
+        app.use(this.get(forward))
+      }
+    }
   }
 
   get middleware() {

@@ -23,6 +23,9 @@ describe('Routing', () => {
   let app: IngressApp,
     routeSpy: sinon.SinonSpy,
     orderedSpies: sinon.SinonSpy[],
+    singleStart = false,
+    singleStop = false,
+    singleMiddle = false,
     path: (url: string, protocol?: string) => string,
     // errorStub: sinon.SinonStub,
     expectedResponse: string
@@ -132,6 +135,19 @@ describe('Routing', () => {
         }
       }
     }
+    @app.UseSingleton
+    class autoregisteredSingleton {
+      middleware(context: any, next: any) {
+        singleMiddle = true
+        return next()
+      }
+      start() {
+        singleStart = true
+      }
+      stop() {
+        singleStop = true
+      }
+    }
 
     const portInfo = await getPort()
     await app.listen(+portInfo.port)
@@ -145,6 +161,13 @@ describe('Routing', () => {
     const getResponse = await getAsync(path('/base/route/test'))
     expect(getResponse).toEqual(expectedResponse)
     sinon.assert.calledOnce(routeSpy)
+  })
+
+  it('should collect and register singletons', async () => {
+    expectedResponse = 'Hello World'
+    const getResponse = await getAsync(path('/base/route/test'))
+    expect(getResponse).toEqual(expectedResponse)
+    expect([singleStart, singleMiddle, singleStart]).toEqual([true, true, true])
   })
 
   it('should allow a websocket connection', async () => {

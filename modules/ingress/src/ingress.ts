@@ -1,4 +1,4 @@
-import { AppBuilder, Middleware, compose, functionList, ContinuationMiddleware } from 'app-builder'
+import { AppBuilder, Middleware, ContinuationMiddleware } from 'app-builder'
 import { BaseContext, DefaultContext, BaseAuthContext, Type } from './context'
 import { Annotation, isAnnotationFactory } from 'reflect-annotations'
 import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
@@ -37,6 +37,9 @@ export class Ingress<
   }
 
   use(usable: Addon<T>): this {
+    if (this.state === AppState.Started) {
+      throw new Error('App Started already - Cannot use something on a started app')
+    }
     let used = false
     if ('forwardRef' in usable) {
       return this.use(usableForwardRef(usable.forwardRef))
@@ -88,10 +91,11 @@ export class Ingress<
       this.server = app.server
     }
     this.state = AppState.Starting
-    await compose(functionList(this.setups.map((x) => x.bind(null, this))))()
+    for (const setup of this.setups) {
+      await Promise.resolve(setup(this))
+    }
     this.state = AppState.Started
   }
-
   public close(): Promise<any> {
     return this.stop()
   }
@@ -102,7 +106,9 @@ export class Ingress<
     }
     this.state = AppState.Stopping
     try {
-      await compose(functionList(this.teardowns.map((x) => x.bind(null, this))))()
+      for (const teardown of this.teardowns) {
+        await Promise.resolve(teardown(this))
+      }
     } finally {
       this.state = AppState.Stopped
     }
@@ -112,10 +118,9 @@ export class Ingress<
     if (!this.server) {
       this.server = new HttpServer()
     }
+    await this.start()
     const mw = this.middleware,
       handler = (req: IncomingMessage, res: ServerResponse) => mw(this.createContext(req, res))
-
-    await this.start()
     //continue in starting state
     this.state = AppState.Starting
 

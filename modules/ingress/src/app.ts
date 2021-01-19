@@ -81,6 +81,7 @@ export default function ingress<
     container: container as Container,
     router,
     Controller: router.Controller,
+    UseSingleton: container.UseSingleton,
     Service: container.Service,
     SingletonService: container.SingletonService,
   })
@@ -94,5 +95,6 @@ export type IngressApp<
   container: Container
   Controller: ControllerDependencyCollector
   Service: DependencyCollector
+  UseSingleton: DependencyCollector
   SingletonService: DependencyCollector
 }
