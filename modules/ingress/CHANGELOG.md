@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.1](https://github.com/ingress/ingress/compare/ingress@4.5.0...ingress@4.5.1) (2021-01-19)
+
+
+### Bug Fixes
+
+* **websockets:** resolve pending acks ([e5e46e9](https://github.com/ingress/ingress/commit/e5e46e92d32cd0222d93fbfa0b3276da552e6594))
+
+
+
+
+
 # [4.5.0](https://github.com/ingress/ingress/compare/ingress@4.4.0...ingress@4.5.0) (2021-01-19)
 
 
