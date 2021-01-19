@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.5.0](https://github.com/ingress/ingress/compare/ingress@4.4.0...ingress@4.5.0) (2021-01-19)
+
+
+### Features
+
+* add UseSingleton di collector to register usables just in time ([c32b1ef](https://github.com/ingress/ingress/commit/c32b1ef3686124e954d3cea8e89e8f2cb1f01f53))
+
+
+
+
+
 # [4.4.0](https://github.com/ingress/ingress/compare/ingress@4.3.4...ingress@4.4.0) (2020-12-24)
 
 
