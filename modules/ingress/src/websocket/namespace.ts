@@ -117,6 +117,7 @@ export type NamespaceOptions = {
 
 export class Namespace {
   public channels = new Map<string, Channel>()
+  public connections = new Set<Connection>()
   private backchannel = new Subject<BackChannelMessage>()
   private backchannelTimeout = 1000
   private backChannelConnection?: SubscriptionLike
@@ -146,8 +147,10 @@ export class Namespace {
     subs.add(connection.onError.subscribe(this.onError))
     subs.add(connection.onPong.subscribe(this.onPong))
     connection.onClose.pipe(take(1)).subscribe(() => {
+      this.connections.delete(connection)
       subs.unsubscribe()
     })
+    this.connections.add(connection)
     return connection
   }
 
