@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.7.0](https://github.com/ingress/ingress/compare/ingress@4.6.0...ingress@4.7.0) (2021-01-20)
+
+
+### Features
+
+* **websockets:** add promisified ping wrapper method ([1b62de8](https://github.com/ingress/ingress/commit/1b62de84734b1c629f73b82dfa8b40b0a6d14f69))
+
+
+
+
+
 # [4.6.0](https://github.com/ingress/ingress/compare/ingress@4.5.1...ingress@4.6.0) (2021-01-20)
 
 
