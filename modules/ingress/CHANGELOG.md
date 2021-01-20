@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.6.0](https://github.com/ingress/ingress/compare/ingress@4.5.1...ingress@4.6.0) (2021-01-20)
+
+
+### Features
+
+* expose connections on namespace ([81e3128](https://github.com/ingress/ingress/commit/81e3128d19b03ee67e596b93c7f92b38ddb62b12))
+
+
+
+
+
 ## [4.5.1](https://github.com/ingress/ingress/compare/ingress@4.5.0...ingress@4.5.1) (2021-01-19)
 
 
