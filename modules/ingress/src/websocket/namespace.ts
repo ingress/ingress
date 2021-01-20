@@ -73,6 +73,15 @@ export class Connection {
     this.conn.close()
   }
 
+  ping(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.conn.ping(void 0, void 0, (err?: Error) => {
+        err && reject(err)
+        resolve()
+      })
+    })
+  }
+
   private _dispose() {
     if (!this.conn) {
       return
