@@ -9,6 +9,8 @@ function isMiddlewareFunction(value: any): value is Func {
   return typeof value === 'function' && value.toString().indexOf('class') !== 0
 }
 
+type HttpHandler = (req: IncomingMessage, res: ServerResponse) => any
+
 export enum AppState {
   New = 0,
   Starting = 1,
@@ -29,11 +31,20 @@ export class Ingress<
   private setups: SetupTeardown[] = []
   private teardowns: SetupTeardown[] = []
   public server?: HttpServer
+  private _handler?: HttpHandler
 
   constructor(options?: { server?: HttpServer }) {
     if (options?.server) {
       this.server = options.server
     }
+  }
+
+  get handler(): HttpHandler {
+    if (this._handler) {
+      return this._handler
+    }
+    const mw = this.middleware
+    return (this._handler = (req, res) => mw(this.createContext(req, res)))
   }
 
   use(usable: Addon<T>): this {
@@ -119,19 +130,15 @@ export class Ingress<
       this.server = new HttpServer()
     }
     await this.start()
-    const mw = this.middleware,
-      handler = (req: IncomingMessage, res: ServerResponse) => mw(this.createContext(req, res))
-    //continue in starting state
     this.state = AppState.Starting
-
     try {
-      this.server?.on('request', handler)
+      this.server?.on('request', this.handler)
       await new Promise<void>((resolve, reject) => {
         this.server?.listen(options, (error?: Error) => (error ? reject(error) : resolve()))
       })
       this.teardowns.unshift((app) => {
         return new Promise<void>((resolve, reject) => {
-          app.server?.off('request', handler)
+          app.server?.off('request', this.handler)
           app.server?.close((error?: Error) => (error ? reject(error) : resolve()))
         })
       })

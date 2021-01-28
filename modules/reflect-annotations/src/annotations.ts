@@ -1,4 +1,4 @@
-import 'reflect-metadata'
+///<reference types="reflect-metadata"/>
 
 const ANNOTATIONS = 'annotations',
   PARAMETER_ANNOTATIONS = 'parameter-annotations',
