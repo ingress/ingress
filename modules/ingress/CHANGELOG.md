@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.8.0](https://github.com/ingress/ingress/compare/ingress@4.7.0...ingress@4.8.0) (2021-01-28)
+
+
+### Features
+
+* add handler getter ([a61a709](https://github.com/ingress/ingress/commit/a61a70906dc8fbafab068447c3f3daf2791d494b))
+
+
+
+
+
 # [4.7.0](https://github.com/ingress/ingress/compare/ingress@4.6.0...ingress@4.7.0) (2021-01-20)
 
 

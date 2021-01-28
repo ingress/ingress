@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.5.0](https://github.com/ingress/ingress/compare/reflect-annotations@3.4.0...reflect-annotations@3.5.0) (2021-01-28)
+
+
+### Features
+
+* add handler getter ([a61a709](https://github.com/ingress/ingress/commit/a61a70906dc8fbafab068447c3f3daf2791d494b))
+
+
+
+
+
 # [3.4.0](https://github.com/ingress/ingress/compare/reflect-annotations@3.3.0...reflect-annotations@3.4.0) (2021-01-19)
 
 
