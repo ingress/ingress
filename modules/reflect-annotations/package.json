@@ -56,6 +56,7 @@
     "typescript": "^4.1.3"
   },
   "jest": {
+    "setupFiles": ["./node_modules/reflect-metadata/Reflect.js"],
     "preset": "ts-jest",
     "testPathIgnorePatterns": [
       ".*\\.js"

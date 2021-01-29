@@ -170,7 +170,7 @@ describe('reflect-annotations', () => {
       expect(annotations[0].options.a).toEqual(42)
     })
 
-    it('should collect parameter annotions', () => {
+    it('should collect parameter annotations', () => {
       const classProperties = reflectAnnotations(Five)
       expect(classProperties[0].methodAnnotations.map((x) => x.constructor.toString())).toEqual([
         MiddlewareFixture.toString(),

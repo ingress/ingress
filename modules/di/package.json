@@ -56,6 +56,7 @@
     "tslib": "^2.1.0"
   },
   "jest": {
+    "setupFiles": ["./node_modules/reflect-metadata/Reflect.js"],
     "preset": "ts-jest",
     "testPathIgnorePatterns": [
       ".*\\.js"

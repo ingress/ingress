@@ -1,4 +1,3 @@
-import 'reflect-metadata'
 import * as assert from 'assert'
 import { Container, Injector, ReflectiveInjector } from '.'
 
