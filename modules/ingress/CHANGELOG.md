@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0-alpha.5](https://github.com/ingress/ingress/compare/ingress@5.0.0-alpha.3...ingress@5.0.0-alpha.5) (2021-02-22)
+
+
+### Bug Fixes
+
+* bump version and add prepublish ([22e94b5](https://github.com/ingress/ingress/commit/22e94b54c5c4fdb05c5a97769d1ed2a77ba27c45))
+
+
+
+
+
 # [5.0.0-alpha.3](https://github.com/ingress/ingress/compare/ingress@5.0.0-alpha.2...ingress@5.0.0-alpha.3) (2021-02-22)
 
 
