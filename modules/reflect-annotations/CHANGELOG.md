@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0-alpha.2](https://github.com/ingress/ingress/compare/reflect-annotations@4.0.0-alpha.1...reflect-annotations@4.0.0-alpha.2) (2021-02-22)
+
+
+### Bug Fixes
+
+* **reflect-annotations:** esm references ([aa2a442](https://github.com/ingress/ingress/commit/aa2a4420279d7f51b58dc626c2f6d6a8431abeb0))
+
+
+
+
+
 # [4.0.0-alpha.1](https://github.com/ingress/ingress/compare/reflect-annotations@4.0.0-alpha.0...reflect-annotations@4.0.0-alpha.1) (2021-02-22)
 
 
