@@ -11,7 +11,7 @@
     }
   },
   "files": [
-    "status-codes.d.ts"
+    "lib"
   ],
   "scripts": {
     "test": "echo 'No Tests'",
