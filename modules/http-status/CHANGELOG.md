@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-alpha.2](https://me.github.com/ingress/ingress/compare/@ingress/http-status@3.0.0-alpha.1...@ingress/http-status@3.0.0-alpha.2) (2021-02-22)
+
+
+### Bug Fixes
+
+* include files on http-status ([3872934](https://me.github.com/ingress/ingress/commit/38729349ab55027673e091d885921ae307ed38f1))
+
+
+
+
+
 # [3.0.0-alpha.1](https://me.github.com/ingress/ingress/compare/@ingress/http-status@3.0.0-alpha.0...@ingress/http-status@3.0.0-alpha.1) (2021-02-22)
 
 

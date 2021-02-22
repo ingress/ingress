@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "5.0.0-alpha.1",
+  "version": "5.0.0-alpha.2",
   "description": "Composable nodejs applications",
   "type": "module",
   "main": "./lib/cjs/main.js",
@@ -51,7 +51,7 @@
   "dependencies": {
     "@hapi/subtext": "~7.0.3",
     "@ingress/di": "^3.0.0-alpha.1",
-    "@ingress/http-status": "^3.0.0-alpha.1",
+    "@ingress/http-status": "^3.0.0-alpha.2",
     "app-builder": "^6.2.2",
     "destroy": "~1.0.4",
     "find-my-way": "^4.0.0",
