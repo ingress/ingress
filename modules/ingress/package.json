@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "5.0.0-alpha.2",
+  "version": "5.0.0-alpha.3",
   "description": "Composable nodejs applications",
   "type": "module",
   "main": "./lib/cjs/main.js",
