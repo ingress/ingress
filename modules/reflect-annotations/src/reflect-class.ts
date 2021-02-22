@@ -1,4 +1,4 @@
-import { Constructor } from './annotations'
+import { Constructor } from './annotations.js'
 
 function uniqueNotConstructor(names: Array<string>, name: string) {
   ~names.indexOf(name) || (name !== 'constructor' && names.push(name))
