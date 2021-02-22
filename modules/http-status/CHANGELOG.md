@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-alpha.1](https://me.github.com/ingress/ingress/compare/@ingress/http-status@3.0.0-alpha.0...@ingress/http-status@3.0.0-alpha.1) (2021-02-22)
+
+
+### Bug Fixes
+
+* commonjs module type for cjs build ([25251ac](https://me.github.com/ingress/ingress/commit/25251ac2f482f015f04e6da5da04f47ef02381d7))
+
+
+
+
+
 # [3.0.0-alpha.0](https://me.github.com/ingress/ingress/compare/@ingress/http-status@2.4.0...@ingress/http-status@3.0.0-alpha.0) (2021-02-22)
 
 

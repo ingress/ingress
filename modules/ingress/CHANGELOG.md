@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0-alpha.1](https://github.com/ingress/ingress/compare/ingress@5.0.0-alpha.0...ingress@5.0.0-alpha.1) (2021-02-22)
+
+
+### Bug Fixes
+
+* commonjs module type for cjs build ([25251ac](https://github.com/ingress/ingress/commit/25251ac2f482f015f04e6da5da04f47ef02381d7))
+
+
+
+
+
 # [5.0.0-alpha.0](https://github.com/ingress/ingress/compare/ingress@4.8.0...ingress@5.0.0-alpha.0) (2021-02-22)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@ingress/http-status",
-  "version": "3.0.0-alpha.0",
+  "version": "3.0.0-alpha.1",
   "description": "Ergonomic (typed) variant of node's http#STATUS_CODES constant",
   "main": "lib/cjs/status-codes.js",
   "type": "module",
