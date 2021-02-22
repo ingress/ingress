@@ -9,11 +9,11 @@ import { BaseContext } from '../context.js'
 import { Func, noop } from '../lang.js'
 
 //Exports
-export { ParseJson } from './json-parser'
-export { ParseOptions, Parse, ParseAnnotation } from './parse.annotation'
-export * from './route.annotation'
-export { RouteMetadata } from './path-resolver'
-export { ExactTypeConverter, PredicateTypeConverter, TypeConverter } from './type-converter'
+export { ParseJson } from './json-parser.js'
+export { ParseOptions, Parse, ParseAnnotation } from './parse.annotation.js'
+export * from './route.annotation.js'
+export { RouteMetadata } from './path-resolver.js'
+export { ExactTypeConverter, PredicateTypeConverter, TypeConverter } from './type-converter.js'
 export { Type, Handler }
 
 export interface RouterOptions {
