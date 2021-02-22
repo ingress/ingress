@@ -3,6 +3,7 @@
   "version": "3.0.0-alpha.0",
   "description": "Ergonomic (typed) variant of node's http#STATUS_CODES constant",
   "main": "lib/cjs/status-codes.js",
+  "type": "module",
   "exports": {
     ".": {
       "import": "./lib/esm/status-codes.js",
@@ -14,7 +15,8 @@
   ],
   "scripts": {
     "test": "echo 'No Tests'",
-    "build": "rm -rf lib && tsc && tsc --outDir lib/cjs --module commonjs"
+    "build": "rm -rf lib && tsc && npm run build:commonjs",
+    "build:commonjs": "tsc --module commonjs --outDir lib/cjs && echo '{\"type\": \"commonjs\"}' > lib/cjs/package.json"
   },
   "keywords": [],
   "author": "Caleb Boyd <caleb.boyd@hotmail.com>",

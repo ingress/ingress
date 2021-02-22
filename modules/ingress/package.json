@@ -11,7 +11,8 @@
     }
   },
   "scripts": {
-    "build": "rm -rf lib && tsc && tsc --outDir lib/cjs --module commonjs",
+    "build": "rm -rf lib && tsc && npm run build:commonjs",
+    "build:commonjs": "tsc --module commonjs --outDir lib/cjs && echo '{\"type\": \"commonjs\"}' > lib/cjs/package.json",
     "watch:typescript": "tsc -w",
     "watch:test": "jest --watchAll --detectOpenHandles",
     "watch": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",

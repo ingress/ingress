@@ -15,7 +15,8 @@
     "!**/*.spec.js"
   ],
   "scripts": {
-    "build": "rm -rf lib && tsc && tsc --outDir lib/cjs --module commonjs",
+    "build": "rm -rf lib && tsc && npm run build:commonjs",
+    "build:commonjs": "tsc --module commonjs --outDir lib/cjs && echo '{\"type\": \"commonjs\"}' > lib/cjs/package.json",
     "test": "jest",
     "watch": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
     "watch:test": "jest --watchAll",

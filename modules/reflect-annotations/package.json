@@ -22,7 +22,8 @@
     "node": ">=4.0.0"
   },
   "scripts": {
-    "build": "rm -rf lib && tsc && tsc --module commonjs --outDir lib/cjs",
+    "build": "rm -rf lib && tsc && npm run build:commonjs",
+    "build:commonjs": "tsc --module commonjs --outDir lib/cjs && echo '{\"type\": \"commonjs\"}' > lib/cjs/package.json",
     "test": "jest",
     "watch": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
     "watch:test": "jest --watchAll",
