@@ -1,4 +1,4 @@
-import { BaseContext, Middleware } from '../context'
+import { BaseContext, Middleware } from '../context.js'
 import { createAnnotationFactory, Annotation } from 'reflect-annotations'
 import { StatusCode } from '@ingress/http-status'
 

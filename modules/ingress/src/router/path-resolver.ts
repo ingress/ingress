@@ -1,5 +1,5 @@
 import { Type } from '@ingress/di'
-import { RouteAnnotation } from './route.annotation'
+import { RouteAnnotation } from './route.annotation.js'
 import { AnnotatedPropertyDescription } from 'reflect-annotations'
 
 const isRouteAnnotation = (x: any) => Boolean(x.isRouteAnnotation)

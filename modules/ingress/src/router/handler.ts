@@ -1,11 +1,11 @@
 import { compose, Middleware } from 'app-builder'
 import { AnnotatedPropertyDescription } from 'reflect-annotations'
-import { parseJson } from './json-parser'
-import { BaseContext } from '../context'
-import { ParamAnnotation } from './route.annotation'
+import { parseJson } from './json-parser.js'
+import { BaseContext } from '../context.js'
+import { ParamAnnotation } from './route.annotation.js'
 import { Type } from '@ingress/di'
-import { TypeConverter } from './type-converter'
-import { PathMap, resolvePaths, RouteMetadata } from './path-resolver'
+import { TypeConverter } from './type-converter.js'
+import { PathMap, resolvePaths, RouteMetadata } from './path-resolver.js'
 
 const pickRequest = (context: BaseContext<any, any>) => context.req
 

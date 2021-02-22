@@ -1,4 +1,4 @@
-import { RouteAnnotation, Route } from './route.annotation'
+import { RouteAnnotation, Route } from './route.annotation.js'
 
 describe('Route annotations', () => {
   const parent = new RouteAnnotation('/parent/path'),

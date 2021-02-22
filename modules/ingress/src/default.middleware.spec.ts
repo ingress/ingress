@@ -1,4 +1,4 @@
-import ingress, { IngressApp } from './app'
+import ingress, { IngressApp } from './app.js'
 import { Readable } from 'stream'
 import getPort from 'get-port'
 import fetch from 'cross-fetch'

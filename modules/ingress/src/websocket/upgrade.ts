@@ -1,12 +1,12 @@
-import { Ingress } from '../ingress'
+import { Ingress } from '../ingress.js'
 import ws, { Server } from 'ws'
-import { Router } from '../router/router'
-import { Func, once } from '../lang'
-import { WebsocketServerResponse } from './response'
+import { Router } from '../router/router.js'
+import { Func, once } from '../lang.js'
+import { WebsocketServerResponse } from './response.js'
 import { StatusCode } from '@ingress/http-status'
 import { Container } from '@ingress/di'
 import { Socket } from 'net'
-import { DefaultContext, Middleware, Request } from '../context'
+import { DefaultContext, Middleware, Request } from '../context.js'
 import { compose } from 'app-builder'
 
 export type UpgradeBody<T = DefaultContext> = {

@@ -1,4 +1,4 @@
-import * as api from './main'
+import * as api from './main.js'
 
 describe('Ingress', () => {
   describe('Exports', () => {

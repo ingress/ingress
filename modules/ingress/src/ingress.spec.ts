@@ -1,4 +1,4 @@
-import ingress, { IngressApp } from './app'
+import ingress, { IngressApp } from './app.js'
 import { compose } from 'app-builder'
 import getPort from 'get-port'
 

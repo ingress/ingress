@@ -1,4 +1,4 @@
-import { Route } from './route.annotation'
+import { Route } from './route.annotation.js'
 import { Type } from '@ingress/di'
 
 export interface ControllerOptions {

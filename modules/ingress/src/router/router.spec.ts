@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import ingress, { IngressApp } from '../app'
-import { Route } from './router'
+import ingress, { IngressApp } from '../app.js'
+import { Route } from './router.js'
 import * as sinon from 'sinon'
 import Websocket from 'ws'
 import getPortAsync from 'get-port'
-import { getAsync, postAsync } from './test.util.spec'
+import { getAsync, postAsync } from './test.util.spec.js'
 import { createAnnotationFactory } from 'reflect-annotations'
-import { UpgradeBody } from '../websocket/upgrade'
+import { UpgradeBody } from '../websocket/upgrade.js'
 import { StatusCode } from '@ingress/http-status'
 
 async function getPort() {

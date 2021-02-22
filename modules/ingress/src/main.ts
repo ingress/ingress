@@ -1,6 +1,5 @@
-//API
-import ingress, { IngressApp, Context } from './app'
-import { Route } from './router/router'
+import ingress, { IngressApp, Context } from './app.js'
+import { Route } from './router/router.js'
 import {
   Ingress,
   ListenOptions,
@@ -9,27 +8,27 @@ import {
   SetupTeardown,
   AppState,
   usableForwardRef,
-} from './ingress'
+} from './ingress.js'
 
 export default ingress
 export { IngressApp, Route, Ingress, Context, AppState }
 export { ListenOptions, Addon, Usable, SetupTeardown, usableForwardRef }
 export { StatusCode } from '@ingress/http-status'
 
-export { BaseContext, DefaultContext, BaseAuthContext, Request, Response, Type } from './context'
+export { BaseContext, DefaultContext, BaseAuthContext, Request, Response, Type } from './context.js'
 
-export { Authenticate } from './annotations/authenticate'
-export { fromConnect } from './annotations/from-connect'
-export { AfterRequest } from './annotations/after-request'
+export { Authenticate } from './annotations/authenticate.js'
+export { fromConnect } from './annotations/from-connect.js'
+export { AfterRequest } from './annotations/after-request.js'
 
 export { compose } from 'app-builder'
 
 //SOMEDAY: alias this
 export { createAnnotationFactory } from 'reflect-annotations'
 
-export * from './websocket/namespace'
-export * from './websocket/upgrade'
-export * from './websocket/backchannel'
+export * from './websocket/namespace.js'
+export * from './websocket/upgrade.js'
+export * from './websocket/backchannel.js'
 
 export {
   PathFactory,
@@ -50,4 +49,4 @@ export {
   ExactTypeConverter,
   ParamAnnotation,
   RouteMetadata,
-} from './router/router'
+} from './router/router.js'

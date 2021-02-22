@@ -101,18 +101,18 @@ export function createAnnotationFactory<T>(Type: Constructor<T>): AnnotationFact
 export function createAnnotationFactory<T>(Type: Constructor<T>): AnnotationFactory<T> {
   return Object.assign(
     function annotationFactory(...args: any[]): Annotation<T> {
-      const annotationInstance = new Type(...args)
-      const annotation = (target: any, key?: string | symbol, descriptorOrParamIndex?: PropertyDescriptor | number) => {
-        if (key && typeof descriptorOrParamIndex === 'number') {
-          const annotations = getParameterAnnotations(target, key)
-          annotations[descriptorOrParamIndex] = annotationInstance
-          setParameterAnnotations(target, key, annotations)
-        } else {
-          const annotations = getAnnotations(target, key)
-          annotations.push(annotationInstance)
-          setAnnotations(target, key, annotations)
+      const annotationInstance = new Type(...args),
+        annotation = (target: any, key?: string | symbol, descriptorOrParamIndex?: PropertyDescriptor | number) => {
+          if (key && typeof descriptorOrParamIndex === 'number') {
+            const annotations = getParameterAnnotations(target, key)
+            annotations[descriptorOrParamIndex] = annotationInstance
+            setParameterAnnotations(target, key, annotations)
+          } else {
+            const annotations = getAnnotations(target, key)
+            annotations.push(annotationInstance)
+            setAnnotations(target, key, annotations)
+          }
         }
-      }
       annotation.annotationInstance = annotationInstance
       return annotation
     },

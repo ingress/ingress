@@ -1,23 +1,8 @@
 {
+  "extends": "../../base.tsconfig.json",
   "compilerOptions": {
-    "target": "es2018",
-    "declaration": true,
-    "module": "commonjs",
-    "skipLibCheck": true,
-    "lib": [
-      "dom",
-      "es2018"
-    ],
-    "strict": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "inlineSourceMap": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "outDir": "./lib/esm",
   },
-  "exclude": [
-    "node_modules"
-  ],
   "include": [
     "*.ts"
   ]

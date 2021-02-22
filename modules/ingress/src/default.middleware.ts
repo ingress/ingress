@@ -12,7 +12,7 @@ import { Buffer } from 'buffer'
 import { Stream } from 'stream'
 import onFinished from 'on-finished'
 import destroy from 'destroy'
-import { Func } from './lang'
+import { Func } from './lang.js'
 
 const internalError = new Error('Internal Server Error') as Error & { statusCode: number }
 internalError.statusCode = 500

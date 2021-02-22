@@ -1,9 +1,9 @@
 import WebSocket from 'ws'
 import { Subject, fromEvent, merge, Observable, SubscriptionLike, Subscription } from 'rxjs'
-import { Ack } from './ack'
+import { Ack } from './ack.js'
 import { map, takeUntil, take } from 'rxjs/operators'
-import { createBackChannel } from './backchannel'
-import { noop, once } from '../lang'
+import { createBackChannel } from './backchannel.js'
+import { noop, once } from '../lang.js'
 
 const DefaultExclusions: Exclusions = Object.create(null)
 export interface Exclusions {

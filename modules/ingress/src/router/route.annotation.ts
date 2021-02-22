@@ -1,7 +1,7 @@
 import { createAnnotationFactory, Annotation } from 'reflect-annotations'
-import { Parse } from './parse.annotation'
-import { DefaultContext } from '../context'
-import { Func } from '../lang'
+import { Parse } from './parse.annotation.js'
+import { DefaultContext } from '../context.js'
+import { Func } from '../lang.js'
 
 const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
   result = (x: string) => '/' + trim(x),

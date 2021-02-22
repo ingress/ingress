@@ -1,7 +1,7 @@
 import { createAnnotationFactory } from 'reflect-annotations'
 import { StatusCode } from '@ingress/http-status'
-import { Middleware, DefaultContext } from '../context'
-import { Func } from '../lang'
+import { Middleware, DefaultContext } from '../context.js'
+import { Func } from '../lang.js'
 import { parse } from 'secure-json-parse'
 
 export interface ParseJsonBodyOptions {

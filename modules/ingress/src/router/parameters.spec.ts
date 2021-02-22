@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import ingress, { IngressApp, Context } from '../app'
-import { Route } from '../router/router'
+import ingress, { IngressApp, Context } from '../app.js'
+import { Route } from '../router/router.js'
 import * as sinon from 'sinon'
 import getPortAsync from 'get-port'
-import { getAsync, postAsync } from './test.util.spec'
+import { getAsync, postAsync } from './test.util.spec.js'
 
 async function getPort() {
   const port = await getPortAsync()

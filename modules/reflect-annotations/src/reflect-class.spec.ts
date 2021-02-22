@@ -1,6 +1,7 @@
-import { reflectClassProperties } from './reflect-class'
-import { createAnnotationFactory, getAnnotations } from './annotations'
-import { reflectAnnotations, isAnnotationFactory } from './index'
+/*eslint-disable @typescript-eslint/no-empty-function */
+import { reflectClassProperties } from './reflect-class.js'
+import { createAnnotationFactory, getAnnotations } from './annotations.js'
+import { reflectAnnotations, isAnnotationFactory } from './index.js'
 
 class MiddlewareFixture {
   middleware(ctx: any, next: (...args: any[]) => any) {
@@ -18,14 +19,16 @@ class ExtraFixtureWithParameter {
 }
 
 class ExtraFixtureWithLotsOfParameters {
-  constructor(a1: 1, a2: 2, a3: 3, a4: 4, a5: 5, a6: 6, a7: 7, a8: 8, a9: 9, a10: 10, a11: 11) {}
+  constructor(a1: 1, a2: 2, a3: 3, a4: 4, a5: 5, a6: 6, a7: 7, a8: 8, a9: 9, a10: 10, a11: 11) {
+    void a11
+  }
 }
 
-const FixtureAnnotation = createAnnotationFactory(Fixture)
-const MiddlewareAnnotation = createAnnotationFactory(MiddlewareFixture)
-const ExtraAnnotation = createAnnotationFactory(ExtraFixture)
-const ExtraAnnotationWithAParameter = createAnnotationFactory(ExtraFixtureWithParameter)
-const ExtraAnnotationWithALotsOfParameters = createAnnotationFactory(ExtraFixtureWithLotsOfParameters)
+const FixtureAnnotation = createAnnotationFactory(Fixture),
+  MiddlewareAnnotation = createAnnotationFactory(MiddlewareFixture),
+  ExtraAnnotation = createAnnotationFactory(ExtraFixture),
+  ExtraAnnotationWithAParameter = createAnnotationFactory(ExtraFixtureWithParameter),
+  ExtraAnnotationWithALotsOfParameters = createAnnotationFactory(ExtraFixtureWithLotsOfParameters)
 
 @MiddlewareAnnotation()
 @ExtraAnnotation()
@@ -127,8 +130,8 @@ describe('reflect-annotations', () => {
     })
 
     it('should return method annotations in the declared order', () => {
-      const classProperties = reflectAnnotations(One)
-      const methodOne = classProperties.find((x) => x.name === 'one')
+      const classProperties = reflectAnnotations(One),
+        methodOne = classProperties.find((x) => x.name === 'one')
 
       expect(methodOne?.methodAnnotations.map((x) => x.constructor.toString())).toEqual([
         Fixture.toString(),
@@ -138,8 +141,8 @@ describe('reflect-annotations', () => {
     })
 
     it('should return method annotations in the parsed order', () => {
-      const classProperties = reflectAnnotations(One, { declaredOrder: false })
-      const methodOne = classProperties.find((x) => x.name === 'one')
+      const classProperties = reflectAnnotations(One, { declaredOrder: false }),
+        methodOne = classProperties.find((x) => x.name === 'one')
 
       expect(methodOne?.methodAnnotations.map((x) => x.constructor.toString())).toEqual([
         MiddlewareFixture.toString(),
@@ -149,8 +152,8 @@ describe('reflect-annotations', () => {
     })
 
     it('should return class annotations in the declared order', () => {
-      const classProperties = reflectAnnotations(One)
-      const annotations = classProperties[0].classAnnotations
+      const classProperties = reflectAnnotations(One),
+        annotations = classProperties[0].classAnnotations
 
       expect(annotations.map((x) => x.constructor.toString())).toEqual([
         MiddlewareFixture.toString(),
@@ -160,8 +163,8 @@ describe('reflect-annotations', () => {
     })
 
     it('should allow annotations with parameters', () => {
-      const classProperties = reflectAnnotations(Four)
-      const annotations = classProperties[0].classAnnotations
+      const classProperties = reflectAnnotations(Four),
+        annotations = classProperties[0].classAnnotations
 
       expect(annotations.map((x) => x.constructor.toString())).toEqual([
         ExtraFixtureWithParameter.toString(),

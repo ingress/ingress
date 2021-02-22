@@ -1,10 +1,10 @@
 import { Container, DependencyCollector } from '@ingress/di'
-import { Router, RouterOptions, Type } from './router/router'
-import { Websockets } from './websocket/upgrade'
-import { BaseContext, DefaultContext, BaseAuthContext, Middleware } from './context'
-import { DefaultMiddleware } from './default.middleware'
-import { Ingress, Addon } from './ingress'
-import { ControllerDependencyCollector } from './router/controller-annotation'
+import { Router, RouterOptions, Type } from './router/router.js'
+import { Websockets } from './websocket/upgrade.js'
+import { BaseContext, DefaultContext, BaseAuthContext, Middleware } from './context.js'
+import { DefaultMiddleware } from './default.middleware.js'
+import { Ingress, Addon } from './ingress.js'
+import { ControllerDependencyCollector } from './router/controller-annotation.js'
 
 /**
  * @public

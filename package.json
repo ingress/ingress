@@ -2,20 +2,62 @@
   "name": "ingress-mono-repo",
   "private": true,
   "version": "0.0.1",
+  "workspaces": [
+    "./modules/*"
+  ],
   "scripts": {
-    "postinstall": "lerna bootstrap && lerna run build",
-    "postpublish": "npm i",
     "check-updates": "ls -1 modules | while read line ; do npx npm-check-updates --packageFile modules/$line/package.json ; done",
     "updates": "ls -1 modules | while read line ; do npx npm-check-updates -u --packageFile modules/$line/package.json ; done ; npm run postinstall",
     "build": "lerna run build",
     "commitlint": "commitlint -f $(git rev-list --tags --max-count=1) -t $(git log --pretty=%H | head -1)",
     "test": "lerna run test",
-    "lint": "lerna run lint"
+    "lint": "eslint ./modules/*/src/**/*.ts --fix"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-angular": "^11.0.0",
-    "lerna": "^3.22.1"
+    "@typescript-eslint/eslint-plugin": "^4.15.1",
+    "@typescript-eslint/parser": "^4.15.1",
+    "eslint": "^7.20.0",
+    "eslint-config-prettier": "~7.2.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "lerna": "^3.22.1",
+    "prettier": "^2.2.1"
+  },
+  "eslintConfig": {
+    "parser": "@typescript-eslint/parser",
+    "extends": [
+      "plugin:@typescript-eslint/recommended",
+      "prettier/@typescript-eslint",
+      "plugin:prettier/recommended"
+    ],
+    "ignorePatterns": [],
+    "overrides": [
+      {
+        "files": [
+          "**/*.spec.ts"
+        ],
+        "env": {
+          "jest": true
+        }
+      }
+    ],
+    "rules": {
+      "@typescript-eslint/no-use-before-define": 0,
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/explicit-function-return-type": 0,
+      "no-warning-comments": 1,
+      "one-var": [
+        "error",
+        "consecutive"
+      ]
+    }
+  },
+  "prettier": {
+    "parser": "typescript",
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 100
   },
   "commitlint": {
     "extends": [

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import ingress, { IngressApp, Context } from '../app'
-import { Route } from '../router/route.annotation'
+import ingress, { IngressApp, Context } from '../app.js'
+import { Route } from '../router/route.annotation.js'
 import WebSocket from 'ws'
-import { postAsync, getPort } from '../router/test.util.spec'
-import { UpgradeBody } from '../websocket/upgrade'
-import { Namespace } from './namespace'
+import { postAsync, getPort } from '../router/test.util.spec.js'
+import { UpgradeBody } from '../websocket/upgrade.js'
+import { Namespace } from './namespace.js'
 
 type ActionMessage<T = Record<string, unknown>> = { action: string } & T
 type EventMessage<T = Record<string, unknown>> = { event: string } & T
