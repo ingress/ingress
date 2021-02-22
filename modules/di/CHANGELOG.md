@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-alpha.0](https://github.com/ingress/ingress/compare/@ingress/di@2.4.0...@ingress/di@3.0.0-alpha.0) (2021-02-22)
+
+
+### Features
+
+* dual mode esm build ([66c7662](https://github.com/ingress/ingress/commit/66c7662f04f22286992c1436d84ead82c69644c9))
+
+
+
+
+
 # [2.4.0](https://github.com/ingress/ingress/compare/@ingress/di@2.3.0...@ingress/di@2.4.0) (2021-01-19)
 
 
