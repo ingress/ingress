@@ -1,11 +1,12 @@
 import WebSocket from 'ws'
 import { Subject, fromEvent, merge, Observable, SubscriptionLike, Subscription } from 'rxjs'
 import { Ack } from './ack.js'
-import { map, takeUntil, take } from 'rxjs/operators'
 import { createBackChannel } from './backchannel.js'
 import { noop, once } from '../lang.js'
-
-const DefaultExclusions: Exclusions = Object.create(null)
+//to be able to load rxjs in esm we have to use the actual directory and load the cjs index
+import rxjsOps from 'rxjs/operators/index.js'
+const { map, takeUntil, take } = rxjsOps,
+  DefaultExclusions: Exclusions = Object.create(null)
 export interface Exclusions {
   [channelId: string]: boolean
 }
