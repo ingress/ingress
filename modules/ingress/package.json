@@ -6,9 +6,13 @@
   "main": "./lib/cjs/main.js",
   "exports": {
     ".": {
-      "import": "./lib/esm/main.js",
-      "require": "./lib/cjs/main.js"
-    }
+      "node": {
+        "import": "./lib/esm/main.js",
+        "require": "./lib/cjs/main.js"
+      },
+      "default": "./lib/cjs/main.js"
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
     "build": "rm -rf lib && tsc && npm run build:commonjs",
