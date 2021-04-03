@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0-alpha.7](https://github.com/ingress/ingress/compare/ingress@5.0.0-alpha.6...ingress@5.0.0-alpha.7) (2021-04-03)
+
+
+### Bug Fixes
+
+* update exports to include package.json ([47e367c](https://github.com/ingress/ingress/commit/47e367cd984c1f9de62e6abedb9c93609b80760f))
+
+
+
+
+
 # [5.0.0-alpha.6](https://github.com/ingress/ingress/compare/ingress@5.0.0-alpha.5...ingress@5.0.0-alpha.6) (2021-02-22)
 
 **Note:** Version bump only for package ingress
