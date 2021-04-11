@@ -9,9 +9,9 @@ import {
   ReflectiveKey,
 } from 'injection-js'
 
-import { Type, DependencyCollectorList, DependencyCollector } from './collector'
+import { Type, DependencyCollectorList, DependencyCollector } from './collector.js'
 
-export * from './collector'
+export * from './collector.js'
 export { ReflectiveInjector, Injector, Provider, Injectable }
 
 /**
@@ -60,7 +60,11 @@ export class Container<T extends ContainerContext = ContainerContext> implements
     return this.forwardRefCollector.collect
   }
 
-  constructor({ singletons = [], services = [], contextToken = ContextToken }: ContainerOptions = {}) {
+  constructor({
+    singletons = [],
+    services = [],
+    contextToken = ContextToken,
+  }: ContainerOptions = {}) {
     Object.assign(this, { singletons, services })
     const key = ReflectiveKey.get(contextToken)
     this.ResolvedContextProvider = class<T> implements ResolvedReflectiveProvider {
@@ -99,7 +103,11 @@ export class Container<T extends ContainerContext = ContainerContext> implements
 
   public start(app?: any): void {
     this.singletons = [
-      ...new Set([...this.singletons, ...this.singletonCollector.items, ...this.forwardRefCollector.items]),
+      ...new Set([
+        ...this.singletons,
+        ...this.singletonCollector.items,
+        ...this.forwardRefCollector.items,
+      ]),
     ]
     this.services = [...new Set([...this.services, ...this.serviceCollector.items])]
     this.rootInjector = ReflectiveInjector.resolveAndCreate(this.singletons)

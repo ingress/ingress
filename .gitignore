@@ -4,3 +4,4 @@ dist
 temp
 lib
 *.log
+.nyc_output
