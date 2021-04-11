@@ -3,26 +3,29 @@
   "private": true,
   "version": "0.0.1",
   "workspaces": [
-    "./modules/*"
+    "./modules/di",
+    "./modules/http-status",
+    "./modules/reflect-annotations",
+    "./modules/ingress"
   ],
   "scripts": {
-    "check-updates": "ls -1 modules | while read line ; do npx npm-check-updates --packageFile modules/$line/package.json ; done",
-    "prepublishOnly": "npm run build",
-    "updates": "ls -1 modules | while read line ; do npx npm-check-updates -u --packageFile modules/$line/package.json ; done",
-    "build": "lerna run build",
+    "build": "npm run build --workspaces",
+    "lint": "eslint ./modules/*/src/**/*.ts --fix",
+    "test": "npm run test --workspaces",
     "commitlint": "commitlint -f $(git rev-list --tags --max-count=1) -t $(git log --pretty=%H | head -1)",
-    "test": "lerna run test",
-    "lint": "eslint ./modules/*/src/**/*.ts --fix"
+    "ncu": "npm exec --workspaces -c \"ncu\"",
+    "ncuu": "npm exec --workspaces -c \"ncu -u\""
   },
   "devDependencies": {
-    "@commitlint/cli": "^11.0.0",
-    "@commitlint/config-angular": "^11.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.15.1",
-    "@typescript-eslint/parser": "^4.15.1",
-    "eslint": "^7.20.0",
-    "eslint-config-prettier": "~7.2.0",
+    "@commitlint/cli": "^12.1.1",
+    "@commitlint/config-angular": "^12.1.1",
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/parser": "^4.21.0",
+    "eslint": "^7.24.0",
+    "eslint-config-prettier": "~8.1.0",
     "eslint-plugin-prettier": "^3.3.1",
-    "lerna": "^3.22.1",
+    "lerna": "^4.0.0",
+    "npm-check-updates": "^11.4.1",
     "prettier": "^2.2.1"
   },
   "eslintConfig": {
