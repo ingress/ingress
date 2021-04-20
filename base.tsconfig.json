@@ -10,7 +10,7 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "inlineSourceMap": true,
+    "sourceMap": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   }
