@@ -5,3 +5,4 @@ temp
 lib
 *.log
 .nyc_output
+coverage

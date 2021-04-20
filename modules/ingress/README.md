@@ -11,9 +11,10 @@ install: <code>npm i ingress</code><br><br>a utility for building applications u
 
 **_Key Features_**
 
+- Great Developer Experience
 - Dependency Injection, Discovery, IoC and lifecycle management
 - Runtime type validation and coercion
-- Composable, connect-compatible, middleware integrations
+- Composable middleware
 
 ## Getting started (http):
 
