@@ -1,0 +1,29 @@
+{
+  "name": "@ingress/router",
+  "version": "0.0.1-alpha.0",
+  "keywords": ["radix", "trie", "tree", "router", "path", "http route"],
+  "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
+  "license": "MIT",
+  "description": "A router middleware for ingress",
+  "type": "module",
+  "exports": {
+    ".": {
+      "node": {
+        "import": "./lib/esm/router.js",
+        "require": "./lib/umd/router.js"
+      },
+      "default": "./lib/umd/router.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "docs"
+  ],
+  "scripts": {
+    "docs": "typedoc src/router.ts --excludePrivate",
+    "test": "tap src/tree.test.ts --no-coverage --node-arg=--loader=ts-node/esm",
+    "coverage": "npm run build && tap lib/umd/tree.test.js --coverage --coverage-report=html",
+    "build": "rm -rf lib && tsc -b tsconfig.json tsconfig.umd.json && echo '{\"type\": \"commonjs\"}' > lib/umd/package.json"
+  }
+}
