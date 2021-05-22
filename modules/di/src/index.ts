@@ -31,7 +31,7 @@ export interface ContainerOptions {
 }
 
 const EMPTY_DEPS: Array<any> = [],
-  ContextToken = new InjectionToken('ingress.context') as any
+  ContextToken = new InjectionToken('ingress.context')
 
 export { ContextToken }
 
@@ -80,9 +80,6 @@ export class Container<T extends ContainerContext = ContainerContext> implements
             dependencies: EMPTY_DEPS,
           },
         ]
-      }
-      get resolvedFactory() {
-        return this.resolvedFactories[0]
       }
     }
   }
