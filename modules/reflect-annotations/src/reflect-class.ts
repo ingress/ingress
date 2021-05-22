@@ -1,4 +1,4 @@
-import { Constructor } from './annotations.js'
+import { Type } from './annotations.js'
 
 function uniqueNotConstructor(names: Array<string>, name: string) {
   ~names.indexOf(name) || (name !== 'constructor' && names.push(name))
@@ -6,10 +6,10 @@ function uniqueNotConstructor(names: Array<string>, name: string) {
 }
 
 export function reflectClassProperties<T>(
-  source: Constructor<T>
-): { source: Constructor<T>; properties: string[]; constructors: Constructor<T>[] } {
+  source: Type<T>
+): { source: Type<T>; properties: string[]; constructors: Type<T>[] } {
   const properties: string[] = [],
-    constructors: Constructor<T>[] = []
+    constructors: Type<T>[] = []
 
   let current = source
 

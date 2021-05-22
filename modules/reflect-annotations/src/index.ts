@@ -8,16 +8,10 @@ import {
   createAnnotationFactory,
   Annotation,
   isAnnotationFactory,
-  Constructor,
   AnnotationFactory,
+  Type,
 } from './annotations.js'
 import { reflectClassProperties } from './reflect-class.js'
-
-export declare let Type: FunctionConstructor
-export interface Type<T> {
-  new (...args: any[]): T
-}
-
 interface AnnotatedPropertyDescription {
   parent: Type<any>
   name: string
@@ -47,7 +41,7 @@ function addMethodAnnotation(property: AnnotatedPropertyDescription, annotation:
 
 function collectPropertyAnnotations<T = any>(
   property: AnnotatedPropertyDescription,
-  ctor: Constructor<T>
+  ctor: Type<T>
 ) {
   const methodAnnotations =
       property.name in ctor.prototype ? getAnnotations(ctor.prototype, property.name) : [],
@@ -64,7 +58,7 @@ function collectPropertyAnnotations<T = any>(
 }
 
 function reflectAnnotations<T = any>(
-  source: Constructor<T>,
+  source: Type<T>,
   options: { declaredOrder: boolean } = { declaredOrder: true }
 ): AnnotatedPropertyDescription[] {
   const classMetadata = reflectClassProperties(source)
