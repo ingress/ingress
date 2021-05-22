@@ -1,4 +1,6 @@
 /*eslint-disable @typescript-eslint/no-empty-function */
+import 'reflect-metadata'
+import t from 'tap'
 import { reflectClassProperties } from './reflect-class.js'
 import { createAnnotationFactory, getAnnotations } from './annotations.js'
 import { reflectAnnotations, isAnnotationFactory } from './index.js'
@@ -80,119 +82,142 @@ class Six {
   }
 }
 
-describe('reflect-annotations', () => {
-  describe('reflectClassProperties', () => {
-    it('should reflect on a class', () => {
+t.test('reflect-annotations', (t) => {
+  t.test('reflectClassProperties', (t) => {
+    t.test('should reflect on a class', (t) => {
       const data = reflectClassProperties(One)
-      expect(data.properties).toEqual(['one', 'onea'])
-      expect(data.constructors).toEqual([One])
-      expect(data.source).toEqual(One)
+      t.same(data.properties, ['one', 'onea'])
+      t.same(data.constructors, [One])
+      t.same(data.source, One)
+      t.end()
     })
 
-    it('should handle odd hierarchies?', () => {
+    t.test('should handle odd hierarchies?', (t) => {
       const data = reflectClassProperties(Three)
-      expect(data.source).toEqual(Three)
-      expect(data.properties.sort()).toEqual(['three', 'threeb', 'two', 'towa', 'twob', 'one', 'onea'].sort())
-      expect(data.constructors).toEqual([Three, Two, One])
+      t.same(data.source, Three)
+      t.same(
+        data.properties.sort(),
+        ['three', 'threeb', 'two', 'towa', 'twob', 'one', 'onea'].sort()
+      )
+      t.same(data.constructors, [Three, Two, One])
+      t.end()
     })
+    t.end()
   })
 
-  describe('createAnnotationFactory', () => {
-    it('should set annotations on the target method', () => {
+  t.test('createAnnotationFactory', (t) => {
+    t.test('should set annotations on the target method', (t) => {
       const metadata = getAnnotations(One.prototype, 'one')
-      expect(metadata[0]).toBeInstanceOf(MiddlewareFixture)
+      t.ok(metadata[0] instanceof MiddlewareFixture)
+      t.end()
     })
 
-    it('should set annotations on the target class', () => {
+    t.test('should set annotations on the target class', (t) => {
       const metadata = getAnnotations(One)
-      expect(metadata[0]).toBeInstanceOf(Fixture)
+      t.ok(metadata[0] instanceof Fixture)
+      t.end()
     })
+    t.end()
   })
 
-  describe('createAnnotationFactory', () => {
-    it('should expose the annotationInstance', () => {
+  t.test('createAnnotationFactory', (t) => {
+    t.test('should expose the annotationInstance', (t) => {
       const instance = FixtureAnnotation().annotationInstance
-      expect(instance).toBeInstanceOf(Fixture)
+      t.ok(instance instanceof Fixture)
+      t.end()
     })
-    it('should be detectable', () => {
-      expect(isAnnotationFactory(FixtureAnnotation)).toEqual(true)
-      expect(isAnnotationFactory({})).toEqual(false)
+    t.test('should be detectable', (t) => {
+      t.ok(isAnnotationFactory(FixtureAnnotation))
+      t.notOk(isAnnotationFactory({}))
+      t.end()
     })
+    t.end()
   })
 
-  describe('reflectAnnotations', () => {
-    it('should return all annotations', () => {
+  t.test('reflectAnnotations', (t) => {
+    t.test('should return all annotations', (t) => {
       const classProperties = reflectAnnotations(One)
-      expect(classProperties).toHaveLength(2)
-      expect(classProperties[0].classAnnotations).toEqual(classProperties[1].classAnnotations)
-      expect(classProperties[0].methodAnnotations).toHaveLength(3)
-      expect(classProperties[1].methodAnnotations).toHaveLength(0)
+      t.ok(classProperties.length === 2)
+      t.same(classProperties[0].classAnnotations, classProperties[1].classAnnotations)
+      t.equal(classProperties[0].parent, One)
+      t.ok(classProperties[0].methodAnnotations.length === 3)
+      t.ok(classProperties[1].methodAnnotations.length === 0)
+      t.end()
     })
 
-    it('should return method annotations in the declared order', () => {
+    t.test('should return method annotations in the declared order', (t) => {
       const classProperties = reflectAnnotations(One),
         methodOne = classProperties.find((x) => x.name === 'one')
 
-      expect(methodOne?.methodAnnotations.map((x) => x.constructor.toString())).toEqual([
-        Fixture.toString(),
-        ExtraFixture.toString(),
-        MiddlewareFixture.toString(),
-      ])
+      t.same(
+        methodOne?.methodAnnotations.map((x) => x.constructor.toString()),
+        [Fixture.toString(), ExtraFixture.toString(), MiddlewareFixture.toString()]
+      )
+      t.end()
     })
 
-    it('should return method annotations in the parsed order', () => {
+    t.test('should return method annotations in the parsed order', (t) => {
       const classProperties = reflectAnnotations(One, { declaredOrder: false }),
         methodOne = classProperties.find((x) => x.name === 'one')
 
-      expect(methodOne?.methodAnnotations.map((x) => x.constructor.toString())).toEqual([
-        MiddlewareFixture.toString(),
-        ExtraFixture.toString(),
-        Fixture.toString(),
-      ])
+      t.same(
+        methodOne?.methodAnnotations.map((x) => x.constructor.toString()),
+        [MiddlewareFixture.toString(), ExtraFixture.toString(), Fixture.toString()]
+      )
+      t.end()
     })
 
-    it('should return class annotations in the declared order', () => {
+    t.test('should return class annotations in the declared order', (t) => {
       const classProperties = reflectAnnotations(One),
         annotations = classProperties[0].classAnnotations
 
-      expect(annotations.map((x) => x.constructor.toString())).toEqual([
-        MiddlewareFixture.toString(),
-        ExtraFixture.toString(),
-        Fixture.toString(),
-      ])
+      t.same(
+        annotations.map((x) => x.constructor.toString()),
+        [MiddlewareFixture.toString(), ExtraFixture.toString(), Fixture.toString()]
+      )
+      t.end()
     })
 
-    it('should allow annotations with parameters', () => {
+    t.test('should allow annotations with parameters', (t) => {
       const classProperties = reflectAnnotations(Four),
         annotations = classProperties[0].classAnnotations
 
-      expect(annotations.map((x) => x.constructor.toString())).toEqual([
-        ExtraFixtureWithParameter.toString(),
-        ExtraFixtureWithLotsOfParameters.toString(),
-      ])
-      expect(annotations[0].options.a).toEqual(42)
+      t.same(
+        annotations.map((x) => x.constructor.toString()),
+        [ExtraFixtureWithParameter.toString(), ExtraFixtureWithLotsOfParameters.toString()]
+      )
+      t.equal(annotations[0].options.a, 42)
+      t.end()
     })
 
-    it('should collect parameter annotations', () => {
+    t.test('should collect parameter annotations', (t) => {
       const classProperties = reflectAnnotations(Five)
-      expect(classProperties[0].methodAnnotations.map((x) => x.constructor.toString())).toEqual([
-        MiddlewareFixture.toString(),
-      ])
-      expect(classProperties[0].parameterAnnotations.map((x) => x.constructor.toString())).toEqual([Fixture.toString()])
-      expect(classProperties[1].parameterAnnotations.map((x) => x && x.constructor.toString())).toEqual([
-        MiddlewareFixture.toString(),
-        undefined,
-        Fixture.toString(),
-      ])
+      t.same(
+        classProperties[0].methodAnnotations.map((x) => x.constructor.toString()),
+        [MiddlewareFixture.toString()]
+      )
+      t.same(
+        classProperties[0].parameterAnnotations.map((x) => x.constructor.toString()),
+        [Fixture.toString()]
+      )
+      t.same(
+        classProperties[1].parameterAnnotations.map((x) => x && x.constructor.toString()),
+        [MiddlewareFixture.toString(), undefined, Fixture.toString()]
+      )
+      t.end()
     })
+    t.end()
   })
 
-  it('should collect types', () => {
+  t.test('should collect types', (t) => {
     const [annotatedMethod, unannotatedMethod] = reflectAnnotations(Six)
-    expect(annotatedMethod.types.parameters).toEqual([String, Object, Number])
-    expect(annotatedMethod.types.return).toEqual(String)
+    t.same(annotatedMethod.types.parameters, [String, Object, Number])
+    t.equal(annotatedMethod.types.return, String)
 
-    expect(unannotatedMethod.types.parameters).toBeUndefined()
-    expect(unannotatedMethod.types.return).toBeUndefined()
+    t.notOk(unannotatedMethod.types.parameters)
+    t.notOk(unannotatedMethod.types.return)
+    t.end()
   })
+
+  t.end()
 })

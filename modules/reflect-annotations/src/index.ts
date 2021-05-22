@@ -13,7 +13,13 @@ import {
 } from './annotations.js'
 import { reflectClassProperties } from './reflect-class.js'
 
+export declare let Type: FunctionConstructor
+export interface Type<T> {
+  new (...args: any[]): T
+}
+
 interface AnnotatedPropertyDescription {
+  parent: Type<any>
   name: string
   classAnnotations: Array<any>
   methodAnnotations: Array<any>
@@ -27,7 +33,7 @@ class PropertyDescription implements AnnotatedPropertyDescription {
   methodAnnotations: Array<any> = []
   parameterAnnotations: Array<any> = []
   types = {}
-  constructor(public name: string, public declaredOrder: boolean) {}
+  constructor(public name: string, public parent: Type<any>, public declaredOrder: boolean) {}
 }
 
 function addClassAnnotation(property: AnnotatedPropertyDescription, annotation: any) {
@@ -68,7 +74,7 @@ function reflectAnnotations<T = any>(
       properties.push(
         classMetadata.constructors.reduceRight<AnnotatedPropertyDescription>(
           collectPropertyAnnotations,
-          new PropertyDescription(propertyName, options.declaredOrder)
+          new PropertyDescription(propertyName, source, options.declaredOrder)
         )
       )
       return properties
