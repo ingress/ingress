@@ -450,4 +450,5 @@ const HTTP_METHODS = new Set([
   'UNLINK',
   'UNLOCK',
   'UNSUBSCRIBE',
+  'UPGRADE',
 ] as const)
