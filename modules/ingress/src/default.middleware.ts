@@ -1,6 +1,7 @@
 import { StatusCode } from '@ingress/http-status'
-import { ServerResponse } from 'http'
-import {
+import type { ServerResponse } from 'http'
+import type { Func } from './lang.js'
+import type {
   Middleware,
   BaseAuthContext,
   BaseContext,
@@ -12,7 +13,6 @@ import { Buffer } from 'buffer'
 import { Stream } from 'stream'
 import onFinished from 'on-finished'
 import destroy from 'destroy'
-import { Func } from './lang.js'
 
 const internalError = new Error('Internal Server Error') as Error & { statusCode: number }
 internalError.statusCode = 500
@@ -29,7 +29,7 @@ const looksLikeHtmlRE = /^\s*</,
     stream.listeners('error').indexOf(handler) === -1 && stream.on('error', handler)
   },
   isWritable = (res: any) => {
-    return !Boolean(res.headersSent || (res.socket && !res.socket.writable))
+    return !(res.headersSent || (res.socket && !res.socket.writable))
   },
   clearHeaders = (res: ServerResponse) => {
     res.getHeaderNames().forEach((x: string) => res.removeHeader(x))

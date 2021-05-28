@@ -95,7 +95,7 @@ export class Ingress<
   }
 
   public async start(app?: Ingress): Promise<void> {
-    if ([AppState.Starting, AppState.Started].includes(this.state)) {
+    if (this.state === AppState.Starting || this.state === AppState.Started) {
       throw new Error('Already started or starting')
     }
     if (!this.server && app && app.server) {
