@@ -135,3 +135,5 @@ export default function createContainer<T extends ContainerContext = ContainerCo
 ): Container<T> {
   return new Container<T>(options)
 }
+
+export { createContainer }

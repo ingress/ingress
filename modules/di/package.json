@@ -8,7 +8,8 @@
     ".": {
       "import": "./lib/esm/index.js",
       "require": "./lib/cjs/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "lib",
@@ -20,7 +21,7 @@
     "test": "tap --no-coverage",
     "coverage": "npm run build && tap \"lib/cjs/**/*.spec.js\" --coverage-report=html",
     "watch": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
-    "watch:test": "tap -w",
+    "watch:test": "tap -w -Rspec",
     "watch:typescript": "tsc -w"
   },
   "tap": {
@@ -46,11 +47,11 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@types/node": "^15.6.0",
-    "concurrently": "^6.1.0",
+    "@types/node": "^15.6.1",
+    "concurrently": "^6.2.0",
     "reflect-metadata": "^0.1.13",
     "tap": "^15.0.9",
-    "typescript": "^4.2.4"
+    "typescript": "^4.3.2"
   },
   "dependencies": {
     "injection-js": "^2.4.0",

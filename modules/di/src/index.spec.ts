@@ -37,6 +37,14 @@ t.test('DI', (t) => {
     public point = Math.random()
   }
 
+  @SingletonService({
+    deps: [TestC],
+    useFactory(c: TestC) {
+      return { c }
+    },
+  })
+  class FactoryToken {}
+
   @UseSingleton
   class SomeSingletonService {}
   @SingletonService()
@@ -81,6 +89,10 @@ t.test('DI', (t) => {
     t.ok(testA.a === testD.testB.testA.a, 'Expected A to be a singleton')
     t.ok(testD.testC === testC)
   })
+
+  const fact = container.get(FactoryToken) as any,
+    c = container.get(TestC)
+  t.equal(fact.c, c)
 
   //Should compile
   const testB = container.get(TestB)
