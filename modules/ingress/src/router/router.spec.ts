@@ -6,7 +6,7 @@ import Websocket from 'ws'
 import getPortAsync from 'get-port'
 import { getAsync, postAsync } from './test.util.spec.js'
 import { createAnnotationFactory } from 'reflect-annotations'
-import { UpgradeBody } from '../websocket/upgrade.js'
+import type { UpgradeBody } from '../websocket/upgrade.js'
 import { StatusCode } from '@ingress/http-status'
 
 async function getPort() {

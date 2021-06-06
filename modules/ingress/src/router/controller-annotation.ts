@@ -1,5 +1,5 @@
 import { Route } from './route.annotation.js'
-import { Type } from '@ingress/di'
+import type { Type } from '@ingress/di'
 
 export interface ControllerOptions {
   routePrefix?: string

@@ -1,5 +1,5 @@
 import { createAnnotationFactory, AnnotationFactory } from 'reflect-annotations'
-import { DefaultContext } from '../context.js'
+import type { DefaultContext } from '../context.js'
 import { once } from '../lang.js'
 
 export function fromConnect<T>(fn: (...args: any[]) => void): AnnotationFactory<T> {

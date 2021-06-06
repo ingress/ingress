@@ -1,7 +1,7 @@
 import { parse, SubtextOptions } from '@hapi/subtext'
-import { Middleware, DefaultContext } from '../context.js'
+import type { Middleware, DefaultContext } from '../context.js'
 import { createAnnotationFactory, Annotation } from 'reflect-annotations'
-import { Func } from '../lang.js'
+import type { Func } from '../lang.js'
 
 /**
  * @public

@@ -3,7 +3,7 @@ import ingress, { IngressApp, Context } from '../app.js'
 import { Route } from '../router/route.annotation.js'
 import WebSocket from 'ws'
 import { postAsync, getPort } from '../router/test.util.spec.js'
-import { UpgradeBody } from '../websocket/upgrade.js'
+import type { UpgradeBody } from '../websocket/upgrade.js'
 import { Namespace } from './namespace.js'
 
 type ActionMessage<T = Record<string, unknown>> = { action: string } & T

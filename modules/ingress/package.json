@@ -56,7 +56,7 @@
     "@hapi/subtext": "~7.0.3",
     "@ingress/di": "^3.0.0-alpha.2",
     "@ingress/http-status": "^3.0.0-alpha.3",
-    "app-builder": "^7",
+    "app-builder": "^7.0.2",
     "destroy": "~1.0.4",
     "find-my-way": "^4.1.0",
     "on-finished": "~2.3.0",

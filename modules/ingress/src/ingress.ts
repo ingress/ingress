@@ -2,8 +2,8 @@ import { AppBuilder, Middleware, ContinuationMiddleware } from 'app-builder'
 import { BaseContext, DefaultContext, BaseAuthContext, Type } from './context.js'
 import { Annotation, isAnnotationFactory } from 'reflect-annotations'
 import { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
-import { Func } from './lang.js'
-import { Container } from './app.js'
+import type { Func } from './lang.js'
+import type { Container } from './app.js'
 
 function isMiddlewareFunction(value: any): value is Func {
   return typeof value === 'function' && value.toString().indexOf('class') !== 0

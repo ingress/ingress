@@ -1,4 +1,4 @@
-import { BaseContext, Middleware } from '../context.js'
+import type { BaseContext, Middleware } from '../context.js'
 import { createAnnotationFactory, Annotation } from 'reflect-annotations'
 import { StatusCode } from '@ingress/http-status'
 
@@ -51,6 +51,5 @@ interface AuthenticateAnnotationFactory {
   (options?: Authenticator<any> | AuthenticateOptions): Annotation<AuthenticateAnnotation<any>>
 }
 
-export const Authenticate: AuthenticateAnnotationFactory = createAnnotationFactory(
-  AuthenticateAnnotation
-)
+export const Authenticate: AuthenticateAnnotationFactory =
+  createAnnotationFactory(AuthenticateAnnotation)

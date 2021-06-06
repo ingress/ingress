@@ -1,8 +1,8 @@
-import { IncomingMessage, ServerResponse } from 'http'
-import { Url } from 'url'
-import { Middleware } from 'app-builder'
+import type { IncomingMessage, ServerResponse } from 'http'
+import type { Url } from 'url'
+import type { Middleware } from 'app-builder'
 import { EventEmitter } from 'events'
-import { Ingress } from './ingress.js'
+import type { Ingress } from './ingress.js'
 import { identity } from './lang.js'
 import { Type } from '@ingress/di'
 

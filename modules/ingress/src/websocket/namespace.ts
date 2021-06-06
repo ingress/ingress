@@ -1,4 +1,4 @@
-import WebSocket from 'ws'
+import type WebSocket from 'ws'
 import { Subject, fromEvent, merge, Observable, SubscriptionLike, Subscription } from 'rxjs'
 import { Ack } from './ack.js'
 import { createBackChannel } from './backchannel.js'

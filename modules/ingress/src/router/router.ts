@@ -1,11 +1,11 @@
-import { Middleware } from 'app-builder'
+import type { Middleware } from 'app-builder'
 import { reflectAnnotations, AnnotatedPropertyDescription } from 'reflect-annotations'
 import { parse as parseUrl } from 'url'
 import createRecognizer, { HTTPMethod } from 'find-my-way'
 import { createHandler, Handler } from './handler.js'
 import { TypeConverter, defaultTypeConverters, Type } from './type-converter.js'
 import { ControllerCollector, ControllerDependencyCollector } from './controller-annotation.js'
-import { BaseContext } from '../context.js'
+import type { BaseContext } from '../context.js'
 import { Func, noop } from '../lang.js'
 
 //Exports

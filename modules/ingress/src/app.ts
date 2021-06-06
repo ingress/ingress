@@ -4,12 +4,12 @@ import { Websockets } from './websocket/upgrade.js'
 import { BaseContext, DefaultContext, BaseAuthContext, Middleware } from './context.js'
 import { DefaultMiddleware } from './default.middleware.js'
 import { Ingress, Addon } from './ingress.js'
-import { ControllerDependencyCollector } from './router/controller-annotation.js'
+import type { ControllerDependencyCollector } from './router/controller-annotation.js'
 
 /**
  * @public
  */
-export { Container } from '@ingress/di'
+export type { Container } from '@ingress/di'
 
 /**
  * @public

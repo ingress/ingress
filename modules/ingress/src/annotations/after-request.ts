@@ -1,7 +1,7 @@
-import { BaseContext } from '../context.js'
+import type { BaseContext } from '../context.js'
 import { compose, Middleware } from 'app-builder'
 import { createAnnotationFactory } from 'reflect-annotations'
-import { Func } from '../lang.js'
+import type { Func } from '../lang.js'
 
 export type AfterRequestHandler = Middleware<BaseContext<any, any>>
 
