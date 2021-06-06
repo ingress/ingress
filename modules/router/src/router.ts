@@ -31,7 +31,7 @@ export class Router {
     }
   }
 
-  get root() {
+  get root(): Router {
     if (this._root) {
       return this._root
     }
@@ -91,7 +91,6 @@ export class Router {
   public get middleware(): Middleware<any> {
     const router = this.root
     return (context: RouterContext, next: any): Promise<any> => {
-      context.req.body = context.req
       let url = context.req.url || '/',
         i = 0
       for (; i < url.length; i++) {
@@ -107,7 +106,7 @@ export class Router {
 
       if (handle) {
         context.res.statusCode = StatusCode.Ok
-        context.route = new Route(url, queryString, params, handle)
+        context.route = new Route(url, queryString, params, context.req.body ?? context.req, handle)
         return context.route.exec(context, next)
       } else {
         context.res.statusCode = StatusCode.NotFound
@@ -118,23 +117,25 @@ export class Router {
 }
 
 export class Route {
-  public rawBody: any = null
   public body: any = null
-  constructor(
-    public path: string,
-    public queryString: string,
-    public params: ParamEntries,
-    public exec: Handle
-  ) {}
   private searchParams: null | URLSearchParams = null
   get query(): URLSearchParams {
     return this.searchParams || (this.searchParams = new URLSearchParams(this.queryString))
   }
+  constructor(
+    public path: string,
+    public queryString: string,
+    public params: ParamEntries,
+    public rawBody: Body,
+    public exec: Handle
+  ) {}
 }
 
+export type Body = any
 export type ParamEntries = [string, string][]
 export type Handle = Middleware<any>
 export type RouterContext = {
+  parse(options: { mode: 'buffer' | 'string' | 'stream' | 'json' | 'auto' }): Promise<any>
   req: { url?: string; method?: string; headers?: Record<string, string>; body: any }
   res: { statusCode: number }
   route?: Route | null

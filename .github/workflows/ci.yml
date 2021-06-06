@@ -24,4 +24,6 @@ jobs:
       - name: Build
         run: npm run build
       - name: Test
+        env:
+          TS_NODE_TRY_TS_EXT: true
         run: npm test

@@ -56,6 +56,7 @@ export class Container<T extends ContainerContext = ContainerContext> implements
   public get Service(): DependencyCollector {
     return this.serviceCollector.collect
   }
+
   public get UseSingleton(): DependencyCollector {
     return this.forwardRefCollector.collect
   }

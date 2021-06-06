@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/ingress/ingress"
   },
-  "type": "module",
+  "type": "commonjs",
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/index.d.ts",
   "exports": {
@@ -24,17 +24,13 @@
     "node": ">=4.0.0"
   },
   "scripts": {
-    "build": "rm -rf lib && tsc && npm run build:commonjs",
-    "build:commonjs": "tsc --module commonjs --outDir lib/cjs && echo '{\"type\": \"commonjs\"}' > lib/cjs/package.json",
-    "test": "tap --no-coverage",
-    "coverage": "npm run build && tap \"lib/cjs/**/*.spec.js\" --coverage-report=html",
-    "watch": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
-    "watch:test": "tap -w -Rspec",
-    "watch:typescript": "tsc -w"
+    "test": "tap",
+    "build:esm": "tsc --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
+    "build": "shx rm -rf lib && npm run build:esm && tsc"
   },
   "tap": {
-    "test-regex": "src\\/.*spec\\.ts",
-    "node-arg": "--loader=ts-node/esm"
+    "test-regex": "src\\/.*\\.spec\\.ts",
+    "node-arg": "--require=ts-node/register"
   },
   "keywords": [
     "annotations",
@@ -53,7 +49,6 @@
   },
   "devDependencies": {
     "@types/node": "^15.6.0",
-    "concurrently": "^6.1.0",
     "reflect-metadata": "^0.1.13",
     "typescript": "^4.2.4"
   },

@@ -1,7 +1,7 @@
 {
   "extends": "../../base.tsconfig.json",
   "compilerOptions": {
-    "outDir": "./lib/esm",
+    "outDir": "./lib/cjs",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
