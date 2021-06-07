@@ -62,7 +62,7 @@ export interface ParamAnnotation {
 export class BodyParamAnnotation implements ParamAnnotation {
   constructor(private keyName?: string) {}
   extractValue(context: RouterContext): any {
-    return this.keyName ? context.route!.body[this.keyName] : context.route!.body
+    return this.keyName ? context.route?.body[this.keyName] : context.route?.body
   }
 }
 
@@ -71,8 +71,8 @@ export class BodyParamAnnotation implements ParamAnnotation {
  */
 export class PathParamAnnotation implements ParamAnnotation {
   constructor(private keyName?: string) {}
-  extractValue(context: RouterContext) {
-    const routeParams = context.route!.params
+  extractValue(context: RouterContext): any {
+    const routeParams = context.route?.params || []
     if (this.keyName) {
       for (const [key, val] of routeParams) {
         if (key === this.keyName) {
@@ -90,8 +90,8 @@ export class PathParamAnnotation implements ParamAnnotation {
  */
 export class QueryParamAnnotation implements ParamAnnotation {
   constructor(private searchParam: string) {}
-  extractValue(context: RouterContext) {
-    return context.route!.query.get(this.searchParam)
+  extractValue(context: RouterContext): any {
+    return context.route?.query.get(this.searchParam)
   }
 }
 
@@ -101,7 +101,7 @@ export class QueryParamAnnotation implements ParamAnnotation {
 export class HeaderParamAnnotation implements ParamAnnotation {
   constructor(private paramName: string) {}
   extractValue(context: RouterContext): any {
-    return context.req.headers![this.paramName]
+    return context.req.headers?.[this.paramName]
   }
 }
 

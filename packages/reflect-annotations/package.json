@@ -48,9 +48,8 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@types/node": "^15.6.0",
-    "reflect-metadata": "^0.1.13",
-    "typescript": "^4.2.4"
+    "@types/node": "^15.12.2",
+    "reflect-metadata": "^0.1.13"
   },
   "gitHead": "6296e5f924b953795fd7572963184bc8b6479c71"
 }
