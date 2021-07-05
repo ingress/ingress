@@ -43,15 +43,13 @@ function collectPropertyAnnotations<T = any>(
   property: AnnotatedPropertyDescription,
   ctor: Type<T>
 ) {
-  const methodAnnotations =
-      property.name in ctor.prototype ? getAnnotations(ctor.prototype, property.name) : [],
+  const methodAnnotations = getAnnotations(ctor.prototype, property.name),
     order = property.declaredOrder ? 'reduceRight' : 'reduce'
   property = getAnnotations(ctor)[order]<AnnotatedPropertyDescription>(
     addClassAnnotation,
     methodAnnotations[order]<AnnotatedPropertyDescription>(addMethodAnnotation, property)
   )
-  property.parameterAnnotations =
-    property.name in ctor.prototype ? getParameterAnnotations(ctor.prototype, property.name) : []
+  property.parameterAnnotations = getParameterAnnotations(ctor.prototype, property.name)
   property.types.parameters = getParameterTypes(ctor.prototype, property.name)
   property.types.return = getReturnType(ctor.prototype, property.name)
   return property

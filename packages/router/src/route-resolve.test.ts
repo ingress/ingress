@@ -1,5 +1,5 @@
 import t from 'tap'
-import { RouteAnnotation } from './annotations/route.annotation.js'
+import { RouteAnnotation, UpgradeRouteAnnotation } from './annotations/route.annotation.js'
 import { resolvePaths, RouteMetadata } from './route-resolve.js'
 
 t.test('resolvePaths', (t) => {
@@ -44,7 +44,7 @@ t.test('resolvePaths', (t) => {
     PUT: ['/'],
   })
 
-  routeMetadata.methodAnnotations = [new RouteAnnotation('/')]
+  routeMetadata.methodAnnotations = [new RouteAnnotation()]
   routeMetadata.classAnnotations = []
   t.throws(() => resolvePaths(routeMetadata), 'TestRoute.myRoute has no Http Method defined')
 
@@ -52,5 +52,23 @@ t.test('resolvePaths', (t) => {
   routeMetadata.classAnnotations = []
   t.throws(() => resolvePaths(routeMetadata), 'Must provide at least one path')
 
+  t.end()
+})
+
+t.test('Upgrade Route annotation', (t) => {
+  const annotation = new UpgradeRouteAnnotation('/'),
+    noop: any = () => 'abc'
+
+  t.equal(annotation.middleware({} as any, noop), 'abc', 'is a noop')
+
+  const resolvedPaths = resolvePaths({
+    classAnnotations: [],
+    methodAnnotations: [annotation],
+    name: 'somename',
+    parameterAnnotations: [],
+    parent: class {},
+    types: { parameters: [] },
+  })
+  t.same(resolvedPaths, { UPGRADE: ['/'] })
   t.end()
 })

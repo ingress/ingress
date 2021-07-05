@@ -1,5 +1,5 @@
 import t from 'tap'
-import { createErrorType } from './error'
+import { createErrorType } from './error.js'
 
 t.test('createErrorType', (t) => {
   const MyError = createErrorType('MyError', {

@@ -1,6 +1,6 @@
 import { describe, it } from '@jest/globals'
 
-import { once } from './lang'
+import { once } from './lang.js'
 
 describe('lang', () => {
   describe('once', () => {

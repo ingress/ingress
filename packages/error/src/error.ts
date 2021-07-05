@@ -1,4 +1,3 @@
-export default createErrorType
 export function createErrorType<T, Props extends CustomErrorProps>(
   name: string,
   baseProperties: Props,
@@ -31,7 +30,7 @@ export function createErrorType<T, Props extends CustomErrorProps>(
         constructor: value(ErrorType),
       }),
     },
-  }) as ErrorConstructor<ErrorInstance>
+  }) as unknown as ErrorConstructor<ErrorInstance>
 }
 
 export interface ErrorConstructor<T> {

@@ -1,84 +1,61 @@
 import 'reflect-metadata'
 import t from 'tap'
 import { Router } from './router.js'
-import { Readable } from 'stream'
-import { Route, RouteAnnotation } from './annotations/route.annotation.js'
-import { compose } from 'app-builder'
-import type { Type } from './annotations/controller.annotation.js'
+import {
+  PathParamAnnotation,
+  Route,
+  RouteAnnotation,
+  Upgrade,
+} from './annotations/route.annotation.js'
+
+import { mockContext } from './context.util.test.js'
+import { createAnnotationFactory } from '../../reflect-annotations/lib/cjs/annotations.js'
+import reflectAnnotations from 'reflect-annotations'
 
 function sample<T>(list: readonly T[]): T {
   return list[Math.floor(Math.random() * list.length)]
 }
 
-function stream<T>(data: T | null = null) {
-  return new Readable({
-    read() {
-      this.push(data)
-      if (data) this.push(null)
-    },
-  })
-}
-
-function mockContext(url: string, method: string, data?: any, ...deps: Type<any>[]) {
-  return {
-    req: Object.assign(stream(data), { url, method }),
-    res: { statusCode: 0 },
-    scope: mockContainer(deps),
-    parse() {
-      return Promise.resolve(data)
-    },
-  }
-}
-
-function mockContainer(deps: Type<any>[]) {
-  const result = new Map<any, any>()
-  for (const dep of deps) {
-    result.set(dep, new dep())
-  }
-  return result
+const noop = () => {
+  void 0
 }
 
 t.test('Route miss', async (t) => {
   const router = new Router()
-  router.start()
+  await router.start()
   let called = false,
     finished = false
   router.on('GET', '/some/route', (c, next) => {
     called = true
     return next()
   })
-  const context = mockContext('/', 'GET'),
-    finish = (ctx: any, next: any) => {
-      finished = true
-      return next()
-    }
-  await compose(router.middleware, finish)(context)
+  const context = mockContext('/', 'GET')
+  await router.middleware(context, () => {
+    finished = true
+  })
   t.equal(called, false, 'route is called')
   t.equal(context.res.statusCode, 404, 'status code is 404')
   t.equal(finished, true, 'finished')
+  router.stop() //noop
   t.end()
 })
 
 t.test('Route hit+query', async (t) => {
   const router = new Router()
-  router.start()
+  await router.start()
   let called = false,
     finished = false
 
   router.on('GET', '/some/route', (c, next) => {
     called = true
-    t.equal(c.route.query.get('some'), 'query')
+    t.equal(c.route.searchParams.get('some'), 'query')
     t.equal(c.route.queryString, 'some=query')
     return next()
   })
-
-  const context = mockContext(`/some/route${sample([';', '#', '?'])}some=query`, 'GET'),
-    finish = (context: any, next: any) => {
-      finished = true
-      return next()
-    }
-
-  await compose(router.middleware, finish)(context)
+  const context = mockContext(`/some/route${sample([';', '#', '?'])}some=query`, 'GET')
+  await router.middleware(context, () => {
+    finished = true
+  })
   t.equal(called, true, 'route is called')
   t.equal(finished, true, 'finished')
   t.equal(context.res.statusCode, 200, 'status code is 200')
@@ -96,18 +73,69 @@ t.test('Route Execution with Annotations', async (t) => {
       called = true
     }
   }
-  router.start()
-  const middleware = router.middleware,
-    context = mockContext('/parent/child', 'POST', null, Routes),
-    finish = (_: any, next: any) => {
-      finished = true
-      return next()
-    }
-
-  await compose(middleware, finish)(context)
+  await router.start()
+  const context = mockContext('/parent/child', 'POST', {}, Routes)
+  await router.middleware(context, () => {
+    finished = true
+  })
   t.equal(called, true, 'called')
   t.equal(finished, true, 'finished')
   t.equal(context.res.statusCode, 200, 'status code is 200')
+  t.end()
+})
+
+t.test('bad type input', async (t) => {
+  t.plan(8)
+  const router = new Router()
+  @router.Controller()
+  class Routes {
+    @Route.Get('/number/:a')
+    numberRoute(@Route.Path('a') a: number) {
+      void a
+    }
+    @Route.Get('/bool/:a')
+    boolRoute(@Route.Path('a') a: boolean) {
+      void a
+    }
+    @Route.Get('/date/:a')
+    dateRoute(@Route.Path('a') a: Date) {
+      void a
+    }
+    @Route.Get('/string/:a')
+    invalidStringRoute(@Route.Path('b') a: string) {
+      void a
+    }
+  }
+  await router.start()
+  let context = mockContext('/number/one', 'GET', {}, Routes)
+  try {
+    await router.middleware(context, noop)
+  } catch (e) {
+    t.equal(e.message, 'cannot convert "one" to number')
+    t.equal(e.statusCode, 400)
+  }
+  try {
+    context = mockContext('/bool/one', 'GET', {}, Routes)
+    await router.middleware(context, noop)
+  } catch (e) {
+    t.equal(e.message, 'cannot convert "one" to boolean')
+    t.equal(e.statusCode, 400)
+  }
+  try {
+    context = mockContext('/date/one', 'GET', {}, Routes)
+    await router.middleware(context, noop)
+  } catch (e) {
+    t.equal(e.message, 'cannot convert "one" to Date')
+    t.equal(e.statusCode, 400)
+  }
+  try {
+    context = mockContext('/string/one', 'GET', {}, Routes)
+    await router.middleware(context, noop)
+  } catch (e) {
+    t.equal(e.message, 'cannot convert undefined to string')
+    t.equal(e.statusCode, 400)
+  }
+
   t.end()
 })
 
@@ -116,28 +144,130 @@ t.test('Route Execution with plain Metadata', async (t) => {
   let called = false,
     finished = false
   class Routes {
-    otherRoute() {
+    otherRoute(variable: string) {
+      t.equal(variable, 'something')
       called = true
     }
   }
-  //TODO nicer api for adding routes without typescript metadata
   router.metadata.add({
     classAnnotations: [new RouteAnnotation('parent')],
-    methodAnnotations: [new RouteAnnotation('child2', 'GET')],
-    parameterAnnotations: [],
+    methodAnnotations: [new RouteAnnotation('child2/:variable', 'GET')],
+    parameterAnnotations: [new PathParamAnnotation('variable')],
     types: { parameters: [] },
     name: 'otherRoute',
     parent: Routes,
   })
-  const context = mockContext('/parent/child2', 'GET', null, Routes),
-    finish = (_: any, next: any) => {
-      finished = true
-      return next()
-    }
-  router.start()
-  await compose(router.middleware, finish)(context)
+  const context = mockContext('/parent/child2/something', 'GET', {}, Routes)
+  await router.start()
+  await router.middleware(context, () => {
+    finished = true
+  })
   t.equal(called, true, 'called')
   t.equal(finished, true, 'finished')
   t.equal(context.res.statusCode, 200, 'status code is 200')
+  t.end()
+})
+
+t.test('accepts upgrade route', async (t) => {
+  class Routes {
+    @Upgrade()
+    somepath() {
+      void 0
+    }
+  }
+  const router = new Router({ controllers: [Routes] })
+  router.start()
+  t.equal(router.hasUpgrade, true, 'hasUpgrade is set')
+  t.end()
+})
+
+t.test('errors without setup (start)', async (t) => {
+  const router = new Router()
+  t.plan(1)
+  try {
+    router.middleware
+  } catch (e) {
+    t.equal(e.message, 'Must call start before using the router.')
+  }
+  t.end()
+})
+
+t.test('priority middleware order', async (t) => {
+  t.plan(2)
+
+  const second = createAnnotationFactory(
+      class {
+        middlewarePriority = 'BeforeBodyParser'
+        get middleware() {
+          return (ctx: any, next: any) => {
+            ctx.order += 2
+            return next()
+          }
+        }
+      }
+    ),
+    fourth = createAnnotationFactory(
+      class {
+        get middleware() {
+          return (ctx: any, next: any) => {
+            ctx.order += 4
+            return next()
+          }
+        }
+      }
+    )
+  class Routes {
+    @Route.Get('/')
+    @fourth()
+    @second()
+    someroute() {
+      ctx.order += 5
+      t.ok(1)
+    }
+  }
+  const router = new Router({ controllers: [Routes] }),
+    context = mockContext('/', 'GET', {}, Routes),
+    parse = context.parse,
+    ctx = Object.assign(context, { order: '1' })
+  ctx.parse = () => {
+    ctx.order += 3
+    return parse()
+  }
+
+  await router.start()
+  await router.middleware(ctx, () => {
+    t.equal(ctx.order, '12345')
+    t.end()
+  })
+})
+
+t.test('with root router', async (t) => {
+  t.plan(2)
+  const root = new Router(),
+    child = new Router()
+
+  class Routes {
+    @Route.Get('/')
+    someroute() {
+      t.ok(1)
+    }
+  }
+  class Routes2 {
+    @Route.Get('/sub')
+    someroute() {
+      t.ok(1)
+    }
+  }
+  root.metadata.add(reflectAnnotations(Routes)[0])
+  child.metadata.add(reflectAnnotations(Routes2)[0])
+
+  await root.start()
+  await child.start({ router: root })
+
+  let context = mockContext('/', 'GET', {}, Routes, Routes2)
+  await root.middleware(context, noop)
+  context = mockContext('/sub', 'GET', {}, Routes, Routes2)
+  await child.middleware(context, noop) // does nothing...
+  await root.middleware(context, noop)
   t.end()
 })

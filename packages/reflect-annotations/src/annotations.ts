@@ -28,7 +28,7 @@ export function setAnnotations(
   key?: string | symbol,
   annotations?: Array<any>
 ): void {
-  Reflect.defineMetadata(ANNOTATIONS, annotations || [], target, key as any)
+  Reflect.defineMetadata(ANNOTATIONS, annotations, target, key as any)
 }
 
 export function getParameterAnnotations(target: Target, key: string | symbol): Array<any> {

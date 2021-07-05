@@ -1,7 +1,18 @@
 import { compose, Middleware } from 'app-builder'
-import { defaultTypeConverters, TypeConverter, Func } from './type-converter.js'
+import { Func, TypeResolver } from './type-resolver.js'
 import type { RouteMetadata } from './route-resolve.js'
 import type { RouterContext } from './router.js'
+
+type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>
+
+function isPrimitive(value: any) {
+  return (typeof value !== 'object' && typeof value !== 'function') || value === null
+}
+
+export type RouteResolveMetadata = Optional<
+  RouteMetadata,
+  'methodAnnotations' | 'classAnnotations' | 'types' | 'parameterAnnotations'
+>
 
 enum MiddlewarePriority {
   'BeforeBodyParser' = 'BeforeBodyParser',
@@ -9,18 +20,19 @@ enum MiddlewarePriority {
 
 export function defaultParser(context: RouterContext, next: () => Promise<any>): Promise<any> {
   return context.parse({ mode: 'auto' }).then((x: any) => {
+    //eslint-disable-next-line
     context.route!.body = x
     return next()
   })
 }
 
 export function resolveRouteMiddleware<T>(
-  route: RouteMetadata,
-  typeConverters: TypeConverter<any>[] = defaultTypeConverters
+  route: RouteResolveMetadata,
+  typeResolver = new TypeResolver()
 ): Middleware<T> {
-  const method = route.parent.prototype[route.name] || (route.parent as any)[route.name],
+  const method = route.parent.prototype[route.name],
     createController = (context: any) => context.scope.get(route.parent),
-    resolveArgs = createParamsResolver(route, typeConverters)
+    resolveArgs = createParamsResolver(route, typeResolver)
 
   return (context: any, next: any) => {
     const controller = createController(context),
@@ -41,60 +53,58 @@ const pickRequest = (context: any) => context.req
 /**
  * Get a function that resolves route parameter metadata to arguments for the route
  * @param route
- * @param typeConverters
+ * @param typeResolver
  * @returns a function that resolves arguments for the route
  */
-function createParamsResolver(
-  route: RouteMetadata,
-  typeConverters: TypeConverter<any>[] = defaultTypeConverters
-) {
-  const paramLength = route.types.parameters?.length || 0,
+function createParamsResolver(route: RouteResolveMetadata, typeResolver: TypeResolver) {
+  const paramLength = Math.max(
+      route.types?.parameters?.length ?? 0,
+      route.parameterAnnotations?.length ?? 0
+    ),
     resolvers: Func[] = []
 
   for (let i = 0; i < paramLength; i++) {
-    const annotation = route.parameterAnnotations[i],
+    const annotation = route.parameterAnnotations?.[i],
       type = route.types?.parameters?.[i],
       pick =
         annotation?.extractValue?.bind(annotation) || type?.extractValue?.bind(type) || pickRequest
-    if (!type && !annotation) {
+    if (!type) {
       resolvers.push(pick)
       continue
     }
+
     if (URLSearchParams === type) {
-      //no annotation allowed on type annotation of URLSearchParams
-      resolvers.push((context) => context.route.query)
+      resolvers.push((context: RouterContext) => {
+        //eslint-disable-next-line
+        return context.route!.searchParams
+      })
       continue
     }
 
     if ('transformValue' in type) {
-      resolvers.push((context) => type.transformValue(pick(context)))
+      resolvers.push((context: RouterContext) => type.transformValue(pick(context)))
       continue
     }
-    let resolver: any = undefined
-    for (const c of typeConverters) {
-      if (('type' in c && c.type === type) || ('typePredicate' in c && c.typePredicate(type))) {
-        resolver = (context: any) => c.convert(pick(context))
-        break
-      }
+    //search registered type resolvers
+    const resolver = typeResolver.getResolver(type)
+    if (resolver) {
+      resolvers.push((context: any) => resolver(pick(context)))
     }
-
     if (!resolver) {
       throw new Error(
-        `No type converter found for: ${route.parent.name}.${route.name} at parameter ${i}:${
-          type.name || type
-        }`
+        `No type converter found for: ${route.parent.name}.${route.name} at argument ${i}:${type.name}`
       )
     }
   }
 
-  const l = resolvers.length
   //hot path ...generate function?
   return function paramResolver(context: any) {
-    const args = []
+    const args = [],
+      l = resolvers.length
     let isAsync = false
     for (let i = 0; i < l; i++) {
       const resolved = resolvers[i](context)
-      if (resolved && 'then' in resolved) {
+      if (resolved && !isPrimitive(resolved) && 'then' in resolved) {
         isAsync = true
       }
       args.push(resolved)
@@ -107,7 +117,7 @@ function createParamsResolver(
 }
 
 function isRegularMiddleware(x: any) {
-  return !x.isBodyParser && 'middleware' in x && x.priority !== MiddlewarePriority.BeforeBodyParser
+  return !x.isBodyParser && 'middleware' in x && !(x.middlewarePriority in MiddlewarePriority)
 }
 
 function resolvePreRouteMiddleware<T>(route: RouteMetadata): Array<Middleware<T>> {
@@ -126,6 +136,6 @@ function resolvePreRouteMiddleware<T>(route: RouteMetadata): Array<Middleware<T>
  * Given the route metadata, compile a handler (optimization boundary)
  * Executed once per route.
  */
-export function createHandler(route: RouteMetadata): Middleware<any> {
-  return compose(...resolvePreRouteMiddleware(route), resolveRouteMiddleware(route))
+export function createHandler(route: RouteMetadata, typeResolver: TypeResolver): Middleware<any> {
+  return compose(...resolvePreRouteMiddleware(route), resolveRouteMiddleware(route, typeResolver))
 }

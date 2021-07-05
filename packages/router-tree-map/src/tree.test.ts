@@ -342,6 +342,7 @@ t.test('unimplemented', (t) => {
         ],
       ],
     ]
+    void input
     t.end()
   })
   t.end()

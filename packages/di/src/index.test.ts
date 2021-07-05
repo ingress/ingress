@@ -1,18 +1,38 @@
 import t from 'tap'
 import 'reflect-metadata'
-import createContainer, { Container, Injector, ReflectiveInjector, ContextToken } from './index.js'
+import createContainer, {
+  Container,
+  Injector,
+  ReflectiveInjector,
+  ContextToken,
+  Injectable,
+} from './index.js'
 
-const Injectable = (): ClassDecorator => () =>
-  void 'decorator that will cause tsc to emit type metadata'
+t.ok(typeof Injector === 'function')
+
+const noop = () => {
+  void 0
+}
 
 t.test('context token', (t) => {
   const container = new Container()
   container.start()
   const context: { scope: Injector } = {} as any
-  container.middleware(context, () => {
-    void 0
-  })
+  container.middleware(context, noop)
   t.ok(context.scope.get(ContextToken) === context)
+  t.end()
+})
+
+t.test('child container', (t) => {
+  const container = new Container()
+  class Service {
+    someProp = 'hello'
+  }
+  container.serviceCollector.collect(Service)
+  container.start()
+  const child = container.createChildWithContext({}),
+    service = child.get(Service)
+  t.equal(service.someProp, 'hello')
   t.end()
 })
 

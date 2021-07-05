@@ -21,8 +21,8 @@ export class DependencyCollectorList {
         return this.collect
       }
       if ('useFactory' in target) {
-        return (provide?: any) => {
-          const provider = target ? { provide, ...target } : provide
+        return (provide: any) => {
+          const provider = { provide, ...target }
           this.items.add(provider)
         }
       }

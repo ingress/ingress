@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "license": "MIT",
   "type": "commonjs",
-  "main": "./lib/cjs/error.js",
+  "main": "./lib/cjs/errors.js",
+  "types": "./lib/cjs/errors.d.ts",
   "exports": {
     ".": {
       "node": {

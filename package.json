@@ -3,17 +3,11 @@
   "private": true,
   "version": "0.0.1",
   "workspaces": [
-    "./packages/di",
-    "./packages/error",
-    "./packages/tasks",
-    "./packages/http-status",
-    "./packages/reflect-annotations",
-    "./packages/router-tree-map",
-    "./packages/ingress"
+    "./packages/*"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "lint": "eslint ./packages/**/src/**/*.ts --fix",
+    "lint": "eslint \"./packages/**/src/**/*.ts\" --fix",
     "test": "npm run test --workspaces",
     "commitlint": "commitlint -f $(git rev-list --tags --max-count=1) -t $(git log --pretty=%H | head -1)",
     "ncu": "npm exec --workspaces -c \"ncu\"",
@@ -22,24 +16,26 @@
   "devDependencies": {
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-angular": "^12.1.4",
-    "@types/tap": "^15.0.2",
-    "@typescript-eslint/eslint-plugin": "^4.26.1",
-    "@typescript-eslint/parser": "^4.26.1",
-    "eslint": "^7.28.0",
+    "@types/tap": "^15.0.4",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "@typescript-eslint/parser": "^4.28.0",
+    "eslint": "^7.29.0",
     "eslint-config-prettier": "~8.3.0",
+    "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-prettier": "^3.4.0",
     "lerna": "^4.0.0",
-    "npm-check-updates": "^11.6.0",
-    "prettier": "^2.3.1",
+    "npm-check-updates": "^11.7.1",
+    "prettier": "^2.3.2",
     "shx": "^0.3.3",
     "tap": "^15.0.9",
     "ts-node": "github:calebboyd/ts-node#rfd",
-    "typedoc": "^0.20.36",
-    "typedoc-plugin-markdown": "^3.9.0"
+    "typedoc": "^0.21.2",
+    "typedoc-plugin-markdown": "^3.10.2"
   },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
     "plugins": [
+      "import",
       "@typescript-eslint"
     ],
     "extends": [
@@ -60,6 +56,11 @@
       }
     ],
     "rules": {
+      "import/extensions": [
+        2,
+        "ignorePackages"
+      ],
+      "@typescript-eslint/no-unused-vars": [2, { "args": "after-used", "ignoreRestSiblings": true, "argsIgnorePattern": "^_" }],
       "@typescript-eslint/no-use-before-define": 0,
       "@typescript-eslint/no-explicit-any": 0,
       "@typescript-eslint/explicit-function-return-type": 0,

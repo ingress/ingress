@@ -99,7 +99,7 @@ export class Container<T extends ContainerContext = ContainerContext> implements
     return this.createChild(new this.ResolvedContextProvider(context))
   }
 
-  public start(app?: any): void {
+  public start(app?: { use: (...args: any[]) => any }): void {
     this.singletons = [
       ...new Set([
         ...this.singletons,

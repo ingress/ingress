@@ -88,8 +88,6 @@ export class TreeNode<T> {
       return this
     }
 
-    let parentFullPathIndex = 0
-
     walk: while (true) {
       // Find the longest common prefix
       // This also implies that the common prefix contains no ':' or '*'
@@ -122,7 +120,6 @@ export class TreeNode<T> {
 
         // '/' after param
         if (n.type === SegmentType.Param && c === CharCode.Slash && n.children.length === 1) {
-          parentFullPathIndex += n.path.length
           n = n.children[0]
           n.priority++
           continue walk

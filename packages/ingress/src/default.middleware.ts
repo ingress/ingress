@@ -8,7 +8,7 @@ import type {
   DefaultContext,
   Response,
   Request,
-} from './context'
+} from './context.js'
 import { Buffer } from 'buffer'
 import { Stream } from 'stream'
 import onFinished from 'on-finished'

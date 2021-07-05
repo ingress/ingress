@@ -1,6 +1,8 @@
 import { createErrorType } from './error.js'
 import { StatusCode } from '@ingress/http-status'
 
+export { createErrorType }
+
 export const ING_BAD_REQUEST = createErrorType('IngBadRequest', {
   code: 'ING_BAD_REQUEST',
   message: 'Bad Request',

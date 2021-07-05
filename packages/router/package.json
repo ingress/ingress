@@ -34,12 +34,13 @@
     "build": "shx rm -rf lib && npm run build:esm && tsc"
   },
   "tap": {
-    "test-regex": "src\\/.*test\\.ts",
-    "node-arg": "--require=ts-node/register"
+    "test-regex": "src\/(?!.*\\.util).*test\\.ts",
+    "node-arg": ["--require=ts-node/register", "--require=reflect-metadata"]
   },
   "dependencies": {
     "@ingress/http-status": "3.0.0-alpha.3",
-    "app-builder": "^7.0.0",
+    "@ingress/error": "0.0.1",
+    "app-builder": "^7.0.4",
     "reflect-annotations": "4.0.0-alpha.3",
     "router-tree-map": "^0.0.3",
     "secure-json-parse": "^2.4.0"

@@ -16,7 +16,7 @@ export class RouteAnnotation {
   public ignoreParentPrefix: boolean
   public ignoreAllPrefix: boolean
 
-  constructor(path: string, ...methods: Array<PathFactory | string>) {
+  constructor(path?: string, ...methods: Array<PathFactoryAnnotation | string>) {
     path = path || ''
     this.ignoreAllPrefix = path.startsWith('$')
     this.ignoreParentPrefix = path.startsWith('~')
@@ -46,20 +46,25 @@ export class RouteAnnotation {
 /**
  * @public
  */
-export interface PathFactory {
-  (urlDefinition?: string, ...methods: Array<PathFactory | string>): Annotation
+export interface PathFactoryAnnotation {
+  (urlDefinition?: string, ...methods: Array<PathFactoryAnnotation | string>): Annotation
 }
+
+export interface ParamAnnotationFactory {
+  (keyname?: string): Annotation
+}
+
 /**
  * @public
  */
-export interface ParamAnnotation {
+export interface ParamAnnotationBase {
   extractValue(context: RouterContext): any
 }
 
 /**
  * @public
  */
-export class BodyParamAnnotation implements ParamAnnotation {
+export class BodyParamAnnotation implements ParamAnnotationBase {
   constructor(private keyName?: string) {}
   extractValue(context: RouterContext): any {
     return this.keyName ? context.route?.body[this.keyName] : context.route?.body
@@ -69,7 +74,7 @@ export class BodyParamAnnotation implements ParamAnnotation {
 /**
  * @public
  */
-export class PathParamAnnotation implements ParamAnnotation {
+export class PathParamAnnotation implements ParamAnnotationBase {
   constructor(private keyName?: string) {}
   extractValue(context: RouterContext): any {
     const routeParams = context.route?.params || []
@@ -88,20 +93,20 @@ export class PathParamAnnotation implements ParamAnnotation {
 /**
  * @public
  */
-export class QueryParamAnnotation implements ParamAnnotation {
+export class QueryParamAnnotation implements ParamAnnotationBase {
   constructor(private searchParam: string) {}
   extractValue(context: RouterContext): any {
-    return context.route?.query.get(this.searchParam)
+    return context.route?.searchParams.get(this.searchParam)
   }
 }
 
 /**
  * @public
  */
-export class HeaderParamAnnotation implements ParamAnnotation {
+export class HeaderParamAnnotation implements ParamAnnotationBase {
   constructor(private paramName: string) {}
   extractValue(context: RouterContext): any {
-    return context.req.headers?.[this.paramName]
+    return context.req.headers[this.paramName]
   }
 }
 
@@ -110,12 +115,11 @@ export class HeaderParamAnnotation implements ParamAnnotation {
  */
 export class UpgradeRouteAnnotation extends RouteAnnotation {
   isBodyParser = true
-  upgrade = true
   middleware(context: RouterContext, next: Func<Promise<any>>): any {
     return next()
   }
-  constructor(path: string) {
-    super(path, 'Get')
+  constructor(path?: string) {
+    super(path, 'UPGRADE')
   }
 }
 
@@ -144,43 +148,43 @@ const methods = ['Get', 'Post', 'Put', 'Delete', 'Head', 'Patch'],
 /**
  * @public
  */
-export interface Route extends PathFactory {
+export interface Route extends PathFactoryAnnotation {
   /**
    * Accept the HTTP GET Method
    */
-  Get: PathFactory
+  Get: PathFactoryAnnotation
   /**
    * Accept the HTTP POST Method
    */
-  Post: PathFactory
+  Post: PathFactoryAnnotation
   /**
    * Accept the HTTP PUT Method
    */
-  Put: PathFactory
+  Put: PathFactoryAnnotation
   /**
    * Accept the HTTP DELETE Method
    */
-  Delete: PathFactory
+  Delete: PathFactoryAnnotation
   /**
    * Accept the HTTP HEAD Method
    */
-  Head: PathFactory
+  Head: PathFactoryAnnotation
   /**
    * Accept the HTTP PATCH Method
    */
-  Patch: PathFactory
+  Patch: PathFactoryAnnotation
   /**
    * Extract the body, or body property to the decorated argument
    */
-  Body: BodyParamAnnotation
+  Body: ParamAnnotationFactory
   /**
    * Extract the path parameters, or specific paramter to the decorated argument
    */
-  Path: PathParamAnnotation
+  Path: ParamAnnotationFactory
   /**
    * Extract the query parameters, or specific query parameter to the decorated argument
    */
-  Query: QueryParamAnnotation
+  Query: ParamAnnotationFactory
   /**
    * Extract the specific header to the decorated argument
    */
@@ -196,7 +200,7 @@ export interface Route extends PathFactory {
  */
 export const Route = methods.reduce(
   (set, method) => {
-    set[method] = (path: string, ...otherMethods: Array<PathFactory | string>) => {
+    set[method] = (path: string, ...otherMethods: Array<PathFactoryAnnotation | string>) => {
       return set(path, ...[...otherMethods, method])
     }
     set[method].toString = () => method

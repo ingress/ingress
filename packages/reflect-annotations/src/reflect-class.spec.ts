@@ -74,10 +74,10 @@ class Five {
 
 class Six {
   @MiddlewareAnnotation()
-  methodWithTypes(@FixtureAnnotation() param: string, foo: any, otherParam: number): string {
+  methodWithTypes(@FixtureAnnotation() _param: string, _foo: any, _otherParam: number): string {
     return 'hello'
   }
-  methodWithNoAnnotations(param: string, foo: any, otherParam: number): string {
+  methodWithNoAnnotations(_param: string, _foo: any, _otherParam: number): string {
     return 'hello'
   }
 }
