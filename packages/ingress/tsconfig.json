@@ -1,7 +1,6 @@
 {
   "extends": "../../base.tsconfig.json",
   "compilerOptions": {
-    "skipLibCheck": false,
     "outDir": "./lib/esm",
   },
   "exclude": ["node_modules"],

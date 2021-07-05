@@ -3,7 +3,13 @@
   "private": true,
   "version": "0.0.1",
   "workspaces": [
-    "./packages/*"
+    "./packages/http-status",
+    "./packages/error",
+    "./packages/di",
+    "./packages/reflect-annotations",
+    "./packages/router-tree-map",
+    "./packages/router",
+    "./packages/ingress"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
