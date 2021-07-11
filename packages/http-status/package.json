@@ -1,0 +1,33 @@
+{
+  "name": "@ingress/http-status",
+  "version": "3.0.0-alpha.3",
+  "description": "Heavily status code accessor rendered from node's http#STATUS_CODES constant",
+  "main": "lib/cjs/status-codes.js",
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "import": "./lib/esm/status-codes.js",
+      "require": "./lib/cjs/status-codes.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "!lib/**/*.test.js"
+  ],
+  "scripts": {
+    "test": "tap",
+    "build:esm": "tsc --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
+    "build": "shx rm -rf lib && npm run build:esm && tsc",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "tap": {
+    "test-regex": "src\\/.*test\\.ts",
+    "node-arg": "--require=ts-node/register"
+  },
+  "keywords": [],
+  "author": "Caleb Boyd <caleb.boyd@hotmail.com>",
+  "license": "MIT",
+  "devDependencies": {},
+  "gitHead": "6296e5f924b953795fd7572963184bc8b6479c71"
+}

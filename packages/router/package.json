@@ -1,0 +1,48 @@
+{
+  "name": "@ingress/router",
+  "version": "0.0.1-alpha.0",
+  "keywords": [
+    "radix",
+    "trie",
+    "tree",
+    "router",
+    "path",
+    "http route"
+  ],
+  "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
+  "license": "MIT",
+  "description": "A fast router middleware for ingress",
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "node": {
+        "import": "./lib/esm/router.js",
+        "require": "./lib/cjs/router.js"
+      },
+      "default": "./lib/esm/router.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "docs"
+  ],
+  "scripts": {
+    "docs": "typedoc src/router.ts --excludePrivate",
+    "test": "tap",
+    "build:esm": "tsc --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
+    "build": "shx rm -rf lib && npm run build:esm && tsc"
+  },
+  "tap": {
+    "test-regex": "src\/(?!.*\\.util).*test\\.ts",
+    "node-arg": ["--require=ts-node/register", "--require=reflect-metadata"]
+  },
+  "dependencies": {
+    "@ingress/http-status": "3.0.0-alpha.3",
+    "@ingress/error": "0.0.1",
+    "app-builder": "^7.0.4",
+    "reflect-annotations": "4.0.0-alpha.3",
+    "router-tree-map": "^0.0.3",
+    "secure-json-parse": "^2.4.0"
+  }
+}

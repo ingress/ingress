@@ -1,0 +1,10 @@
+{
+  "extends": "../../base.tsconfig.json",
+  "compilerOptions": {
+    "outDir": "lib/cjs",
+    "target": "es2018",
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
+}

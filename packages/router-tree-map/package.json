@@ -1,0 +1,41 @@
+{
+  "name": "router-tree-map",
+  "version": "0.0.3",
+  "keywords": ["radix", "trie", "tree", "router", "path", "http route"],
+  "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
+  "license": "MIT",
+  "description": "A radix tree map-like structure for /route/:like/keys and values",
+  "type": "commonjs",
+  "main": "./lib/cjs/tree.js",
+  "types": "./lib/cjs/tree.d.ts",
+  "exports": {
+    ".": {
+      "node": {
+        "import": "./lib/esm/tree.js",
+        "require": "./lib/cjs/tree.js"
+      },
+      "default": "./lib/cjs/tree.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "docs"
+  ],
+  "scripts": {
+    "docs": "typedoc src/tree.ts --excludePrivate",
+    "test": "tap",
+    "build:esm": "tsc --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
+    "build": "shx rm -rf lib && npm run build:esm && tsc"
+  },
+  "tap": {
+    "test-regex": "src\\/.*test\\.ts",
+    "node-arg": "--require=ts-node/register"
+  },
+  "eslintConfig": {
+    "rules": {
+      "no-constant-condition": 0,
+      "@typescript-eslint/no-this-alias": 0
+    }
+  }
+}

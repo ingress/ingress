@@ -1,42 +1,47 @@
 {
-  "name": "ingress-mono-repo",
+  "name": "@ingress/workspace",
   "private": true,
   "version": "0.0.1",
   "workspaces": [
-    "./modules/di",
-    "./modules/http-status",
-    "./modules/reflect-annotations",
-    "./modules/router-tree-map",
-    "./modules/ingress"
+    "./packages/http-status",
+    "./packages/error",
+    "./packages/di",
+    "./packages/reflect-annotations",
+    "./packages/router-tree-map",
+    "./packages/router",
+    "./packages/ingress"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "lint": "eslint ./modules/**/src/**/*.ts --fix",
+    "lint": "eslint \"./packages/**/src/**/*.ts\" --fix",
     "test": "npm run test --workspaces",
     "commitlint": "commitlint -f $(git rev-list --tags --max-count=1) -t $(git log --pretty=%H | head -1)",
     "ncu": "npm exec --workspaces -c \"ncu\"",
     "ncuu": "npm exec --workspaces -c \"ncu -u\""
   },
   "devDependencies": {
-    "@commitlint/cli": "^12.1.1",
-    "@commitlint/config-angular": "^12.1.1",
-    "@types/tap": "^14.10.3",
-    "@typescript-eslint/eslint-plugin": "^4.21.0",
-    "@typescript-eslint/parser": "^4.21.0",
-    "eslint": "^7.24.0",
-    "eslint-config-prettier": "~8.1.0",
-    "eslint-plugin-prettier": "^3.3.1",
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-angular": "^12.1.4",
+    "@types/tap": "^15.0.4",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "@typescript-eslint/parser": "^4.28.0",
+    "eslint": "^7.29.0",
+    "eslint-config-prettier": "~8.3.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-prettier": "^3.4.0",
     "lerna": "^4.0.0",
-    "npm-check-updates": "^11.4.1",
-    "prettier": "^2.2.1",
-    "tap": "^15.0.4",
-    "ts-node": "^9.1.1",
-    "typedoc": "^0.20.35",
-    "typedoc-plugin-markdown": "^3.7.1"
+    "npm-check-updates": "^11.7.1",
+    "prettier": "^2.3.2",
+    "shx": "^0.3.3",
+    "tap": "^15.0.9",
+    "ts-node": "github:calebboyd/ts-node#rfd",
+    "typedoc": "^0.21.2",
+    "typedoc-plugin-markdown": "^3.10.2"
   },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
     "plugins": [
+      "import",
       "@typescript-eslint"
     ],
     "extends": [
@@ -57,6 +62,11 @@
       }
     ],
     "rules": {
+      "import/extensions": [
+        2,
+        "ignorePackages"
+      ],
+      "@typescript-eslint/no-unused-vars": [2, { "args": "after-used", "ignoreRestSiblings": true, "argsIgnorePattern": "^_" }],
       "@typescript-eslint/no-use-before-define": 0,
       "@typescript-eslint/no-explicit-any": 0,
       "@typescript-eslint/explicit-function-return-type": 0,

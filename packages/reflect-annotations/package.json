@@ -1,0 +1,55 @@
+{
+  "name": "reflect-annotations",
+  "version": "4.0.0-alpha.3",
+  "description": "Set and inspect annotation metadata on JavaScript classes and methods",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ingress/ingress"
+  },
+  "type": "commonjs",
+  "main": "./lib/cjs/index.js",
+  "types": "./lib/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "!**/*.spec.js"
+  ],
+  "engines": {
+    "node": ">=4.0.0"
+  },
+  "scripts": {
+    "test": "tap",
+    "build:esm": "tsc --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
+    "build": "shx rm -rf lib && npm run build:esm && tsc"
+  },
+  "tap": {
+    "test-regex": "src\\/.*\\.spec\\.ts",
+    "node-arg": "--require=ts-node/register"
+  },
+  "keywords": [
+    "annotations",
+    "decorators",
+    "class decorators",
+    "class annotations",
+    "annotation",
+    "decorator",
+    "class reflection",
+    "reflection"
+  ],
+  "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
+  "license": "MIT",
+  "peerDependencies": {
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^16.0.0",
+    "reflect-metadata": "^0.1.13"
+  },
+  "gitHead": "6296e5f924b953795fd7572963184bc8b6479c71"
+}

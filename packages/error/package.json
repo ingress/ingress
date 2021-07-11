@@ -1,0 +1,39 @@
+{
+  "name": "@ingress/error",
+  "version": "0.0.1",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "./lib/cjs/errors.js",
+  "types": "./lib/cjs/errors.d.ts",
+  "exports": {
+    ".": {
+      "node": {
+        "import": "./lib/esm/errors.js",
+        "require": "./lib/cjs/errors.js"
+      },
+      "default": "./lib/cjs/errors.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "npm": ">=7",
+    "node": ">=14"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "tap",
+    "build:esm": "tsc --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
+    "build": "shx rm -rf lib && tsc && npm run build:esm"
+  },
+  "tap": {
+    "test-regex": "src\\/.*test\\.ts",
+    "node-arg": "--require=ts-node/register"
+  },
+  "dependencies": {
+    "@ingress/http-status": "3.0.0-alpha.3"
+  },
+  "devDependencies": {
+  }
+}

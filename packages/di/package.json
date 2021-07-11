@@ -1,0 +1,58 @@
+{
+  "name": "@ingress/di",
+  "version": "3.0.0-alpha.2",
+  "description": "Server-side dependency injection for ingress",
+  "type": "commonjs",
+  "main": "./lib/cjs/index.js",
+  "exports": {
+    ".": {
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "!**/*.spec.js"
+  ],
+  "scripts": {
+    "test": "tap",
+    "build:esm": "tsc --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
+    "build": "shx rm -rf lib && npm run build:esm && tsc",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "tap": {
+    "test-regex": "src\\/.*test\\.ts",
+    "node-arg": "--require=ts-node/register"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ingress/ingress.git"
+  },
+  "keywords": [
+    "server di",
+    "node dependency injection",
+    "dependency",
+    "injection"
+  ],
+  "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ingress/ingress/issues"
+  },
+  "peerDependencies": {
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^16.0.0",
+    "concurrently": "^6.2.0",
+    "reflect-metadata": "^0.1.13",
+    "tap": "^15.0.9",
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "injection-js": "^2.4.0",
+    "tslib": "^2.3.0"
+  },
+  "gitHead": "6296e5f924b953795fd7572963184bc8b6479c71"
+}
