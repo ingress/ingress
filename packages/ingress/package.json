@@ -58,13 +58,13 @@
     "@ingress/http-status": "^3.0.0-alpha.3",
     "app-builder": "^7.0.4",
     "destroy": "~1.0.4",
-    "find-my-way": "^4.3.0",
+    "find-my-way": "^4.3.2",
     "on-finished": "~2.3.0",
     "reflect-annotations": "^4.0.0-alpha.3",
     "rxjs": "~7.2.0",
     "secure-json-parse": "^2.4.0",
     "uuid": "^8.3.2",
-    "ws": "^7.5.2"
+    "ws": "^7.5.3"
   },
   "peerDependencies": {
     "@types/ws": "^7.4.6"
@@ -80,10 +80,10 @@
     "@babel/preset-env": "^7.14.7",
     "@babel/preset-typescript": "^7.14.5",
     "@types/destroy": "~1.0.0",
-    "@types/jest": "^26.0.23",
-    "@types/node": "^16.0.0",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^16.3.1",
     "@types/on-finished": "~2.3.1",
-    "@types/secure-json-parse": "^1.0.2",
+    "@types/secure-json-parse": "^1.0.3",
     "@types/sinon": "^10.0.2",
     "@types/uuid": "^8.3.1",
     "@types/ws": "^7.4.6",

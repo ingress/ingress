@@ -1,6 +1,7 @@
 {
-  "extends": "../../base.tsconfig.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "module": "commonjs",
     "outDir": "./lib/cjs"
   },
   "exclude": ["node_modules"],
