@@ -1,5 +1,5 @@
 import type { Ingress } from '../ingress.js'
-import ws, { Server } from 'ws'
+import WebSocket, * as ws from 'ws'
 import type { Router } from '../router/router.js'
 import { Func, once } from '../lang.js'
 import { WebsocketServerResponse } from './response.js'
@@ -9,6 +9,8 @@ import type { Socket } from 'net'
 import type { DefaultContext, Middleware, Request } from '../context.js'
 import { compose } from 'app-builder'
 
+const Server = ws.Server
+
 export type UpgradeBody<T = DefaultContext> = {
   head: Buffer
   req: Request<T>
@@ -17,7 +19,7 @@ export type UpgradeBody<T = DefaultContext> = {
   accept: () => Promise<Websocket>
 }
 
-export type Websocket = ws
+export type Websocket = WebSocket
 
 export class Websockets {
   private server = new Server({ noServer: true, clientTracking: false })

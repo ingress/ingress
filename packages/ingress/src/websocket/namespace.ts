@@ -4,10 +4,10 @@ import { Ack } from './ack.js'
 import { createBackChannel } from './backchannel.js'
 import { noop, once } from '../lang.js'
 
-//to be able to load rxjs in esm we have to use the actual directory and load the cjs module
-import * as cjsMap from 'rxjs/internal/operators/map.js'
-import * as cjsTakeUntil from 'rxjs/internal/operators/takeUntil.js'
-import * as cjsTake from 'rxjs/internal/operators/take.js'
+//cross compatible entrypoint for cjs and esm
+import * as cjsMap from 'rxjs/internal/operators/map'
+import * as cjsTakeUntil from 'rxjs/internal/operators/takeUntil'
+import * as cjsTake from 'rxjs/internal/operators/take'
 
 const [{ map }, { takeUntil }, { take }] = [cjsMap, cjsTakeUntil, cjsTake],
   DefaultExclusions: Exclusions = Object.create(null)

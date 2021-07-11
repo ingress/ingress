@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "strict": true,
-    "target": "es2018", //this is a perf target
-    "module": "commonjs",
+    "target": "es2018",
+    "module": "esnext",
     "moduleResolution": "node",
     "lib": ["dom", "dom.iterable", "es2020"],
     "declaration": true,
@@ -17,6 +17,9 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
+  "include": [
+    "scripts/**/*.ts"
+  ],
   "exclude": [
     "**/node_modules",
     "**/.*/"
