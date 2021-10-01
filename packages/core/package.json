@@ -1,0 +1,55 @@
+{
+  "name": "@ingress/core",
+  "version": "0.0.1-alpha.0",
+  "keywords": [],
+  "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
+  "license": "MIT",
+  "description": "Core ingress objects, application lifecycle and http handlers",
+  "type": "commonjs",
+  "types": "lib/cjs/core.d.ts",
+  "exports": {
+    ".": {
+      "node": {
+        "import": "./lib/esm/core.js",
+        "require": "./lib/cjs/core.js"
+      }
+    }
+  },
+  "imports": {
+    "#context": {
+      "node": {
+        "import": "./lib/esm/context.node.js",
+        "require": "./lib/cjs/context.node.js"
+      },
+      "worker": {
+        "import": "./lib/esm/context.worker.js",
+        "require": "./lib/cjs/context.worker.js"
+      }
+    }
+  },
+  "files": [
+    "lib",
+    "docs"
+  ],
+  "scripts": {
+    "test": "tap",
+    "build:esm": "tsc --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
+    "build": "shx rm -rf lib && npm run build:esm && tsc"
+  },
+
+  "tap": {
+    "test-regex": "src/(?!.*\\.util).*test\\.ts",
+    "node-arg": [
+      "--require=tsconfig-paths/register",
+      "--require=ts-node/register",
+      "--require=reflect-metadata"
+    ]
+  },
+  "dependencies": {
+    "@ingress/di": "3.0.0-alpha.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^2.2.2",
+    "@types/node": "^16.7.10"
+  }
+}
