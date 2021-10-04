@@ -21,6 +21,12 @@ export const ING_CONTENT_LENGTH_REQUIRED = createErrorType('IngContentLengthRequ
   statusCode: StatusCode.LengthRequired,
 })
 
+export const ING_PAYLOAD_TOO_LARGE = createErrorType('IngPayloadTooLarge', {
+  code: 'ING_PAYLOAD_TOO_LARGE',
+  message: 'Payload too large',
+  statusCode: StatusCode.PayloadTooLarge,
+})
+
 export const ING_INPUT_FAILED_VALIDATION = createErrorType('IngInputFailedValidation', {
   code: 'ING_INPUT_FAILED_VALIDATION',
   message: 'Validation failed',

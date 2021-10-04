@@ -7,17 +7,17 @@ export function createErrorType<T, Props extends CustomErrorProps>(
   const props = Object.entries(baseProperties),
     l = props.length,
     { [name]: ErrorType } = {
-      [name]: function (this: ErrorInstance, message?: string) {
+      [name]: function (this: ErrorInstance, ...args: any[]) {
         if (!(this instanceof ErrorType)) {
-          return new (ErrorType as any)(message)
+          return new (ErrorType as any)(...args)
         }
         cst(this, ErrorType)
         this.name = name
         for (let i = 0; i < l; i++) {
           ;(this as any)[props[i][0]] = props[i][1]
         }
-        if (message) {
-          this.message = message
+        if (args[0]) {
+          this.message = args[0]
         }
       },
     }
@@ -33,8 +33,11 @@ export function createErrorType<T, Props extends CustomErrorProps>(
   }) as unknown as ErrorConstructor<ErrorInstance>
 }
 
+export interface ErrorOptions {
+  cause?: Error
+}
 export interface ErrorConstructor<T> {
-  new (...args: any[]): T
+  new (message?: string, options?: ErrorOptions): T
 }
 
 type CustomErrorProps = { message: string; code: string; statusCode?: number }
@@ -51,5 +54,6 @@ function value<T>(value: T) {
   }
 }
 
-const cst =
-  Error.captureStackTrace.bind(Error) || /* istanbul ignore next: not node env */ (() => void 0)
+/* istanbul ignore next: not node env */
+const noop = () => void 0,
+  cst = Error.captureStackTrace.bind(Error) || noop

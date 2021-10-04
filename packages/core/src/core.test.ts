@@ -173,7 +173,7 @@ t.test('container option (usable priority)', async (t) => {
   const thing3s: Thing3[] = [],
     thing4s: Thing4[] = [],
     app1 = new Ingress({ container })
-  app1.use((ctx, next) => {
+  app1.use((ctx: any, next: any) => {
     thing3s.push(ctx.scope.get(Thing3))
     thing4s.push(ctx.scope.get(Thing4))
     return next()
@@ -194,7 +194,7 @@ t.test('container option (usable priority)', async (t) => {
 t.test('null prototype context default', async (t) => {
   t.plan(1)
   const app = new Ingress()
-  app.use((ctx, next) => {
+  app.use((ctx: any, next: any) => {
     t.equal(Object.getPrototypeOf(ctx), null)
     return next()
   })

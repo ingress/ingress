@@ -13,6 +13,7 @@
   "license": "MIT",
   "description": "A fast router middleware for ingress",
   "type": "commonjs",
+  "types": "./lib/cjs/router.d.ts",
   "exports": {
     ".": {
       "node": {
@@ -41,11 +42,11 @@
     ]
   },
   "dependencies": {
-    "@ingress/error": "^0.1.2",
-    "@ingress/http-status": "^3.0.0-alpha.6",
-    "app-builder": "^7.0.4",
-    "reflect-annotations": "^4.0.0-alpha.6",
-    "router-tree-map": "^0.1.2",
+    "@ingress/http-status": "3.0.0-alpha.3",
+    "@ingress/core": "1.0.0-rc.1",
+    "@ingress/error": "0.0.1",
+    "reflect-annotations": "4.0.0-alpha.3",
+    "router-tree-map": "^0.0.3",
     "secure-json-parse": "^2.4.0"
   },
   "gitHead": "4bc0a9eb661fce02765d56efdc84f8d1a10a01ec"

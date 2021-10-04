@@ -1,29 +1,25 @@
 import type { Type } from './annotations.js'
 
-function uniqueNotConstructor(names: Array<string>, name: string) {
-  ~names.indexOf(name) || (name !== 'constructor' && names.push(name))
-  return names
-}
-
 export function reflectClassProperties<T>(source: Type<T>): {
   source: Type<T>
   properties: string[]
   constructors: Type<T>[]
 } {
-  const properties: string[] = [],
+  const properties = new Set<string>(),
+    addProp = (x: string) => properties.add(x),
     constructors: Type<T>[] = []
 
   let current = source
 
-  while (current && current.prototype && current !== Function.prototype) {
-    Object.getOwnPropertyNames(current.prototype).reduce(uniqueNotConstructor, properties)
+  while (current !== Function.prototype) {
+    Object.getOwnPropertyNames(current.prototype).forEach(addProp)
     constructors.push(current)
     current = Object.getPrototypeOf(current)
   }
-
+  properties.delete('constructor')
   return {
     source,
-    properties,
+    properties: Array.from(properties),
     constructors,
   }
 }

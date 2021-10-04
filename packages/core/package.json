@@ -1,6 +1,6 @@
 {
   "name": "@ingress/core",
-  "version": "0.0.1-alpha.0",
+  "version": "1.0.0-rc.1",
   "keywords": [],
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
@@ -40,7 +40,6 @@
   "tap": {
     "test-regex": "src/(?!.*\\.util).*test\\.ts",
     "node-arg": [
-      "--require=tsconfig-paths/register",
       "--require=ts-node/register",
       "--require=reflect-metadata"
     ]
@@ -50,6 +49,6 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^2.2.2",
-    "@types/node": "^16.7.10"
+    "@types/node": "^16.10.2"
   }
 }

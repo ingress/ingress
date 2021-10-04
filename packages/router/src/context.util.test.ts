@@ -39,6 +39,19 @@ function stream<T>(data: T | null = null) {
   })
 }
 
+export function mockApp(): any {
+  const container = mockContainer([]) as any
+  container.registerProvider = (arg: any) => {
+    container.set(arg.provide, arg.useValue)
+  }
+  container.registerSingletonProvider = (arg: any) => {
+    container.set(arg.provide, arg.useValue)
+  }
+  return {
+    container,
+  }
+}
+
 function mockContainer(deps: Type<any>[]) {
   const result = new Map<any, any>()
   for (const dep of deps) {

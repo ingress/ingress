@@ -1,6 +1,6 @@
 import t from 'tap'
 import { Route } from './annotations/route.annotation.js'
-import { mockContext } from './context.util.test.js'
+import { mockApp, mockContext } from './context.util.test.js'
 import { Router } from './router.js'
 
 t.test('type parameters extract and transform', async (t) => {
@@ -21,8 +21,9 @@ t.test('type parameters extract and transform', async (t) => {
       t.equal(arg, backward)
     }
   }
-  const router = new Router({ controllers: [Routes] })
-  await router.start()
+  const router = new Router({ controllers: [Routes] }),
+    app = mockApp()
+  await router.start(app, () => Promise.resolve())
   await router.middleware(mockContext('/', 'GET', {}, Routes), () => t.end())
 })
 
@@ -41,8 +42,9 @@ t.test('type parameters transform with param annotation extract', async (t) => {
       t.equal(arg, expectedBackward)
     }
   }
-  const router = new Router({ controllers: [Routes] })
-  await router.start()
+  const router = new Router({ controllers: [Routes] }),
+    app = mockApp()
+  await router.start(app, () => Promise.resolve())
   await router.middleware(mockContext(`/${forward}`, 'GET', {}, Routes), () => t.end())
 })
 
@@ -64,7 +66,8 @@ t.test('default type resolvers', async (t) => {
       t.equal(e, true)
     }
   }
-  const router = new Router({ controllers: [Routes] })
-  await router.start()
+  const router = new Router({ controllers: [Routes] }),
+    app = mockApp()
+  await router.start(app, () => Promise.resolve())
   await router.middleware(mockContext(`/1/false/true/10-10-2020/true`, 'GET'), () => t.end())
 })

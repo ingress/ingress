@@ -1,14 +1,8 @@
 import 'reflect-metadata'
 import t from 'tap'
-import { Router } from './router.js'
-import {
-  PathParamAnnotation,
-  Route,
-  RouteAnnotation,
-  Upgrade,
-} from './annotations/route.annotation.js'
-
-import { mockContext } from './context.util.test.js'
+import { Router, Route } from './router.js'
+import { PathParamAnnotation, RouteAnnotation, Upgrade } from './annotations/route.annotation.js'
+import { mockApp, mockContext } from './context.util.test.js'
 import { createAnnotationFactory } from '../../reflect-annotations/lib/cjs/annotations.js'
 import reflectAnnotations from 'reflect-annotations'
 
@@ -17,15 +11,25 @@ function sample<T>(list: readonly T[]): T {
 }
 
 const noop = () => {
-  void 0
-}
+    void 0
+  },
+  midNoop = () => Promise.resolve()
+
+t.test('readUrl', (t) => {
+  t.same(Router.readUrl('/hello/world?whats=up'), ['/hello/world', 'whats=up'])
+  t.same(Router.readUrl('/hello/world#whats=up'), ['/hello/world', 'whats=up'])
+  t.same(Router.readUrl('/hello/world;whats=up'), ['/hello/world', 'whats=up'])
+  t.same(Router.readUrl(''), ['/', ''])
+  t.end()
+})
 
 t.test('Route miss', async (t) => {
   const router = new Router()
-  await router.start()
+
+  await router.start(mockApp(), midNoop)
   let called = false,
     finished = false
-  router.on('GET', '/some/route', (c, next) => {
+  router.on('GET', '/some/route', (c: any, next: any) => {
     called = true
     return next()
   })
@@ -36,17 +40,16 @@ t.test('Route miss', async (t) => {
   t.equal(called, false, 'route is called')
   t.equal(context.res.statusCode, 404, 'status code is 404')
   t.equal(finished, true, 'finished')
-  router.stop() //noop
   t.end()
 })
 
 t.test('Route hit+query', async (t) => {
   const router = new Router()
-  await router.start()
+  await router.start(mockApp(), midNoop)
   let called = false,
     finished = false
 
-  router.on('GET', '/some/route', (c, next) => {
+  router.on('GET', '/some/route', (c: any, next: any) => {
     called = true
     t.equal(c.route.searchParams.get('some'), 'query')
     t.equal(c.route.queryString, 'some=query')
@@ -73,7 +76,7 @@ t.test('Route Execution with Annotations', async (t) => {
       called = true
     }
   }
-  await router.start()
+  await router.start(mockApp(), midNoop)
   const context = mockContext('/parent/child', 'POST', {}, Routes)
   await router.middleware(context, () => {
     finished = true
@@ -106,32 +109,32 @@ t.test('bad type input', async (t) => {
       void a
     }
   }
-  await router.start()
+  await router.start(mockApp(), midNoop)
   let context = mockContext('/number/one', 'GET', {}, Routes)
   try {
     await router.middleware(context, noop)
-  } catch (e) {
+  } catch (e: any) {
     t.equal(e.message, 'cannot convert "one" to number')
     t.equal(e.statusCode, 400)
   }
   try {
     context = mockContext('/bool/one', 'GET', {}, Routes)
     await router.middleware(context, noop)
-  } catch (e) {
+  } catch (e: any) {
     t.equal(e.message, 'cannot convert "one" to boolean')
     t.equal(e.statusCode, 400)
   }
   try {
     context = mockContext('/date/one', 'GET', {}, Routes)
     await router.middleware(context, noop)
-  } catch (e) {
+  } catch (e: any) {
     t.equal(e.message, 'cannot convert "one" to Date')
     t.equal(e.statusCode, 400)
   }
   try {
-    context = mockContext('/string/one', 'GET', {}, Routes)
+    context = mockContext('/string/one', '', {}, Routes)
     await router.middleware(context, noop)
-  } catch (e) {
+  } catch (e: any) {
     t.equal(e.message, 'cannot convert undefined to string')
     t.equal(e.statusCode, 400)
   }
@@ -158,7 +161,7 @@ t.test('Route Execution with plain Metadata', async (t) => {
     parent: Routes,
   })
   const context = mockContext('/parent/child2/something', 'GET', {}, Routes)
-  await router.start()
+  await router.start(mockApp(), midNoop)
   await router.middleware(context, () => {
     finished = true
   })
@@ -176,7 +179,7 @@ t.test('accepts upgrade route', async (t) => {
     }
   }
   const router = new Router({ controllers: [Routes] })
-  router.start()
+  router.start(mockApp(), midNoop)
   t.equal(router.hasUpgrade, true, 'hasUpgrade is set')
   t.end()
 })
@@ -186,7 +189,7 @@ t.test('errors without setup (start)', async (t) => {
   t.plan(1)
   try {
     router.middleware
-  } catch (e) {
+  } catch (e: any) {
     t.equal(e.message, 'Must call start before using the router.')
   }
   t.end()
@@ -234,7 +237,7 @@ t.test('priority middleware order', async (t) => {
     return parse()
   }
 
-  await router.start()
+  await router.start(mockApp(), midNoop)
   await router.middleware(ctx, () => {
     t.equal(ctx.order, '12345')
     t.end()
@@ -261,8 +264,9 @@ t.test('with root router', async (t) => {
   root.metadata.add(reflectAnnotations(Routes)[0])
   child.metadata.add(reflectAnnotations(Routes2)[0])
 
-  await root.start()
-  await child.start({ router: root })
+  const app = mockApp()
+  await root.start(app, midNoop)
+  await child.start(app, midNoop)
 
   let context = mockContext('/', 'GET', {}, Routes, Routes2)
   await root.middleware(context, noop)

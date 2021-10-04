@@ -1,7 +1,9 @@
 import t from 'tap'
 import { Route } from './annotations/route.annotation.js'
-import { mockContext } from './context.util.test.js'
+import { mockApp, mockContext } from './context.util.test.js'
 import { Router } from './router.js'
+
+const noop = () => Promise.resolve()
 
 t.test('no registered type converter', async (t) => {
   t.plan(1)
@@ -13,8 +15,9 @@ t.test('no registered type converter', async (t) => {
   }
   const router = new Router({ controllers: [Routes] })
   try {
-    await router.start()
-  } catch (e) {
+    const app = mockApp()
+    await router.start(app, noop)
+  } catch (e: any) {
     t.equal(e.message, 'No type converter found for: Routes.someRoute at argument 0:Object')
   }
   t.end()
@@ -30,7 +33,8 @@ t.test('registered type resolver', async (t) => {
   }
   const router = new Router({ controllers: [Routes] })
   router.registerTypeResolver(Object, (x) => x + ' world')
-  await router.start()
+  const app = mockApp()
+  await router.start(app, () => Promise.resolve())
   await router.middleware(mockContext('/hello', 'GET', {}, Routes), () => t.end())
 })
 
@@ -51,7 +55,7 @@ t.test('registered type predicate resolver', async (t) => {
     (x) => x === Object,
     (x) => x + ' world'
   )
-  await router.start()
+  await router.start(mockApp(), noop)
   await router.middleware(mockContext('/hello', 'GET', {}, Routes), () => t.end())
 })
 
@@ -75,6 +79,6 @@ t.test('async type converter', async (t) => {
     }
   }
   const router = new Router({ controllers: [Routes] })
-  await router.start()
+  await router.start(mockApp(), noop)
   await router.middleware(mockContext('/', 'GET', {}, Routes), () => t.end())
 })

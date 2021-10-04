@@ -26,7 +26,7 @@ function testRoutes(t: Test, routes: [string, boolean][]) {
     let err: Error | null = null
     try {
       tree.set(route, null)
-    } catch (e) {
+    } catch (e: any) {
       err = e
     }
     if (conflict) {

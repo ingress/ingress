@@ -9,30 +9,39 @@ import {
 } from './annotations/controller.annotation.js'
 import { resolvePaths, RouteMetadata, PathMap } from './route-resolve.js'
 
-import type { EventEmitter } from 'events'
-import type { Middleware } from 'app-builder'
+import type { Middleware, Ingress } from '@ingress/core'
 import { Func, TypeResolver } from './type-resolver.js'
 
 export type Pathname = string
 export type QueryString = string
 
 export { ControllerDependencyCollector }
+export { Route } from './annotations/route.annotation'
 export class Router {
   private collector = new ControllerCollector()
-  private http!: RouteMap<Handle>
-  private upgrade!: RouteMap<Handle>
+  private map!: RouteMap<Handle>
 
-  public static readUrl(url: string): [Pathname, QueryString] {
-    const path = url
+  /**
+   * Given the "path" which potentially includes additional fragments, split the two
+   * eg. : /path/to/route?with=query&parameters=1 => ['/path/to/route', 'with=query&parameters=1']
+   *
+   *
+   *
+   * @param path
+   * @returns
+   */
+  public static readUrl(path?: string): [Pathname, QueryString] {
+    if (!path) return ['/', '']
+    const pathName = path
     let i = 0
-    for (; i < url.length; i++) {
-      const c = url.charCodeAt(i)
+    for (; i < path.length; i++) {
+      const c = path.charCodeAt(i)
       if (QuerySep.Hash === c || QuerySep.QuestionMark === c || QuerySep.SemiColon === c) {
-        url = url.slice(0, i)
+        path = path.slice(0, i)
         break
       }
     }
-    return [url, path.slice(i + 1)]
+    return [path, pathName.slice(i + 1)]
   }
 
   public metadata = new Set<RouteMetadata>()
@@ -55,25 +64,29 @@ export class Router {
     throw new Error('Must call start before using the router.')
   }
 
-  public start(app?: { router?: Router }): Promise<void> {
+  public start(app: Ingress<any>, next: Func<Promise<any>>): Promise<void> {
     //initialization w possible parent
-    const root = app?.router || this
-    root.http = root.http || new RouteMap()
-    root.upgrade = root.upgrade || new RouteMap()
+    let root: Router = app.container.get(Router)
+    if (!root) {
+      root = this
+      app.container.registerSingletonProvider({ provide: Router, useValue: this })
+    }
+    root.map = root.map || new RouteMap()
     root.registeredMetadata = root.registeredMetadata || new Map()
     this._root = root
 
     //lazy route registration
     for (const ctrl of this.collector.items) {
+      app.container.registerProvider(ctrl)
       this.root.registerRouteClass(ctrl)
     }
     this.collector.clear()
     for (const route of this.metadata) {
+      app.container.registerProvider(route.parent)
       this.root.registerRouteMetadata(route)
     }
     this.metadata.clear()
-
-    return Promise.resolve()
+    return next()
   }
 
   private typeResolver = new TypeResolver()
@@ -110,30 +123,31 @@ export class Router {
 
   public on(method: HttpMethod, route: string, handle: Handle): Router {
     if (method === 'UPGRADE') {
-      this.root.upgrade.on('GET', route, handle)
       this.hasUpgrade = true
-    } else this.root.http.on(method, route, handle)
+    }
+    this.root.map.on(method, route, handle)
     return this
-  }
-
-  public stop(app?: { server: EventEmitter }): Promise<any> {
-    void app
-    return Promise.resolve()
   }
 
   public get middleware(): Middleware<any> {
     const router = this.root
     if (router !== this) {
-      return (context, next) => next()
+      return (_ctx: any, next: any) => next()
     }
     return (context: RouterContext, next: any): Promise<any> => {
       const [url, queryString] = Router.readUrl(context.req.url),
-        method = context.req.method,
-        { handle, params } = router.http.find(method, url)
+        method = context.req.method || 'GET',
+        { handle, params } = router.map.find(method, url)
 
       if (handle) {
         context.res.statusCode = StatusCode.Ok
-        context.route = new Route(url, queryString, params, context.req.body || context.req, handle)
+        context.route = new RouteData(
+          url,
+          queryString,
+          params,
+          (context.req as any).body || context.req,
+          handle
+        )
         return context.route.exec(context, next)
       } else {
         context.res.statusCode = StatusCode.NotFound
@@ -143,11 +157,15 @@ export class Router {
   }
 }
 
-export class Route {
+const _searchParams = Symbol('_searchParams')
+
+export class RouteData {
+  private [_searchParams]: null | URLSearchParams = null
+
   public body: any = null
-  private _searchParams: null | URLSearchParams = null
+
   get searchParams(): URLSearchParams {
-    return this._searchParams || (this._searchParams = new URLSearchParams(this.queryString))
+    return this[_searchParams] || (this[_searchParams] = new URLSearchParams(this.queryString))
   }
   constructor(
     public path: string,
@@ -163,9 +181,13 @@ export type ParamEntries = [string, string][]
 export type Handle = Middleware<any>
 export type RouterContext = {
   parse(options: { mode: 'buffer' | 'string' | 'stream' | 'json' | 'auto' }): Promise<any>
-  req: { url: string; method: string; headers: Record<string, string>; body: any }
+  req: {
+    url?: string
+    method?: string
+    headers: Record<string, string[] | string | undefined>
+  }
   res: { statusCode: number }
-  route?: Route | null
+  route?: RouteData | null
 }
 const enum QuerySep {
   Hash = 35,
