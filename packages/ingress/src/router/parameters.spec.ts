@@ -174,7 +174,7 @@ describe('Parameters', () => {
       expectError = true
       try {
         await postAsync(path('/base/route/type-conversion/booleans/wat'))
-      } catch (e) {
+      } catch (e: any) {
         expect(e.statusMessage).toEqual('Bad Request')
         expect(e.statusCode).toEqual(400)
       }
@@ -196,7 +196,7 @@ describe('Parameters', () => {
           data: JSON.stringify(2),
           headers: { expected: '3' },
         })
-      } catch (e) {
+      } catch (e: any) {
         expect(e.statusMessage).toEqual('Bad Request')
         expect(e.statusCode).toEqual(400)
       }
@@ -210,7 +210,7 @@ describe('Parameters', () => {
           data: null,
           headers: { expected: '3' },
         })
-      } catch (e) {
+      } catch (e: any) {
         expect(e.statusMessage).toEqual('Bad Request')
         expect(e.statusCode).toEqual(400)
       }
@@ -221,7 +221,7 @@ describe('Parameters', () => {
       expectError = true
       try {
         await postAsync(path('/base/route/type-conversion/$numbers/4'), { data: '2' })
-      } catch (e) {
+      } catch (e: any) {
         expect(e.statusMessage).toEqual('Bad Request')
         expect(e.statusCode).toEqual(400)
       }
@@ -244,7 +244,7 @@ describe('Parameters', () => {
         data: null,
         headers: { expected: 'three' },
       })
-    } catch (e) {
+    } catch (e: any) {
       expect(e.statusMessage).toEqual('Bad Request')
       expect(e.statusCode).toEqual(400)
     }
@@ -255,7 +255,7 @@ describe('Parameters', () => {
 
     try {
       await postAsync(path('/base/route/type-conversion/strings/one'))
-    } catch (e) {
+    } catch (e: any) {
       expect(e.statusMessage).toEqual('Bad Request')
       expect(e.statusCode).toEqual(400)
     }
@@ -295,7 +295,7 @@ describe('Parameters', () => {
           routes: [Routes],
         },
       }).start()
-    } catch (e) {
+    } catch (e: any) {
       error = e
     }
     //reflective error message

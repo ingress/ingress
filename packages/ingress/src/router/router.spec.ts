@@ -286,7 +286,7 @@ describe('Routing', () => {
   it('should return 404 for missing routes', async () => {
     try {
       await getAsync(path('/missing'))
-    } catch (e) {
+    } catch (e: any) {
       expect(e.statusMessage).toEqual('Not Found')
       expect(e.statusCode).toEqual(404)
       expect(e.body).toEqual('')

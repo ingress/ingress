@@ -71,7 +71,7 @@ function resolveRouteMiddleware<T extends BaseContext<any, any>>(handler: {
     let params: any[]
     try {
       params = await resolveParameters(paramResolvers, context)
-    } catch (e) {
+    } catch (e: any) {
       e.statusCode = e.statusCode || 400
       throw e
     }

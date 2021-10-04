@@ -44,15 +44,14 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@types/node": "^16.3.1",
-    "concurrently": "^6.2.0",
+    "@types/node": "^16.10.2",
+    "concurrently": "^6.3.0",
     "reflect-metadata": "^0.1.13",
-    "tap": "^15.0.9",
-    "typescript": "^4.3.5"
+    "tap": "^15.0.10"
   },
   "dependencies": {
     "injection-js": "^2.4.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.1"
   },
   "gitHead": "4bc0a9eb661fce02765d56efdc84f8d1a10a01ec"
 }

@@ -73,9 +73,14 @@ export class Connection {
     return this
   }
 
-  end(): void {
+  close(): void {
     this.closing = true
     this.conn.close()
+  }
+
+  end(): void {
+    this.closing = true
+    this.conn.terminate()
   }
 
   ping(): Promise<void> {

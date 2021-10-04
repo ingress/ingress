@@ -27,7 +27,7 @@ export class Websockets {
   constructor(
     private preUpgrade: Middleware<any>,
     private router: Router<any>,
-    private container: Container<any>
+    private container: Container
   ) {}
 
   setupUpgradeHandler(app: Ingress): void {

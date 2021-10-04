@@ -10,13 +10,16 @@ import createContainer, {
 
 t.ok(typeof Injector === 'function')
 
-const noop = () => {
-  void 0
-}
+const mockApp = {
+    use: () => void 0,
+  },
+  noop = () => {
+    void 0
+  }
 
 t.test('context token', (t) => {
   const container = new Container()
-  container.start()
+  container.start(mockApp, void 0 as any)
   const context: { scope: Injector } = {} as any
   container.middleware(context, noop)
   t.ok(context.scope.get(ContextToken) === context)
@@ -29,11 +32,31 @@ t.test('child container', (t) => {
     someProp = 'hello'
   }
   container.serviceCollector.collect(Service)
-  container.start()
+  container.start(mockApp, void 0 as any)
   const child = container.createChildWithContext({}),
     service = child.get(Service)
   t.equal(service.someProp, 'hello')
   t.end()
+})
+
+t.test('init', async (t) => {
+  const container = new Container(),
+    ctx = {} as any
+  container.initContext(ctx)
+  t.equal(ctx.scope, null)
+  @Injectable()
+  class A {}
+  @Injectable()
+  class B {}
+  container.registerProvider(A)
+  container.registerSingletonProvider(B)
+  t.throws(() => container.get(B))
+  await container.start(mockApp, () => Promise.resolve())
+  t.ok(container.get(B) instanceof B)
+  const child = container.createChildWithContext({})
+  t.ok(child.get(A) instanceof A)
+  t.throws(() => container.registerProvider(A))
+  t.throws(() => container.registerSingletonProvider(B))
 })
 
 t.test('DI', (t) => {
@@ -80,12 +103,15 @@ t.test('DI', (t) => {
   const context1 = new Context(),
     context2 = new Context(),
     middleware = container.middleware
-  container.start({
-    use: (a: any) => {
-      singletonUsed = true
-      t.ok(a instanceof SomeSingletonService, 'a is registered on the app')
+  container.start(
+    {
+      use: (a: any) => {
+        singletonUsed = true
+        t.ok(a instanceof SomeSingletonService, 'a is registered on the app')
+      },
     },
-  })
+    void 0 as any
+  )
   let called = false,
     expectedSingleton: any,
     expectedDifferentInstance: any

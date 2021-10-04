@@ -160,10 +160,11 @@ describe('default ingress responses', () => {
     })
     const PORT = await getPort()
     await app.listen(PORT)
-    await fetch(`http://localhost:${PORT}`).then((x) => {
-      expect(x.headers.get('content-length')).toEqual(expectedBody.length.toString())
+    await fetch(`http://localhost:${PORT}`).then(async (x) => {
+      const text = await x.text()
+      expect(text.length).toEqual(17)
+      expect(x.headers.get('content-length')).toEqual(Buffer.byteLength(expectedBody).toString())
       expect(x.headers.get('content-type')).toEqual('application/json')
-      return x.json()
     })
     await new Promise((r) => setTimeout(r, 2000))
     expect(events).toEqual(['response-finished', 'request-finished'])
