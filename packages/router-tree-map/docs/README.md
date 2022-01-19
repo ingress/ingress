@@ -12,4 +12,4 @@ This is a port of the [go httprouter implementation by Julien Schmidt](https://g
 
 ## API
 
-See the [docs](https://github.com/ingress/ingress/tree/dev/modules/router-tree-map/docs)
+See the [docs](https://github.com/ingress/ingress/tree/dev/packages/router-tree-map/docs)

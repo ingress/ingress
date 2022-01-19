@@ -1,7 +1,14 @@
 {
   "name": "router-tree-map",
   "version": "0.0.3",
-  "keywords": ["radix", "trie", "tree", "router", "path", "http route"],
+  "keywords": [
+    "radix",
+    "trie",
+    "tree",
+    "router",
+    "path",
+    "http route"
+  ],
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
   "description": "A radix tree map-like structure for /route/:like/keys and values",

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ingress/ingress/HEAD/modules/ingress/logo.png" width="400" max-width="90%" alt="ingress" />
+  <img src="https://raw.githubusercontent.com/ingress/ingress/HEAD/packages/ingress/logo.png" width="400" max-width="90%" alt="ingress" />
 </p>
 <p align="center">
 install: <code>npm i ingress</code><br><br>a utility for building applications using typescript and node.js<br>
