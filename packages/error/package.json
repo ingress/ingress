@@ -1,6 +1,6 @@
 {
   "name": "@ingress/error",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "MIT",
   "type": "commonjs",
   "main": "./lib/cjs/errors.js",
@@ -32,7 +32,7 @@
     "node-arg": "--require=ts-node/register"
   },
   "dependencies": {
-    "@ingress/http-status": "^3.0.0-alpha.4"
+    "@ingress/http-status": "^3.0.0-alpha.6"
   },
   "gitHead": "53a98ec5de237c53c6106b255b92a2ff4af68fee"
 }

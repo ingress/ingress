@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0-alpha.6](https://me.github.com/ingress/ingress/compare/@ingress/http-status@3.0.0-alpha.4...@ingress/http-status@3.0.0-alpha.6) (2022-01-20)
+
+**Note:** Version bump only for package @ingress/http-status
+
+
+
+
+
 # [3.0.0-alpha.4](https://me.github.com/ingress/ingress/compare/@ingress/http-status@3.0.0-alpha.3...@ingress/http-status@3.0.0-alpha.4) (2022-01-20)
 
 

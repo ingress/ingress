@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0-alpha.10](https://github.com/ingress/ingress/compare/ingress@5.0.0-alpha.8...ingress@5.0.0-alpha.10) (2022-01-20)
+
+**Note:** Version bump only for package ingress
+
+
+
+
+
 # [5.0.0-alpha.8](https://github.com/ingress/ingress/compare/ingress@5.0.0-alpha.7...ingress@5.0.0-alpha.8) (2022-01-20)
 
 
