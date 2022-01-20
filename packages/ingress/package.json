@@ -1,6 +1,6 @@
 {
   "name": "ingress",
-  "version": "5.0.0-alpha.8",
+  "version": "5.0.0-alpha.9",
   "description": "Composable nodejs applications",
   "type": "module",
   "main": "./lib/cjs/main.js",
@@ -99,5 +99,5 @@
     "ts-jest": "^27.0.3",
     "typescript": "^4.3.5"
   },
-  "gitHead": "6296e5f924b953795fd7572963184bc8b6479c71"
+  "gitHead": "53a98ec5de237c53c6106b255b92a2ff4af68fee"
 }

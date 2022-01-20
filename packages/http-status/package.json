@@ -1,6 +1,6 @@
 {
   "name": "@ingress/http-status",
-  "version": "3.0.0-alpha.4",
+  "version": "3.0.0-alpha.5",
   "description": "Heavily status code accessor rendered from node's http#STATUS_CODES constant",
   "main": "lib/cjs/status-codes.js",
   "type": "commonjs",
@@ -28,5 +28,5 @@
   "keywords": [],
   "author": "Caleb Boyd <caleb.boyd@hotmail.com>",
   "license": "MIT",
-  "gitHead": "6296e5f924b953795fd7572963184bc8b6479c71"
+  "gitHead": "53a98ec5de237c53c6106b255b92a2ff4af68fee"
 }

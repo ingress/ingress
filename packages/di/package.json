@@ -1,6 +1,6 @@
 {
   "name": "@ingress/di",
-  "version": "3.0.0-alpha.3",
+  "version": "3.0.0-alpha.4",
   "description": "Server-side dependency injection for ingress",
   "type": "commonjs",
   "main": "./lib/cjs/index.js",
@@ -54,5 +54,5 @@
     "injection-js": "^2.4.0",
     "tslib": "^2.3.0"
   },
-  "gitHead": "6296e5f924b953795fd7572963184bc8b6479c71"
+  "gitHead": "53a98ec5de237c53c6106b255b92a2ff4af68fee"
 }

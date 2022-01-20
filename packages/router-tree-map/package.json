@@ -1,6 +1,6 @@
 {
   "name": "router-tree-map",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "keywords": [
     "radix",
     "trie",
@@ -44,5 +44,6 @@
       "no-constant-condition": 0,
       "@typescript-eslint/no-this-alias": 0
     }
-  }
+  },
+  "gitHead": "53a98ec5de237c53c6106b255b92a2ff4af68fee"
 }
