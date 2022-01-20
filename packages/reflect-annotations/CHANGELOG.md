@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0-alpha.4](https://github.com/ingress/ingress/compare/reflect-annotations@4.0.0-alpha.3...reflect-annotations@4.0.0-alpha.4) (2022-01-20)
+
+
+### Features
+
+* scaffold router package ([#17](https://github.com/ingress/ingress/issues/17)) ([f3108e6](https://github.com/ingress/ingress/commit/f3108e6a9fafb295f2d782733e5aeafaad29a5e3))
+
+
+
+
+
 # [4.0.0-alpha.3](https://github.com/ingress/ingress/compare/reflect-annotations@4.0.0-alpha.2...reflect-annotations@4.0.0-alpha.3) (2021-04-03)
 
 **Note:** Version bump only for package reflect-annotations

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0-alpha.8](https://github.com/ingress/ingress/compare/ingress@5.0.0-alpha.7...ingress@5.0.0-alpha.8) (2022-01-20)
+
+
+### Bug Fixes
+
+* identify variable json content types ([9c9c913](https://github.com/ingress/ingress/commit/9c9c9135afe0e2b617cc960b2e37935c972b049d))
+
+
+### Features
+
+* scaffold router package ([#17](https://github.com/ingress/ingress/issues/17)) ([f3108e6](https://github.com/ingress/ingress/commit/f3108e6a9fafb295f2d782733e5aeafaad29a5e3))
+
+
+
+
+
 # [5.0.0-alpha.7](https://github.com/ingress/ingress/compare/ingress@5.0.0-alpha.6...ingress@5.0.0-alpha.7) (2021-04-03)
 
 
