@@ -30,7 +30,7 @@ export class ParseJsonAnnotation {
         if (!contentType && !contentLength && headers['transfer-encoding'] === void 0) {
           return next()
         }
-        if (contentType && ~contentType.indexOf('application/json')) {
+        if (contentType && contentType.startsWith('application/') && contentType.endsWith('json')) {
           return parseJsonReq(context, contentLength, next, options)
         }
       } else {
