@@ -1,6 +1,6 @@
 {
   "name": "@ingress/router",
-  "version": "0.1.0-alpha.4",
+  "version": "0.1.0-alpha.5",
   "keywords": [
     "radix",
     "trie",
@@ -41,11 +41,11 @@
     ]
   },
   "dependencies": {
-    "@ingress/error": "^0.1.5",
-    "@ingress/http-status": "^3.0.0-alpha.8",
+    "@ingress/error": "^0.1.7",
+    "@ingress/http-status": "^3.0.0-alpha.9",
     "app-builder": "^7.0.4",
-    "reflect-annotations": "^4.0.0-alpha.8",
-    "router-tree-map": "^0.1.4",
+    "reflect-annotations": "^4.0.0-alpha.9",
+    "router-tree-map": "^0.1.5",
     "secure-json-parse": "^2.4.0"
   },
   "gitHead": "1256d716c1ca480849f7579ca05f6116bfa77ce9"
