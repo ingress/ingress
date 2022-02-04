@@ -16,6 +16,10 @@
     },
     "./package.json": "./package.json"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ingress/ingress.git"
+  },
   "engines": {
     "npm": ">=7",
     "node": ">=14"
@@ -35,5 +39,5 @@
   "dependencies": {
     "@ingress/http-status": "^3.0.0-alpha.8"
   },
-  "gitHead": "ccf60e19d41030a2abb734b1dad2cf63c1606960"
+  "gitHead": "1256d716c1ca480849f7579ca05f6116bfa77ce9"
 }
