@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.3](https://me.github.com/ingress/ingress/compare/@ingress/error@0.1.2...@ingress/error@0.1.3) (2022-02-04)
+
+**Note:** Version bump only for package @ingress/error
+
+
+
+
+
 ## [0.1.2](https://me.github.com/ingress/ingress/compare/@ingress/error@0.1.0...@ingress/error@0.1.2) (2022-01-20)
 
 **Note:** Version bump only for package @ingress/error

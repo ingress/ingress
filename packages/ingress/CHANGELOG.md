@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0-alpha.11](https://github.com/ingress/ingress/compare/ingress@5.0.0-alpha.10...ingress@5.0.0-alpha.11) (2022-02-04)
+
+
+### Bug Fixes
+
+* handle extraneous charset on json contentTypes ([324b209](https://github.com/ingress/ingress/commit/324b209e79803e4f6b553274daaefa19e4c144f7))
+
+
+
+
+
 # [5.0.0-alpha.10](https://github.com/ingress/ingress/compare/ingress@5.0.0-alpha.8...ingress@5.0.0-alpha.10) (2022-01-20)
 
 **Note:** Version bump only for package ingress

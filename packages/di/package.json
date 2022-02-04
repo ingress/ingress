@@ -1,6 +1,6 @@
 {
   "name": "@ingress/di",
-  "version": "3.0.0-alpha.5",
+  "version": "3.0.0-alpha.6",
   "description": "Server-side dependency injection for ingress",
   "type": "commonjs",
   "main": "./lib/cjs/index.js",

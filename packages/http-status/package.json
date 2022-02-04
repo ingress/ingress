@@ -1,6 +1,6 @@
 {
   "name": "@ingress/http-status",
-  "version": "3.0.0-alpha.6",
+  "version": "3.0.0-alpha.7",
   "description": "Heavily status code accessor rendered from node's http#STATUS_CODES constant",
   "main": "lib/cjs/status-codes.js",
   "type": "commonjs",
