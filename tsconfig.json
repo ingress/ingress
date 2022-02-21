@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "strict": true,
-    "target": "es2018",
-    "module": "esnext",
+    "target": "es2020",
+    "module": "EsNext",
     "moduleResolution": "node",
     "lib": ["dom", "dom.iterable", "es2020"],
     "declaration": true,
@@ -23,5 +23,9 @@
   "exclude": [
     "**/node_modules",
     "**/.*/"
-  ]
+  ],
+  // "ts-node": {
+  //   "transpileOnly": true,
+  //   "transpiler": "ts-node/transpilers/swc-experimental"
+  // },
 }
