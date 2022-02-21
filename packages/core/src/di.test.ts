@@ -1,14 +1,9 @@
-import t from 'tap'
+import { test } from 'uvu'
+import * as t from 'uvu/assert'
 import 'reflect-metadata'
-import createContainer, {
-  Container,
-  Injector,
-  ReflectiveInjector,
-  ContextToken,
-  Injectable,
-} from './index.js'
+import createContainer, { ModuleContainer, Injector, ContextToken, Injectable } from './index.js'
 
-t.ok(typeof Injector === 'function')
+t.ok(typeof Injectable === 'function')
 
 const mockApp = {
     use: () => void 0,
@@ -17,17 +12,16 @@ const mockApp = {
     void 0
   }
 
-t.test('context token', (t) => {
-  const container = new Container()
+test('context token', () => {
+  const container = new ModuleContainer()
   container.start(mockApp, void 0 as any)
   const context: { scope: Injector } = {} as any
   container.middleware(context, noop)
   t.ok(context.scope.get(ContextToken) === context)
-  t.end()
 })
 
-t.test('child container', (t) => {
-  const container = new Container()
+test('child container', () => {
+  const container = new ModuleContainer()
   class Service {
     someProp = 'hello'
   }
@@ -36,11 +30,10 @@ t.test('child container', (t) => {
   const child = container.createChildWithContext({}),
     service = child.get(Service)
   t.equal(service.someProp, 'hello')
-  t.end()
 })
 
-t.test('init', async (t) => {
-  const container = new Container(),
+test('init', async () => {
+  const container = new ModuleContainer(),
     ctx = {} as any
   container.initContext(ctx)
   t.equal(ctx.scope, null)
@@ -48,26 +41,24 @@ t.test('init', async (t) => {
   class A {}
   @Injectable()
   class B {}
-  container.registerProvider(A)
-  container.registerSingletonProvider(B)
+  container.registerScoped(A)
+  container.registerSingleton(B)
   t.throws(() => container.get(B))
   await container.start(mockApp, () => Promise.resolve())
   t.ok(container.get(B) instanceof B)
   const child = container.createChildWithContext({})
   t.ok(child.get(A) instanceof A)
-  t.throws(() => container.registerProvider(A))
-  t.throws(() => container.registerSingletonProvider(B))
+  t.throws(() => container.registerScoped(A))
+  t.throws(() => container.registerSingleton(B))
 })
 
-t.test('DI', (t) => {
+test('DI', () => {
   @Injectable()
   class TestA {
     public a = Math.random()
   }
 
-  class Context {
-    scope: Injector = ReflectiveInjector.resolveAndCreate([])
-  }
+  class Context {}
 
   const container = createContainer({
       contextToken: Context,
@@ -100,8 +91,8 @@ t.test('DI', (t) => {
     constructor(public testC: TestC, public testB: TestB) {}
   }
   let singletonUsed = false
-  const context1 = new Context(),
-    context2 = new Context(),
+  const context1 = new Context() as { scope: Injector },
+    context2 = new Context() as { scope: Injector },
     middleware = container.middleware
   container.start(
     {
@@ -140,11 +131,13 @@ t.test('DI', (t) => {
     c = container.get(TestC)
   t.equal(fact.c, c)
 
-  //Should compile
   const testB = container.get(TestB)
-  void testB.testA
+  t.ok(testB instanceof TestB)
+  t.ok(testB.testA instanceof TestA)
+  let called2 = false
 
   middleware(context2, () => {
+    called2 = true
     t.ok(context2.scope !== context1.scope, 'Expected subsequent contexts to not be equal')
 
     t.ok(expectedSingleton === context2.scope.get(TestC), 'Expected TestC to be a singleton')
@@ -160,6 +153,7 @@ t.test('DI', (t) => {
     )
   })
 
-  t.ok(called)
-  t.end()
+  t.ok(called && called2)
 })
+
+test.run()

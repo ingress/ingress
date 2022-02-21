@@ -4,6 +4,8 @@
     "module": "commonjs",
     "outDir": "./lib/cjs",
     "lib": ["ES2020"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "exclude": ["node_modules"],
   "include": ["src/**/*.ts"]

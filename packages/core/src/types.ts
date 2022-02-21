@@ -1,6 +1,6 @@
 import type { Ingress, Middleware } from './core.js'
 import type { Annotation, AnnotationFactory } from 'reflect-annotations'
-import type { ContainerContext } from '@ingress/di'
+import type { ModuleContainerContext } from './di.js'
 
 export type Func<T = any> = (...args: any[]) => T
 
@@ -13,21 +13,29 @@ export enum AppState {
    */
   New = 0,
   /**
-   * The App is initializing
-   */
-  Starting = 1,
-  /**
-   * The app is running
-   */
-  Started = 2,
-  /**
    * The app is stopping
    */
-  Stopping = 3,
+  Stopping = 1,
   /**
    * The App is stopped after having been started
    */
-  Stopped = 4,
+  Stopped = 2,
+  /**
+   * The App is initializing
+   */
+  Starting = 3,
+  /**
+   * The app is ready
+   */
+  Started = 4,
+  /**
+   * The app is ready
+   */
+  Ready = 4,
+  /**
+   * The app is running
+   */
+  Running = 5,
 }
 
 export type RequireAtLeastOne<T> = {
@@ -60,7 +68,7 @@ export type UsableType = RequireAtLeastOne<Usable>
 /**
  * @public
  */
-export type Addon<T extends ContainerContext> =
+export type Addon<T extends ModuleContainerContext> =
   | Annotation<UsableType>
   | AnnotationFactory<any>
   | UsableType

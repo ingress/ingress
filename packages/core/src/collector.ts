@@ -7,7 +7,7 @@ export interface Type<T> {
   new (...args: any[]): T
 }
 
-export type Func<T = any> = (...args: any[]) => T
+export type Func<T = any, Args extends any[] = any[]> = (...args: Args) => T
 export interface DependencyCollector {
   (opts?: FactoryOptions): ClassDecorator
   (target: any): void

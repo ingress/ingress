@@ -1,7 +1,8 @@
 import { compose, Middleware, exec } from './core.js'
-import t from 'tap'
+import { test } from 'uvu'
+import * as t from 'uvu/assert'
 
-t.test('can short circuit', async (t) => {
+test('can short circuit', async () => {
   const m = { count: 0 }
   await compose(
     async (x: any) => {
@@ -12,10 +13,9 @@ t.test('can short circuit', async (t) => {
     }
   )(m)
   t.equal(m.count, 1)
-  t.end()
 })
 
-t.test('works', async (t) => {
+test('works', async () => {
   let str = ''
   await compose(
     async (x: any, next: any) => {
@@ -29,10 +29,9 @@ t.test('works', async (t) => {
     }
   )({})
   t.equal(str, '123')
-  t.end()
 })
 
-t.test('can run concurrently', async (t) => {
+test('can run concurrently', async () => {
   let first = true
   const composed = compose(async (x: any, next: any) => {
     if (first) {
@@ -42,10 +41,9 @@ t.test('can run concurrently', async (t) => {
     await next()
   })
   await Promise.all([composed(), composed()])
-  t.end()
 })
 
-t.test('is valid middleware', async (t) => {
+test('is valid middleware', async () => {
   const context = { str: '' },
     func = compose<typeof context>([
       async function (ctx, next) {
@@ -66,15 +64,13 @@ t.test('is valid middleware', async (t) => {
   })
 
   t.equal(context.str, '12345')
-  t.end()
 })
 
-t.test('errors', (t) => {
+test('errors', () => {
   t.throws(() => compose('a' as any))
-  t.end()
 })
 
-t.test('propagates errors from middleware', async (t) => {
+test('propagates errors from middleware', async () => {
   const someError = new Error(Math.random().toString())
   function doThrow() {
     throw someError
@@ -90,10 +86,9 @@ t.test('propagates errors from middleware', async (t) => {
     t.equal(error, someError)
   }
   t.ok(didError)
-  t.end()
 })
 
-t.test('exec', async (t) => {
+test('exec', async () => {
   const mws: Middleware<any>[] = [
       async (ctx, next) => {
         ctx.value += 1
@@ -116,7 +111,8 @@ t.test('exec', async (t) => {
       ctx.value += 'L'
       return next()
     }
-  await exec(ctx, mws, last)
+  await exec(mws, ctx, last)
   t.equal(ctx.value, '123L456')
-  t.end()
 })
+
+test.run()
