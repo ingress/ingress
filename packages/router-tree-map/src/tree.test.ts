@@ -1,12 +1,11 @@
-import t from 'tap'
+import * as t from 'uvu/assert'
+import { test } from 'uvu'
 import { TreeNode, Router } from './tree.js'
 
-type Test = Omit<typeof t, 'mocha' | 'mochaGlobals' | 'Test'>
-
-function checkPriorities(t: Test, n: any) {
+function checkPriorities(n: any) {
   let priority = 0
   n.children.forEach((x: any, i: number) => {
-    priority += checkPriorities(t, n.children[i])
+    priority += checkPriorities(n.children[i])
   })
   if (n.handle !== null) {
     priority++
@@ -20,7 +19,7 @@ function checkPriorities(t: Test, n: any) {
   return priority
 }
 
-function testRoutes(t: Test, routes: [string, boolean][]) {
+function testRoutes(routes: [string, boolean][]) {
   const tree = new TreeNode<any>()
   for (const [route, conflict] of routes) {
     let err: Error | null = null
@@ -32,7 +31,7 @@ function testRoutes(t: Test, routes: [string, boolean][]) {
     if (conflict) {
       t.ok(err, `no error for conflicting route ${route}`)
     } else {
-      t.notOk(err, `unexpected error for route ${route}: ${err?.message}`)
+      t.not.ok(err, `unexpected error for route ${route}: ${err?.message}`)
     }
   }
 }
@@ -42,14 +41,13 @@ function fakeHandler<T>(arg: T) {
 }
 
 function checkRequests(
-  t: Test,
   tree: TreeNode<any>,
   requests: [string, boolean, string, [string, string][] | null][]
 ) {
   for (const [path, noHandle, route, expectedParams] of requests) {
     const value = tree.get(path)
     if (noHandle) {
-      t.notOk(value.handle, `Expected null handle but got ${value.handle} for '${path}'`)
+      t.not.ok(value.handle, `Expected null handle but got ${value.handle} for '${path}'`)
     } else {
       const val = value.handle()
       t.equal(
@@ -59,12 +57,12 @@ function checkRequests(
       )
     }
     if (expectedParams) {
-      t.same(value.params, expectedParams, 'Expected the correct params')
+      t.equal(value.params, expectedParams, 'Expected the correct params')
     }
   }
 }
 
-t.test('set and get', (t) => {
+test('set and get', () => {
   const map = new TreeNode()
   ;[
     '/hi',
@@ -79,7 +77,7 @@ t.test('set and get', (t) => {
     '/α',
     '/β',
   ].forEach((x) => map.set(x, fakeHandler(x)))
-  checkRequests(t, map, [
+  checkRequests(map, [
     ['/hello', true, '', null],
     ['/a', false, '/a', null],
     ['/', true, '', null],
@@ -93,11 +91,10 @@ t.test('set and get', (t) => {
     ['/α', false, '/α', null],
     ['/β', false, '/β', null],
   ])
-  checkPriorities(t, map)
-  t.end()
+  checkPriorities(map)
 })
 
-t.test('wildcard routes', (t) => {
+test('wildcard routes', () => {
   const map = new TreeNode()
   ;[
     '/',
@@ -118,9 +115,9 @@ t.test('wildcard routes', (t) => {
     '/info/:user/project/:project',
   ].forEach((x) => map.set(x, fakeHandler(x)))
 
-  checkPriorities(t, map)
+  checkPriorities(map)
 
-  checkRequests(t, map, [
+  checkRequests(map, [
     ['/', false, '/', null],
     ['/cmd/test', true, '/cmd/:tool/', [['tool', 'test']]],
     ['/cmd/test/', false, '/cmd/:tool/', [['tool', 'test']]],
@@ -164,11 +161,10 @@ t.test('wildcard routes', (t) => {
       ],
     ],
   ])
-  t.end()
 })
 
-t.test('wildcard conflict', (t) => {
-  testRoutes(t, [
+test('wildcard conflict', () => {
+  testRoutes([
     ['/cmd/:tool/:sub', false],
     ['/cmd/vet', false],
     ['/foo/bar', false],
@@ -196,53 +192,44 @@ t.test('wildcard conflict', (t) => {
     ['/id:id', false],
     ['/id/:id', false],
   ])
-  t.end()
 })
 
-t.test('Invalid node type', (t) => {
+test('Invalid node type', () => {
   const map = new TreeNode()
   map.set('/', fakeHandler('/'))
   map.set('/:page', fakeHandler('/:page'))
   ;(map as any).children[0].type = 42
   t.throws(() => map.get('/test'))
-  t.end()
 })
 
-t.test('Invalid wildcards', (t) => {
-  testRoutes(t, [
+test('Invalid wildcards', () => {
+  testRoutes([
     ['/non-leading-*wild', true],
     ['/*wild/static', true],
     ['/*wild:withbadchar', true],
   ])
-  t.end()
 })
 
-t.test('Method Router', (t) => {
-  t.test('path registration', (t) => {
-    const router = new Router(),
-      handle = {}
-    router.on('GET', '/some/:path', handle)
-    const result = router.find('GET', '/some/thing')
-    t.equal(result?.handle, handle)
-    t.end()
-  })
-  t.test('throws on invalid input', (t) => {
-    const router = new Router(),
-      handle = {}
-    t.throws(() => router.on(Math.random().toString() as any, '/some/:path', handle))
-    t.throws(() => router.on('GET', 'un-prefixed/route', handle))
-    t.end()
-  })
-  t.test('no registered method/route', (t) => {
-    const router = new Router(),
-      result = router.find('GET', '/some/path')
-    t.same(result, { handle: null, params: [] })
-    t.end()
-  })
-  t.end()
+test('path registration', () => {
+  const router = new Router(),
+    handle = {}
+  router.on('GET', '/some/:path', handle)
+  const result = router.find('GET', '/some/thing')
+  t.equal(result?.handle, handle)
+})
+test('throws on invalid input', () => {
+  const router = new Router(),
+    handle = {}
+  t.throws(() => router.on(Math.random().toString() as any, '/some/:path', handle))
+  t.throws(() => router.on('GET', 'un-prefixed/route', handle))
+})
+test('no registered method/route', () => {
+  const router = new Router(),
+    result = router.find('GET', '/some/path')
+  t.equal(result, { handle: null, params: [] })
 })
 
-t.test('tree child conflict', (t) => {
+test('tree child conflict', () => {
   const routes = [
     ['/cmd/vet', false],
     ['/cmd/:tool', false],
@@ -258,92 +245,89 @@ t.test('tree child conflict', (t) => {
     ['/:id', false],
     ['/*filepath', true],
   ] as [string, boolean][]
-  testRoutes(t, routes)
-  t.end()
+  testRoutes(routes)
 })
 
-t.test('duplicate path', (t) => {
+test('duplicate path', () => {
   const map = new TreeNode(),
     routes = ['/', '/doc/', '/src/*filepath', '/search/:query', '/user_:name'],
     add = (handler: any) => routes.forEach((x) => map.set(x, handler))
   add({})
   t.throws(() => add(null))
-  t.end()
 })
 
-t.test('unnamed wildcard', (t) => {
+test('unnamed wildcard', () => {
   const map = new TreeNode()
   t.throws(() => map.set('/not-named/*', null))
-  t.end()
 })
 
-t.test('unimplemented', (t) => {
-  t.skip('unescaped params', (t) => {
-    const map = new TreeNode(),
-      routes = [
-        '/',
-        '/cmd/:tool/:sub',
-        '/cmd/:tool/',
-        '/src/*filepath',
-        '/search/:query',
-        '/files/:dir/*filepath',
-        '/info/:user/project/:project',
-        '/info/:user',
-      ]
-    for (const route of routes) {
-      map.set(route, {})
-    }
-    const input = [
-      ['/', false, '/', null],
-      ['/cmd/test/', false, '/cmd/:tool/', [['tool', 'test']]],
-      ['/cmd/test', true, '', [['tool', 'test']]],
-      ['/src/some/file.png', false, '/src/*filepath', [['filepath', '/some/file.png']]],
-      ['/src/some/file+test.png', false, '/src/*filepath', [['filepath', '/some/file test.png']]],
-      [
-        '/src/some/file++++%%%%test.png',
-        false,
-        '/src/*filepath',
-        [['filepath', '/some/file++++%%%%test.png']],
-      ],
-      ['/src/some/file%2Ftest.png', false, '/src/*filepath', [['filepath', '/some/file/test.png']]],
-      [
-        '/search/someth!ng+in+ünìcodé',
-        false,
-        '/search/:query',
-        [['query', 'someth!ng in ünìcodé']],
-      ],
-      [
-        '/info/gordon/project/go',
-        false,
-        '/info/:user/project/:project',
-        [
-          ['user', 'gordon'],
-          ['project', 'go'],
-        ],
-      ],
-      ['/info/slash%2Fgordon', false, '/info/:user', [['user', 'slash/gordon']]],
-      [
-        '/info/slash%2Fgordon/project/Project%20%231',
-        false,
-        '/info/:user/project/:project',
-        [
-          ['user', 'slash/gordon'],
-          ['project', 'Project #1'],
-        ],
-      ],
-      ['/info/slash%%%%', false, '/info/:user', [['user', 'slash%%%%']]],
-      [
-        '/info/slash%%%%2Fgordon/project/Project%%%%20%231',
-        false,
-        '/info/:user/project/:project',
-        [
-          ['user', 'slash%%%%2Fgordon'],
-          ['project', 'Project%%%%20%231'],
-        ],
-      ],
-    ]
-    void input
-    t.end()
-  })
-  t.end()
-})
+// test('unimplemented', () => {
+//   test('unescaped params', () => {
+//     const map = new TreeNode(),
+//       routes = [
+//         '/',
+//         '/cmd/:tool/:sub',
+//         '/cmd/:tool/',
+//         '/src/*filepath',
+//         '/search/:query',
+//         '/files/:dir/*filepath',
+//         '/info/:user/project/:project',
+//         '/info/:user',
+//       ]
+//     for (const route of routes) {
+//       map.set(route, {})
+//     }
+//     const input = [
+//       ['/', false, '/', null],
+//       ['/cmd/test/', false, '/cmd/:tool/', [['tool', 'test']]],
+//       ['/cmd/test', true, '', [['tool', 'test']]],
+//       ['/src/some/file.png', false, '/src/*filepath', [['filepath', '/some/file.png']]],
+//       ['/src/some/file+test.png', false, '/src/*filepath', [['filepath', '/some/file test.png']]],
+//       [
+//         '/src/some/file++++%%%%test.png',
+//         false,
+//         '/src/*filepath',
+//         [['filepath', '/some/file++++%%%%test.png']],
+//       ],
+//       ['/src/some/file%2Ftest.png', false, '/src/*filepath', [['filepath', '/some/file/test.png']]],
+//       [
+//         '/search/someth!ng+in+ünìcodé',
+//         false,
+//         '/search/:query',
+//         [['query', 'someth!ng in ünìcodé']],
+//       ],
+//       [
+//         '/info/gordon/project/go',
+//         false,
+//         '/info/:user/project/:project',
+//         [
+//           ['user', 'gordon'],
+//           ['project', 'go'],
+//         ],
+//       ],
+//       ['/info/slash%2Fgordon', false, '/info/:user', [['user', 'slash/gordon']]],
+//       [
+//         '/info/slash%2Fgordon/project/Project%20%231',
+//         false,
+//         '/info/:user/project/:project',
+//         [
+//           ['user', 'slash/gordon'],
+//           ['project', 'Project #1'],
+//         ],
+//       ],
+//       ['/info/slash%%%%', false, '/info/:user', [['user', 'slash%%%%']]],
+//       [
+//         '/info/slash%%%%2Fgordon/project/Project%%%%20%231',
+//         false,
+//         '/info/:user/project/:project',
+//         [
+//           ['user', 'slash%%%%2Fgordon'],
+//           ['project', 'Project%%%%20%231'],
+//         ],
+//       ],
+//     ]
+//     void input
+//   })
+// })
+
+test.run()

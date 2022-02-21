@@ -158,7 +158,9 @@ export class TreeNode<T> {
           // Wildcard conflict
           let pathSeg = path
           if (n.type !== SegmentType.CatchAll) {
-            pathSeg = path.split('/')[0]
+            const idx = path.indexOf('/')
+            if (idx === -1) pathSeg = path
+            else pathSeg = path.substring(0, idx)
           }
           const prefix = fullPath.slice(0, fullPath.indexOf(pathSeg)) + n.path
           throw new Error(

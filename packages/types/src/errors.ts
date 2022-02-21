@@ -9,6 +9,12 @@ export const ING_BAD_REQUEST = createErrorType('IngBadRequest', {
   statusCode: StatusCode.BadRequest,
 })
 
+export const ING_NO_SERIALIZER = createErrorType('IngNoSerializer', {
+  code: 'ING_NO_SERIALIZER',
+  message: 'No serializer found for the specified Content-Type',
+  statusCode: StatusCode.InternalServerError,
+})
+
 export const ING_CONTENT_LENGTH_MISMATCH = createErrorType('IngContentLengthMisMatch', {
   code: 'ING_CONTENT_LENGTH_MISMATCH',
   message: 'Body did not have the expected Content-Length',
