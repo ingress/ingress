@@ -21,11 +21,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Install
-        run: npm i -g npm@7 && npm ci
+        run: npm i -g npm@8 && npm ci
       - name: Check Commits
         run: npm run commitlint
       - name: Build
-        run: npm run build -w @ingress/http-status -w @ingress/error && npm run build
+        run: npm run build
       - name: Test
         env:
           TS_NODE_TRY_TS_EXT: true
