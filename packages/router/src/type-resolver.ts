@@ -3,18 +3,18 @@ export interface Type<T> {
   new (...args: any[]): T
 }
 export type Func<T = any> = (...args: any[]) => T
-import { ING_BAD_REQUEST } from '@ingress/error'
+import { ING_BAD_REQUEST } from '@ingress/types'
 
 export class TypeResolver {
   public types = new Map<Type<any>, Func>(defaultResolvers.map((x) => [x.type, x.convert]))
   public predicates: Array<[Func<boolean>, Func]> = []
 
-  registerTypeResolver(type: Type<any>, resolver: Func): this {
+  register(type: Type<any>, resolver: Func): this {
     this.types.set(type, resolver)
     return this
   }
 
-  registerTypePredicateResolver(predicate: Func<boolean>, resolver: Func): this {
+  registerPredicate(predicate: Func<boolean>, resolver: Func): this {
     this.predicates.push([predicate, resolver])
     return this
   }

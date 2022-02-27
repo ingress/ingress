@@ -1,54 +1,44 @@
-import { compose, Middleware } from 'app-builder'
+import { compose, Middleware } from '@ingress/core'
 import { Func, TypeResolver } from './type-resolver.js'
 import type { RouteMetadata } from './route-resolve.js'
 import type { RouterContext } from './router.js'
 
-type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>
-
 function isPrimitive(value: any) {
   return (typeof value !== 'object' && typeof value !== 'function') || value === null
 }
-
-export type RouteResolveMetadata = Optional<
-  RouteMetadata,
-  'methodAnnotations' | 'classAnnotations' | 'types' | 'parameterAnnotations'
->
 
 enum MiddlewarePriority {
   'BeforeBodyParser' = 'BeforeBodyParser',
 }
 
 export function defaultParser(context: RouterContext, next: () => Promise<any>): Promise<any> {
-  return context.parse({ mode: 'auto' }).then((x: any) => {
+  return context.request.parse({ mode: 'json' }).then((x: any) => {
     //eslint-disable-next-line
-    context.route!.body = x
+    context.request.body = x
     return next()
   })
 }
 
 export function resolveRouteMiddleware<T>(
-  route: RouteResolveMetadata,
+  route: RouteMetadata,
   typeResolver = new TypeResolver()
 ): Middleware<T> {
-  const method = route.parent.prototype[route.name],
-    createController = (context: any) => context.scope.get(route.parent),
+  const method = route.controller.prototype[route.name],
+    createController = (context: any) => context.scope.get(route.controller),
     resolveArgs = createParamsResolver(route, typeResolver)
 
-  return (context: any, next: any) => {
+  return (context: any, _next: any) => {
     const controller = createController(context),
-      args = resolveArgs(context),
-      setBody = (body: any) => {
-        context.body = body
-        return next()
-      }
+      args = resolveArgs(context)
+
     if ('then' in args) {
-      return args.then((resolvedArgs) => method.apply(controller, resolvedArgs)).then(setBody)
+      return args.then((resolvedArgs) => method.apply(controller, resolvedArgs)).then(context.send)
     }
-    return Promise.resolve(method.apply(controller, args)).then(setBody)
+    return method.apply(controller, args)
   }
 }
 
-const pickRequest = (context: any) => context.req
+const pickRequest = (context: any) => context.request
 
 /**
  * Get a function that resolves route parameter metadata to arguments for the route
@@ -56,7 +46,7 @@ const pickRequest = (context: any) => context.req
  * @param typeResolver
  * @returns a function that resolves arguments for the route
  */
-function createParamsResolver(route: RouteResolveMetadata, typeResolver: TypeResolver) {
+function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) {
   const paramLength = Math.max(
       route.types?.parameters?.length ?? 0,
       route.parameterAnnotations?.length ?? 0
@@ -76,7 +66,7 @@ function createParamsResolver(route: RouteResolveMetadata, typeResolver: TypeRes
     if (URLSearchParams === type) {
       resolvers.push((context: RouterContext) => {
         //eslint-disable-next-line
-        return context.route!.searchParams
+        return context.request.searchParams
       })
       continue
     }
@@ -92,13 +82,13 @@ function createParamsResolver(route: RouteResolveMetadata, typeResolver: TypeRes
     }
     if (!resolver) {
       throw new Error(
-        `No type converter found for: ${route.parent.name}.${route.name} at argument ${i}:${type.name}`
+        `No type converter found for: ${route.controller.name}.${route.name} at argument ${i}:${type.name}`
       )
     }
   }
 
   //hot path ...generate function?
-  return function paramResolver(context: any) {
+  return function paramResolver(context: any): any[] | Promise<any[]> {
     const args = [],
       l = resolvers.length
     let isAsync = false
@@ -121,7 +111,9 @@ function isRegularMiddleware(x: any) {
 }
 
 function resolvePreRouteMiddleware<T>(route: RouteMetadata): Array<Middleware<T>> {
-  const routeAnnotations = route.classAnnotations.concat(route.methodAnnotations),
+  const routeAnnotations = (route.controllerAnnotations ?? []).concat(
+      route.methodAnnotations ?? []
+    ),
     earlyMiddleware = routeAnnotations
       .filter((x) => x.middlewarePriority === MiddlewarePriority.BeforeBodyParser)
       .map((x) => x.middleware),

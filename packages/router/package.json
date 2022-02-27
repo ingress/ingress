@@ -30,24 +30,19 @@
   ],
   "scripts": {
     "docs": "typedoc src/router.ts --excludePrivate",
-    "test": "tap",
-    "build:esm": "tsc --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
-    "build": "shx rm -rf lib && npm run build:esm && tsc"
-  },
-  "tap": {
-    "test-regex": "src/(?!.*\\.util).*test\\.ts",
-    "node-arg": [
-      "--require=ts-node/register",
-      "--require=reflect-metadata"
-    ]
+    "build:esm": "tsc --sourceRoot \"$(pwd)/src\" --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
+    "build": "shx rm -rf lib && tsc --sourceRoot \"$(pwd)/src\" && npm run build:esm"
   },
   "dependencies": {
-    "@ingress/http-status": "3.0.0-alpha.3",
     "@ingress/core": "1.0.0-rc.1",
-    "@ingress/error": "0.0.1",
-    "reflect-annotations": "4.0.0-alpha.3",
-    "router-tree-map": "^0.0.3",
+    "@ingress/types": "0.0.1",
+    "reflect-annotations": "4.0.0-alpha.6",
+    "router-tree-map": "^0.1.2",
     "secure-json-parse": "^2.4.0"
   },
-  "gitHead": "4bc0a9eb661fce02765d56efdc84f8d1a10a01ec"
+  "devDependencies": {
+    "@hapi/shot": "^5.0.5",
+    "@ingress/http": "0.0.1-alpha.0",
+    "@types/hapi__shot": "^4.1.2"
+  }
 }

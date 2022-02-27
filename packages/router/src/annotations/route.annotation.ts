@@ -67,7 +67,9 @@ export interface ParamAnnotationBase {
 export class BodyParamAnnotation implements ParamAnnotationBase {
   constructor(private keyName?: string) {}
   extractValue(context: RouterContext): any {
-    return this.keyName ? context.route?.body[this.keyName] : context.route?.body
+    return this.keyName
+      ? context.request.body && (context.request.body as any)[this.keyName]
+      : context.request.body
   }
 }
 
@@ -96,7 +98,7 @@ export class PathParamAnnotation implements ParamAnnotationBase {
 export class QueryParamAnnotation implements ParamAnnotationBase {
   constructor(private searchParam: string) {}
   extractValue(context: RouterContext): any {
-    return context.route?.searchParams.get(this.searchParam)
+    return context.request?.searchParams.get(this.searchParam)
   }
 }
 
@@ -106,7 +108,7 @@ export class QueryParamAnnotation implements ParamAnnotationBase {
 export class HeaderParamAnnotation implements ParamAnnotationBase {
   constructor(private paramName: string) {}
   extractValue(context: RouterContext): any {
-    return context.req.headers[this.paramName]
+    return context.request.headers[this.paramName.toLowerCase()]
   }
 }
 
@@ -178,7 +180,7 @@ export interface Route extends PathFactoryAnnotation {
    */
   Body: ParamAnnotationFactory
   /**
-   * Extract the path parameters, or specific paramter to the decorated argument
+   * Extract the path parameters, or specific parameter to the decorated argument
    */
   Path: ParamAnnotationFactory
   /**

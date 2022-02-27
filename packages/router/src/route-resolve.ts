@@ -1,8 +1,18 @@
 import { RouteAnnotation } from './annotations/route.annotation.js'
-import type { AnnotatedPropertyDescription } from 'reflect-annotations'
 import type { HttpMethod } from 'router-tree-map'
+import type { Type } from '@ingress/core'
 
-export type RouteMetadata = Omit<AnnotatedPropertyDescription, 'declaredOrder'>
+export type RouteMetadata = {
+  controller: Type<any>
+  name: string
+  controllerAnnotations?: Array<any>
+  methodAnnotations?: Array<any>
+  parameterAnnotations?: Array<any>
+  types?: {
+    parameters?: any[]
+    return?: any
+  }
+}
 export type PathMap = { [key in HttpMethod]: string[] }
 
 function isRouteAnnotation(x: any): x is RouteAnnotation {
@@ -15,13 +25,13 @@ function isRouteAnnotation(x: any): x is RouteAnnotation {
  * @param baseUrl
  */
 export function resolvePaths(route: RouteMetadata, baseUrl = '/'): PathMap {
-  const parents = route.classAnnotations.filter(isRouteAnnotation),
-    children = route.methodAnnotations.filter(isRouteAnnotation),
+  const parents = route.controllerAnnotations?.filter(isRouteAnnotation) ?? [],
+    children = route.methodAnnotations?.filter(isRouteAnnotation) ?? [],
     paths = {} as PathMap
 
   let resolveFrom = '/'
   if (!children.length) {
-    throw new Error('Must provide at least one path')
+    throw new Error('Must provide at least one route with a method')
   }
   if (parents.length) {
     resolveFrom = baseUrl
@@ -32,11 +42,11 @@ export function resolvePaths(route: RouteMetadata, baseUrl = '/'): PathMap {
   for (const parent of parents) {
     for (const child of children) {
       if (!child.methods.length && !parent.methods.length) {
-        throw new Error(`${route.parent.name}.${route.name} has no Http Method defined`)
+        throw new Error(`${route.controller.name}.${route.name} has no Http Method defined`)
       }
       if (child.methods.length && parent.methods.length) {
         throw new Error(
-          `${route.parent.name}.${route.name} must provide Http Methods on the base OR sub route, but not both`
+          `${route.controller.name}.${route.name} must provide Http Methods on the base OR sub route, but not both`
         )
       }
       const methods = parent.methods.length ? parent.methods : child.methods,
