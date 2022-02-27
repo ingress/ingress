@@ -120,17 +120,22 @@ export class ModuleContainer implements Injector {
     if (next) {
       await next()
     }
+    //merge into parent container
     if (app && app.container) {
-      app.container.initWith(this)
+      app.container.setup(this)
+      if (app.container !== this) {
+        //remove sub-container initializers from the initContext pipeline.
+        app.unUse(this)
+      }
     } else {
-      this.initWith()
+      this.setup()
     }
     for (const forward of this.forwardRefCollector.items) {
       app.use(this.get(forward))
     }
   }
 
-  public initWith(container = this) {
+  public setup(container = this) {
     this.singletons = [
       ...new Set([
         ...this.singletons,
@@ -146,23 +151,16 @@ export class ModuleContainer implements Injector {
   }
 
   initContext(ctx: any): any {
-    ctx.scope ||= null
+    ctx.scope ||= this.createChildWithContext(ctx)
     return ctx
-  }
-
-  get middleware() {
-    return (context: { scope: Injector }, next: () => any): Promise<any> => {
-      context.scope ||= this.createChildWithContext(context)
-      return next()
-    }
   }
 
   public findRegisteredSingleton<T = any>(item: Type<T>): T | undefined {
     if (this.singletonCollector.items.has(item)) {
       return item as any as T
     }
-    const provider: ValueProvider | undefined = this.singletons.find((x) => {
-      ;('provide' in x && x.provide) === item
+    const provider: ValueProvider | undefined = this.singletons.find((x: any) => {
+      return x.provide === item
     }) as any
     return provider?.useValue
   }

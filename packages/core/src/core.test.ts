@@ -1,10 +1,10 @@
 import 'reflect-metadata'
-import createContainer, { ModuleContainer, Injectable } from './di.js'
+import createContainer, { Func, ModuleContainer, Injectable } from './di.js'
 import { createAnnotationFactory } from 'reflect-annotations'
 import { test } from 'uvu'
 import * as t from 'uvu/assert'
 import { Ingress, AppState, Middleware } from './core.js'
-import type { Func, Usable } from './types.js'
+import type { Usable } from './types.js'
 
 test('usable composition and middleware variations', async () => {
   //t.plan(20)
@@ -116,8 +116,8 @@ test('usable composition and middleware variations', async () => {
 })
 
 test('base container merge', async () => {
-  const container1 = createContainer(),
-    container2 = createContainer()
+  const container1 = Object.assign(createContainer(), { NAME: 1 }),
+    container2 = Object.assign(createContainer(), { NAME: 2 })
   @container1.SingletonService
   class S1 {}
   @container2.SingletonService
@@ -154,7 +154,6 @@ test('invalid middleware', async () => {
 })
 
 test('module merge', async () => {
-  //t.plan(11)
   const app = new Ingress(),
     m2 = new ModuleContainer()
   @app.container.SingletonService
@@ -202,7 +201,7 @@ test('null prototype context default', async () => {
 test('app already started or stopped', async () => {
   //t.plan(3)
   const app = new Ingress()
-  app.use({ middleware: undefined } as any)
+  app.use({ middleware: (context: any, next: any) => next() })
   await app.start()
   await app.start().catch((e) => t.equal(e.message, 'Already started or starting'))
   t.throws(

@@ -45,7 +45,7 @@ test('can run concurrently', async () => {
 
 test('is valid middleware', async () => {
   const context = { str: '' },
-    func = compose<typeof context>([
+    func = compose<typeof context>(
       async function (ctx, next) {
         ctx.str += 1
         await next()
@@ -55,8 +55,8 @@ test('is valid middleware', async () => {
         ctx.str += 2
         await next()
         ctx.str += 4
-      },
-    ])
+      }
+    )
 
   await func(context, (ctx, next) => {
     ctx.str += 3
@@ -112,6 +112,34 @@ test('exec', async () => {
       return next()
     }
   await exec(mws, ctx, last)
+  t.equal(ctx.value, '123L456')
+})
+
+test('exec shrink', async () => {
+  const mws: Middleware<any>[] = [
+      async (ctx, next) => {
+        ctx.value += 1
+        await next()
+        ctx.value += 6
+      },
+      async (ctx, next) => {
+        mws.splice(1, 1, void 0 as any) // remove self
+        ctx.value += 2
+        await next()
+        ctx.value += 5
+      },
+      async (ctx, next) => {
+        ctx.value += 3
+        await next()
+        ctx.value += 4
+      },
+      (ctx: any, next: any) => {
+        ctx.value += 'L'
+        return next()
+      },
+    ],
+    ctx = { value: '' }
+  await exec(mws, ctx)
   t.equal(ctx.value, '123L456')
 })
 

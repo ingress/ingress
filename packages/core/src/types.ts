@@ -1,8 +1,6 @@
 import type { Ingress, Middleware } from './core.js'
 import type { Annotation, AnnotationFactory } from 'reflect-annotations'
-import type { ModuleContainerContext } from './di.js'
-
-export type Func<T = any> = (...args: any[]) => T
+import type { ModuleContainerContext, Func } from './di.js'
 
 /**
  * Lifecycle stages of an app
@@ -61,7 +59,27 @@ export interface Usable {
   /**
    * Context initialization method invoked synchronously before the application's middleware
    */
-  initContext?: Func<any>
+  initContext?: Func
+  /**
+   * Called once as a signal indicating the application's driver has been started.
+   */
+  run?: Func
+}
+
+export interface Startable {
+  start: Required<Usable>['start']
+}
+export interface ContextInitializer {
+  initContext: Required<Usable>['initContext']
+}
+export interface Stopable {
+  stop: Required<Usable>['stop']
+}
+export interface Runnable {
+  run: Required<Usable>['run']
+}
+export interface UsableMiddleware {
+  middleware: Required<Usable>['middleware']
 }
 
 export type UsableType = RequireAtLeastOne<Usable>
@@ -69,9 +87,65 @@ export type UsableType = RequireAtLeastOne<Usable>
  * @public
  */
 export type Addon<T extends ModuleContainerContext> =
-  | Annotation<UsableType>
-  | AnnotationFactory<any>
   | UsableType
+  | Annotation<UsableType>
+  | AnnotationFactory<UsableType>
   | Middleware<T>
   | Ingress<T>
   | (UsableType & Middleware<T>)
+
+export const guards = {
+  isStartable,
+  isContextInitializer,
+  isStopable,
+  checkUsableMiddleware,
+  canStart,
+}
+
+function isStartable(usable: any): usable is Startable {
+  return checkPropertyIsFunctionOrGetter(usable, 'start')
+}
+function isContextInitializer(usable: any): usable is ContextInitializer {
+  return checkPropertyIsFunctionOrGetter(usable, 'initContext')
+}
+function isStopable(usable: any): usable is Stopable {
+  return checkPropertyIsFunctionOrGetter(usable, 'stop')
+}
+function checkUsableMiddleware(usable: any): usable is UsableMiddleware {
+  const descriptor = getDescriptor(usable, 'middleware')
+  if (typeof descriptor?.value === 'function') {
+    if (descriptor.value.length !== 2)
+      throw new TypeError('Middleware must accept two arguments, context and next')
+    return true
+  }
+  return typeof descriptor?.get === 'function'
+}
+
+function canStart(state: AppState) {
+  return ![AppState.Starting, AppState.Started, AppState.Running].includes(state)
+}
+
+function getDescriptor(obj: any, prop: string) {
+  if (!Reflect.has(obj, prop)) {
+    return undefined
+  }
+  let focus = obj,
+    descriptor = Reflect.getOwnPropertyDescriptor(focus, prop)
+  while (!descriptor) {
+    focus = Reflect.getPrototypeOf(focus)
+    descriptor = Reflect.getOwnPropertyDescriptor(focus, prop)
+  }
+  return descriptor
+}
+
+/**
+ * If the property is a simple function this is overly complex, but
+ * if it is getter we want to execute it as lazily as possible
+ * @param obj
+ * @param prop
+ * @returns
+ */
+function checkPropertyIsFunctionOrGetter(obj: any, prop: string) {
+  const descriptor = getDescriptor(obj, prop)
+  return typeof descriptor?.get === 'function' || typeof descriptor?.value === 'function'
+}
