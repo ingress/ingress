@@ -77,7 +77,9 @@ function reflectAnnotations<T = any>(
 
 export default reflectAnnotations
 
-export { reflectAnnotations, AnnotatedPropertyDescription, Annotation }
+export { reflectAnnotations, AnnotatedPropertyDescription }
+/* c8 ignore next */
+export { Annotation }
 export {
   getAnnotations,
   setAnnotations,

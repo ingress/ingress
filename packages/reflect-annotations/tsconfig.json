@@ -5,5 +5,10 @@
     "outDir": "./lib/cjs",
   },
   "exclude": ["node_modules"],
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "ts-node": {
+    "transpileOnly": true,
+    //SWC fails to emit return type, so use typescript
+    "transpiler": null
+  },
 }
