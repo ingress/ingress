@@ -1,5 +1,5 @@
 import { createErrorType } from './error.js'
-import { StatusCode } from '@ingress/http-status'
+import { StatusCode } from './status-code.js'
 
 export { createErrorType }
 

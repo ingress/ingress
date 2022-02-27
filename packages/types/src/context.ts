@@ -1,7 +1,6 @@
-import type { Func, Ingress } from '@ingress/core'
-import type { Readable } from 'stream'
-import type { Blob } from 'buffer'
-import type { ModuleContainerContext } from '@ingress/di'
+import type { Func, Ingress, ModuleContainerContext } from '@ingress/core'
+import type { Readable } from 'node:stream'
+import type { Blob } from 'node:buffer'
 
 export type Serializer = Func
 

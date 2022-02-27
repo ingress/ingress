@@ -2,8 +2,7 @@
   "name": "ingress",
   "version": "5.0.0-alpha.10",
   "description": "Composable nodejs applications",
-  "type": "module",
-  "main": "./lib/cjs/main.js",
+  "type": "commonjs",
   "exports": {
     ".": {
       "node": {
@@ -15,8 +14,8 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "rm -rf lib && tsc && npm run build:commonjs",
-    "build:commonjs": "tsc --module commonjs --outDir lib/cjs && echo '{\"type\": \"commonjs\"}' > lib/cjs/package.json",
+    "build:esm": "tsc --sourceRoot \"$(pwd)/src\" --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
+    "build": "shx rm -rf lib && tsc --sourceRoot \"$(pwd)/src\" && npm run build:esm",
     "watch:typescript": "tsc -w",
     "watch:test": "jest --watchAll --detectOpenHandles",
     "watch": "npm run build && concurrently -k \"npm:watch:typescript\" \"npm:watch:test\" -c blue,green",
@@ -54,20 +53,20 @@
   ],
   "dependencies": {
     "@hapi/subtext": "~7.0.3",
-    "@ingress/di": "^3.0.0-alpha.5",
-    "@ingress/http-status": "^3.0.0-alpha.6",
+    "@ingress/di": "3.0.0-alpha.2",
+    "@ingress/http-status": "3.0.0-alpha.6",
     "app-builder": "^7.0.4",
-    "destroy": "~1.0.4",
-    "find-my-way": "^4.3.3",
+    "destroy": "~1.1.0",
+    "find-my-way": "^5.1.1",
     "on-finished": "~2.3.0",
     "reflect-annotations": "^4.0.0-alpha.6",
-    "rxjs": "~7.3.1",
+    "rxjs": "~7.5.2",
     "secure-json-parse": "^2.4.0",
     "uuid": "^8.3.2",
-    "ws": "^8.2.3"
+    "ws": "^8.4.2"
   },
   "peerDependencies": {
-    "@types/ws": "^8.2.0"
+    "@types/ws": "^8.2.2"
   },
   "peerDependenciesMeta": {
     "@types/ws": {
@@ -75,28 +74,28 @@
     }
   },
   "devDependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.14.5",
-    "@babel/plugin-proposal-decorators": "^7.15.4",
-    "@babel/preset-env": "^7.15.6",
-    "@babel/preset-typescript": "^7.15.0",
+    "@babel/plugin-proposal-class-properties": "^7.16.7",
+    "@babel/plugin-proposal-decorators": "^7.16.7",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-typescript": "^7.16.7",
     "@types/destroy": "~1.0.0",
-    "@types/jest": "^27.0.2",
-    "@types/node": "^16.10.2",
+    "@types/jest": "^27.4.0",
+    "@types/node": "^17.0.12",
     "@types/on-finished": "~2.3.1",
     "@types/secure-json-parse": "^1.0.3",
-    "@types/sinon": "^10.0.4",
-    "@types/uuid": "^8.3.1",
-    "@types/ws": "^8.2.0",
+    "@types/sinon": "^10.0.8",
+    "@types/uuid": "^8.3.4",
+    "@types/ws": "^8.2.2",
     "babel-plugin-transform-typescript-metadata": "^0.3.2",
-    "concurrently": "^6.3.0",
-    "cross-fetch": "~3.1.4",
+    "concurrently": "^7.0.0",
+    "cross-fetch": "~3.1.5",
     "get-port": "^5",
-    "jest": "^27.2.4",
+    "jest": "^27.3.1",
     "jest-github-actions-reporter": "^1.0.3",
     "jest-ts-webcompat-resolver": "^1.0.0",
     "reflect-metadata": "^0.1.13",
-    "sinon": "^11.1.2",
-    "ts-jest": "^27.0.5"
+    "sinon": "^12.0.1",
+    "ts-jest": "^27.0.7"
   },
   "gitHead": "4bc0a9eb661fce02765d56efdc84f8d1a10a01ec"
 }
