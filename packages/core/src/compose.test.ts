@@ -1,6 +1,7 @@
 import { compose, Middleware, exec } from './core.js'
 import { test } from 'uvu'
 import * as t from 'uvu/assert'
+import { executeByArity } from './compose.js'
 
 test('can short circuit', async () => {
   const m = { count: 0 }
@@ -40,7 +41,7 @@ test('can run concurrently', async () => {
     }
     await next()
   })
-  await Promise.all([composed(), composed()])
+  await Promise.all([composed({}), composed({})])
 })
 
 test('is valid middleware', async () => {
@@ -80,7 +81,7 @@ test('propagates errors from middleware', async () => {
     await compose(() => {
       doThrow()
       return Promise.resolve()
-    })()
+    })({})
   } catch (error) {
     didError = true
     t.equal(error, someError)
@@ -141,6 +142,38 @@ test('exec shrink', async () => {
     ctx = { value: '' }
   await exec(mws, ctx)
   t.equal(ctx.value, '123L456')
+})
+
+test('execute by arity', async () => {
+  let plan = 0
+  await executeByArity(
+    'func',
+    {
+      func() {
+        plan++
+        return Promise.resolve()
+      },
+    },
+    {},
+    () => {
+      plan++
+    }
+  )
+  t.equal(plan, 2)
+  await executeByArity(
+    'missing',
+    {
+      func() {
+        plan++
+        return Promise.resolve()
+      },
+    },
+    {},
+    () => {
+      plan++
+    }
+  )
+  t.equal(plan, 3)
 })
 
 test.run()

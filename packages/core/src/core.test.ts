@@ -1,13 +1,12 @@
 import 'reflect-metadata'
-import createContainer, { Func, ModuleContainer, Injectable } from './di.js'
+import { createContainer, Func, ModuleContainer, Injectable } from './di.js'
 import { createAnnotationFactory } from 'reflect-annotations'
 import { test } from 'uvu'
 import * as t from 'uvu/assert'
-import { Ingress, AppState, Middleware } from './core.js'
-import type { Usable } from './types.js'
+import { Ingress, AppState, Middleware, ingress } from './core.js'
+import type { Startable, Stopable, UsableMiddleware } from './types.js'
 
 test('usable composition and middleware variations', async () => {
-  //t.plan(20)
   let plan = 20
   const eql = (a: any, b: any) => {
     t.equal(a, b)
@@ -20,7 +19,7 @@ test('usable composition and middleware variations', async () => {
     value = ''
   }
   const app1 = new Ingress<Ctx>({ context: new CtxThing() }),
-    app2 = new Ingress<Ctx>(),
+    app2 = ingress<Ctx>(),
     app3 = new Ingress<Ctx>(),
     app = Object.assign(app1, { value: '' }),
     usable1 = {
@@ -46,7 +45,7 @@ test('usable composition and middleware variations', async () => {
       },
     },
     usable2 = createAnnotationFactory(
-      class implements Usable {
+      class implements Startable, Stopable, UsableMiddleware<any> {
         async start(appB: any, next: Func<Promise<void>>) {
           app.value += 2
           eql(app, appB)
@@ -118,7 +117,7 @@ test('usable composition and middleware variations', async () => {
 test('base container merge', async () => {
   const container1 = Object.assign(createContainer(), { NAME: 1 }),
     container2 = Object.assign(createContainer(), { NAME: 2 })
-  @container1.SingletonService
+  @container1.SingletonService()
   class S1 {}
   @container2.SingletonService
   class S2 {}
@@ -134,11 +133,10 @@ test('base container merge', async () => {
 })
 
 test('invalid middleware', async () => {
-  //t.plan(3)
   const app = new Ingress()
   t.throws(() => {
-    app.use(() => {
-      void 0
+    app.use((context) => {
+      void context
     })
   }, 'Middleware must accept two arguments, context and next')
   t.throws(() => {
@@ -158,7 +156,11 @@ test('module merge', async () => {
     m2 = new ModuleContainer()
   @app.container.SingletonService
   class a {}
-  @m2.SingletonService
+  @m2.SingletonService({
+    useFactory() {
+      return 'abc'
+    },
+  })
   class b {}
   @m2.Service
   class c {}
@@ -174,10 +176,10 @@ test('module merge', async () => {
     bb ||= context.scope.get(b)
     cc ||= context.scope.get(c)
     t.ok(aa instanceof a)
-    t.ok(bb instanceof b)
+    t.is(bb, 'abc')
     t.ok(cc instanceof c)
     t.equal(aa, context.scope.get(a))
-    t.equal(bb, context.scope.get(b))
+    t.equal('abc', context.scope.get(b))
     return next()
   }
   app.use(mw)
@@ -187,15 +189,50 @@ test('module merge', async () => {
   await app.stop()
 })
 
+test('nested unUse', async () => {
+  let plan = 0
+  const a = new Ingress(),
+    b = new Ingress()
+  a.use({
+    start() {
+      return Promise.resolve()
+    },
+    middleware(context: any, next: any) {
+      plan++
+      return next()
+    },
+  })
+  b.use({
+    start(app: any, next: any) {
+      app.unUse(this)
+      t.throws(() => app.unUse(this), "Unable to unUse an addon that has not been use'd")
+      plan++
+      return next()
+    },
+    middleware(context: any, next: any) {
+      plan++
+      t.unreachable('Should not execute')
+      return next()
+    },
+  })
+  a.use(b)
+  await a.start()
+  await a.middleware()
+  await a.stop()
+  t.equal(plan, 2, 'exepected plan to be 2')
+})
+
 test('null prototype context default', async () => {
-  //t.plan(1)
+  let plan = 0
   const app = new Ingress()
   app.use((ctx: any, next: any) => {
+    plan++
     t.equal(Object.getPrototypeOf(ctx), null)
     return next()
   })
   await app.start()
   await app.middleware()
+  t.is(1, plan)
 })
 
 test('app already started or stopped', async () => {
@@ -222,9 +259,9 @@ test('registerDriver', async () => {
   const app = new Ingress(),
     handle = Symbol('something')
   app.registerDriver(handle, async () => {
-    t.equal(app.readyState, AppState.Started, 'Started')
+    t.is(app.readyState, AppState.Started, 'Started')
     await Promise.resolve()
-    t.equal(app.readyState, AppState.Running, 'Running')
+    t.is(app.readyState, AppState.Started, 'Started')
   })
   t.throws(() => {
     app.registerDriver(handle, () => {
@@ -232,11 +269,13 @@ test('registerDriver', async () => {
     })
   }, 'Driver already registered')
   t.equal(app.readyState, AppState.New, 'New')
-  await app.start()
+  const starting = app.start()
+  t.equal(app.readyState, AppState.Starting, 'Starting')
+  await starting
   t.equal(app.driver, handle)
-  t.equal(app.readyState, AppState.Started, 'Started')
+  t.is(app.readyState, AppState.Started, 'Started')
   await app.run()
-  t.equal(app.readyState, AppState.Running)
+  t.is(app.readyState, AppState.Running, 'Running')
 })
 
 test('run', async () => {

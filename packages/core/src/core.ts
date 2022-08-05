@@ -1,6 +1,6 @@
 import { isAnnotationFactory } from 'reflect-annotations'
 import { Func, ModuleContainer, ModuleContainerContext } from './di.js'
-import { compose, exec, ContinuationMiddleware, Middleware } from './compose.js'
+import { exec, ContinuationMiddleware, executeByArity, Middleware } from './compose.js'
 import {
   Addon,
   AppState,
@@ -12,85 +12,76 @@ import {
   UsableMiddleware,
 } from './types.js'
 
-export {
-  Usable,
-  Addon,
-  AppState,
-  Func,
-  compose,
-  exec,
-  Middleware,
-  ContinuationMiddleware,
-  ModuleContainerContext,
-}
+const _hosts = Symbol('ingress.hosts'),
+  _middleware = Symbol('ingress.middleware')
 
-export * from './di.js'
+class Ingress<T extends ModuleContainerContext> {
+  static [_hosts] = new WeakMap<any, Ingress<any>>();
+  [_middleware]: ContinuationMiddleware<T> | null = null
 
-export class Ingress<T extends ModuleContainerContext> {
   public readyState: AppState = AppState.New
   public container!: ModuleContainer
   public driver: any = null
 
   private contextBase: Partial<T> | undefined = undefined
-  private mw: (UsableMiddleware | undefined)[] = []
+  private mw: UsableMiddleware<T>[] = []
   private setups: (Startable | undefined)[] = []
   private teardowns: (Stopable | undefined)[] = []
   private setupCtx: (ContextInitializer | undefined)[] = []
 
   constructor(options?: { context?: any; container?: ModuleContainer }) {
     this.contextBase = options?.context
-    const container = options?.container || new ModuleContainer()
-    this.container = container
+    this.container = options?.container || new ModuleContainer()
   }
 
-  initContext(ctx: Partial<T>): T {
+  extendContext(ctx: Partial<T>): T {
     ctx = ctx || Object.create(this.contextBase || null)
     for (const init of this.setupCtx) {
-      ctx = init!.initContext(ctx)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      ctx = init!.extendContext(ctx)
     }
-    //TODO use proxy to monitor dynamic properties during dev?
+    //SOMEDAY use proxy to monitor dynamic properties during dev?
     return ctx as T
   }
-
-  #middleware: ContinuationMiddleware<T> | null = null
   get middleware(): ContinuationMiddleware<T> {
-    if (this.#middleware) {
-      return this.#middleware
+    if (this[_middleware]) {
+      return this[_middleware]!
     }
-    const executor = (u: UsableMiddleware, context: T, next: Func) => {
+    const executor = (u: UsableMiddleware<T>, context: T, next: Func) => {
         return u.middleware(context, next)
       },
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
-      app = this,
       mw = this.mw.filter((x) => x)
+
     this.setupCtx = this.setupCtx.filter((x) => x)
-    return (this.#middleware = function middleware(ctx, next) {
-      ctx = app.initContext(ctx as T)
+    return (this[_middleware] = (ctx, next) => {
+      ctx = this.extendContext(ctx as T)
       return exec(mw, ctx, next, executor)
     })
   }
 
   /**
-   * Replace the passed usable with undefined, creating a sparse array.
    * @param usable
    */
   public unUse(usable: Addon<T>) {
-    if (guards.isStartable(usable)) {
-      const idx = this.setups.indexOf(usable)
-      if (~idx) this.setups.splice(idx, 1, void 0)
+    const host = Ingress[_hosts].get(usable)
+    if (!host) {
+      throw new Error("Unable to unUse an addon that has not been use'd")
     }
-    if (guards.isStopable(usable)) {
-      const idx = this.teardowns.indexOf(usable)
-      if (~idx) this.teardowns.splice(idx, 1, void 0)
+    ;(['setups', 'teardowns', 'mw', 'setupCtx'] as const).forEach((name) => {
+      const list: any[] = host[name],
+        idx = list.indexOf(usable)
+      if (~idx) list.splice(idx, 1, void 0)
+    })
+    Ingress[_hosts].delete(usable)
+  }
+
+  public finalize(forwardRefs: Iterable<any>) {
+    const setups = this.setups.slice()
+    for (const forward of forwardRefs) {
+      this.use(this.container.get(forward))
     }
-    if (guards.checkUsableMiddleware(usable)) {
-      const idx = this.mw.indexOf(usable)
-      if (~idx) this.mw.splice(idx, 1, void 0)
-    }
-    if ('initContext' in usable) {
-      const idx = this.setupCtx.indexOf(usable as ContextInitializer)
-      if (~idx) this.setupCtx.splice(idx, 1, void 0)
-    }
+    const finalSetups = this.setups.filter((x) => !setups.includes(x))
+    return exec(finalSetups, this, void 0, startableExecutor)
   }
 
   public use(...usables: Addon<T>[]): this {
@@ -98,7 +89,7 @@ export class Ingress<T extends ModuleContainerContext> {
       for (const x of usables) this.use(x)
       return this
     }
-    const [usable] = usables
+    let [usable] = usables
     if ([AppState.Started, AppState.Running].includes(this.readyState)) {
       throw new Error('Already started, Cannot "use" something now')
     }
@@ -106,7 +97,7 @@ export class Ingress<T extends ModuleContainerContext> {
     if ('annotationInstance' in usable) {
       return this.use(usable.annotationInstance)
     }
-    if (guards.checkUsableMiddleware(usable)) {
+    if (guards.isMiddleware<T>(usable)) {
       this.mw.push(usable)
       used = true
     }
@@ -128,14 +119,21 @@ export class Ingress<T extends ModuleContainerContext> {
     if (isAnnotationFactory(usable)) {
       return this.use(usable().annotationInstance)
     }
-    const usableContainer = { middleware: usable }
-    if (guards.checkUsableMiddleware(usableContainer)) {
-      this.mw.push(usableContainer)
-      used = true
+
+    if (typeof usable === 'function') {
+      usable = { middleware: usable }
+      if (guards.checkUsableMiddleware(usable)) {
+        this.mw.push(usable)
+        used = true
+      }
     }
+
     if (!used) {
       throw new TypeError('Unable to use: ' + usable)
     }
+
+    Ingress[_hosts].set(usable, this)
+
     return this
   }
 
@@ -146,26 +144,22 @@ export class Ingress<T extends ModuleContainerContext> {
       return Promise.reject(new Error('Already started or starting'))
     }
     if (!isRoot) {
-      // //register with the root's container
-      // app.container.setup(this.container)
       this.container = app.container
-    }
-    if (isRoot) {
+    } else {
       this.use(this.container)
     }
+
     this.readyState = AppState.Starting
-    await exec(this.setups, app, next, (u: Startable, ctx, nxt) => {
-      return u ? u.start(ctx, nxt) : nxt()
-    })
+    await exec(this.setups, app, next, startableExecutor)
     this.readyState = AppState.Started
     if (!this.#initializer) this.readyState = AppState.Running
     return this
   }
 
   #initializer: Func | null = null
-  registerDriver(driver: any, initializer: Func) {
+  registerDriver(driver: any, init: Func) {
     if (this.#initializer) throw new Error('Driver already registered')
-    this.#initializer = initializer
+    this.#initializer = init
     this.driver = driver
   }
 
@@ -176,13 +170,15 @@ export class Ingress<T extends ModuleContainerContext> {
     if (this.readyState === AppState.New) {
       await this.start()
     }
+
     if (this.readyState !== AppState.Running) {
       try {
-        return this.#initializer?.()
+        await this.#initializer?.()
       } finally {
         this.readyState = AppState.Running
       }
     }
+    return this
   }
 
   public async stop(app?: Ingress<any>, next?: Func<Promise<void>>): Promise<Ingress<T>> {
@@ -195,12 +191,41 @@ export class Ingress<T extends ModuleContainerContext> {
     }
     this.readyState = AppState.Stopping
     try {
-      await exec(this.teardowns, app, next, (u: Stopable, ctx, nxt) => {
-        return u ? u.stop(ctx, nxt) : nxt()
-      })
+      await exec(this.teardowns, app, next, executeByArity.bind(null, 'stop'))
     } finally {
       this.readyState = AppState.Stopped
     }
     return this
   }
 }
+
+const startableExecutor = executeByArity.bind(null, 'start')
+
+/** Core Objects */
+/** Main and Factory Exports */
+export { Ingress, AppState }
+export default ingress
+export function ingress<T extends ModuleContainerContext>(
+  ...args: ConstructorParameters<typeof Ingress>
+) {
+  return new Ingress<T>(...args)
+}
+
+/** Core Types */
+export type { Addon, UsableMiddleware, Startable, Stopable, ContextInitializer, Middleware, Usable }
+
+/** compositional execution helpers */
+export { compose, exec } from './compose.js'
+
+/** dependency injection */
+export {
+  Func,
+  Type,
+  Provider,
+  InjectionToken,
+  Injectable,
+  ModuleContainer,
+  ContextToken,
+  createContainer,
+} from './di.js'
+export type { ModuleContainerOptions, Injector, ModuleContainerContext } from './di.js'

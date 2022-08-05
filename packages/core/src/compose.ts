@@ -1,18 +1,18 @@
 import type { Func } from './di'
 
 export interface Middleware<T, R = any> {
-  (context: T, next: ContinuationMiddleware<T>): R | Promise<R>
+  (context: T, next: ContinuationMiddleware<T, R>): R | Promise<R>
 }
 export interface ContinuationMiddleware<T, R = any> {
-  (context?: T, next?: Middleware<T>): R | Promise<R>
+  (context?: T, next?: Middleware<T, R>): R | Promise<R>
 }
-
-const noop = function noop() {
-  void 0
+export interface StartingMiddleware<T, R = any> {
+  (context: T, next?: Middleware<T, R>): R | Promise<R>
 }
 
 /**
- * Determines if a function looks like a middleware function
+ * Checks to see if a function is a middleware function
+ * Don't use in the hotpath
  * @param value
  * @returns
  */
@@ -20,11 +20,16 @@ export function isMiddlewareFunction(value: any): value is Func {
   return typeof value === 'function' && value.toString().indexOf('class') !== 0
 }
 
+const defaultExecutor = (func: Func, ctx: any, next: any) => func(ctx, next),
+  noopNext = () => {
+    void 0
+  }
+
 /**
  * Take a snapshot of middleware and return a function to invoke all with a single argument <T>context
  * @param middleware
  */
-export function compose<T = any>(...middleware: Middleware<T>[]): ContinuationMiddleware<T> {
+export function compose<T = any>(...middleware: Middleware<T>[]): StartingMiddleware<T> {
   for (const x of middleware) {
     if (!isMiddlewareFunction(x)) {
       throw new TypeError(`${x}, must be a middleware function accepting (context, next) arguments`)
@@ -34,8 +39,6 @@ export function compose<T = any>(...middleware: Middleware<T>[]): ContinuationMi
     return exec(middleware, ctx as T, next, defaultExecutor)
   }
 }
-
-const defaultExecutor = (func: Func, ctx: any, next: any) => func(ctx, next)
 
 /**
  * Execute a growable array of middleware
@@ -48,7 +51,7 @@ const defaultExecutor = (func: Func, ctx: any, next: any) => func(ctx, next)
 export function exec<T>(
   mw: any[],
   ctx: T,
-  next: Middleware<T> | undefined = undefined,
+  next: Middleware<T> | undefined = noopNext,
   executor: Func | undefined = defaultExecutor
 ): Promise<void> | void {
   let i = -1
@@ -56,8 +59,32 @@ export function exec<T>(
     if (++i < mw.length) {
       return executor(mw[i], ctx, nxt)
     } else if (next) {
-      return next(ctx, noop)
+      return next(ctx, noopNext)
     }
   }
   return nxt()
+}
+
+export function executeByArity(prop: string, usable: any, ctx: any, next: any) {
+  if (usable?.[prop]) {
+    if (usable[prop].length >= 2) return usable[prop](ctx, next)
+    const nxt = wrapNext(next),
+      result = usable[prop](ctx, nxt)
+
+    if (typeof result?.then === 'function') return result.then(nxt)
+
+    return nxt()
+  }
+  return next()
+}
+
+function wrapNext(fn: Func | null) {
+  return function () {
+    if (fn) {
+      const result = fn()
+      fn = null
+      return result
+    }
+    throw new Error('next should be an explicit argument')
+  }
 }

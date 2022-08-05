@@ -1,15 +1,18 @@
-import type { FactoryProvider } from 'injection-js'
+import type { FactoryProvider, ValueProvider, ClassProvider } from 'injection-js'
 
-export type FactoryOptions = Omit<FactoryProvider, 'provide'>
+export type DependencyProvider =
+  | Omit<FactoryProvider, 'provide'>
+  | Omit<ValueProvider, 'provide'>
+  | Omit<ClassProvider, 'provide'>
 
 export const Type = Function
 export interface Type<T> {
   new (...args: any[]): T
 }
 
-export type Func<T = any, Args extends any[] = any[]> = (...args: Args) => T
+export type Func<T = unknown, Args extends unknown[] = unknown[]> = (...args: Args) => T
 export interface DependencyCollector {
-  (opts?: FactoryOptions): ClassDecorator
+  (opts?: DependencyProvider): ClassDecorator
   (target: any): void
 }
 
@@ -21,7 +24,7 @@ export class DependencyCollectorList {
       if (!target) {
         return this.collect
       }
-      if ('useFactory' in target) {
+      if ('useClass' in target || 'useFactory' in target || 'useValue' in target) {
         return (provide: any) => {
           const provider = { provide, ...target }
           this.items.add(provider)

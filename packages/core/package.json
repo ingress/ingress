@@ -9,11 +9,11 @@
   "types": "lib/cjs/core.d.ts",
   "exports": {
     ".": {
-      "node": {
-        "import": "./lib/esm/core.js",
-        "require": "./lib/cjs/core.js"
-      }
-    }
+      "import": "./lib/esm/core.js",
+      "require": "./lib/cjs/core.js",
+      "types": "./lib/cjs/core.d.ts"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "lib",
@@ -25,12 +25,13 @@
     "cov": "c8 --100 --src src -r html npm test",
     "ocov": "npm run cov && open coverage/index.html",
     "build:esm": "tsc --sourceRoot \"$(pwd)/src\" --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
-    "build": "shx rm -rf lib && npm run build:esm && tsc --sourceRoot \"$(pwd)/src\""
+    "build:cjs": "npm run build:esm && tsc --sourceRoot \"$(pwd)/src\"",
+    "build": "shx rm -rf lib && concurrently npm:build:*"
   },
   "dependencies": {
     "injection-js": "^2.4.0"
   },
   "devDependencies": {
-    "@types/node": "^17.0.12"
+    "@types/node": "^18.6.3"
   }
 }

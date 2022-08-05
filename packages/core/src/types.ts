@@ -1,5 +1,5 @@
 import type { Ingress, Middleware } from './core.js'
-import type { Annotation, AnnotationFactory } from 'reflect-annotations'
+import type { Annotation } from 'reflect-annotations'
 import type { ModuleContainerContext, Func } from './di.js'
 
 /**
@@ -40,64 +40,49 @@ export type RequireAtLeastOne<T> = {
   [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>
 }[keyof T]
 
-/**
- * @public
- */
-export interface Usable {
+export interface Startable {
   /**
    * Middleware that executes on start of the application, in the order it was registered
    */
-  start?: Middleware<Ingress<any>>
-  /**
-   * Middleware that executes at the stop of the application, in the order it was registered
-   */
-  stop?: Middleware<Ingress<any>>
-  /**
-   * Middleware that executes in the middleware of the application
-   */
-  middleware?: Middleware<any>
+  start: Middleware<Ingress<any>>
+}
+export interface ContextInitializer {
   /**
    * Context initialization method invoked synchronously before the application's middleware
    */
-  initContext?: Func
-  /**
-   * Called once as a signal indicating the application's driver has been started.
-   */
-  run?: Func
-}
-
-export interface Startable {
-  start: Required<Usable>['start']
-}
-export interface ContextInitializer {
-  initContext: Required<Usable>['initContext']
+  extendContext: Func
 }
 export interface Stopable {
-  stop: Required<Usable>['stop']
+  /**
+   * Middleware that executes at the stop of the application, in the order it was registered
+   */
+  stop: Middleware<Ingress<any>>
 }
-export interface Runnable {
-  run: Required<Usable>['run']
-}
-export interface UsableMiddleware {
-  middleware: Required<Usable>['middleware']
+export interface UsableMiddleware<T> {
+  /**
+   * Middleware that executes in the middleware of the application
+   */
+  middleware: Middleware<T>
 }
 
-export type UsableType = RequireAtLeastOne<Usable>
+export type UsableType<T> = Startable & ContextInitializer & Stopable & UsableMiddleware<T>
+export type Usable<T = any> = RequireAtLeastOne<UsableType<T>>
 /**
  * @public
  */
 export type Addon<T extends ModuleContainerContext> =
-  | UsableType
-  | Annotation<UsableType>
-  | AnnotationFactory<UsableType>
+  | Usable<T>
+  | Annotation<Usable<T>>
+  //  | AnnotationFactory<UsableType>
   | Middleware<T>
   | Ingress<T>
-  | (UsableType & Middleware<T>)
+  | (Usable<T> & Middleware<T>)
 
 export const guards = {
   isStartable,
   isContextInitializer,
   isStopable,
+  isMiddleware,
   checkUsableMiddleware,
   canStart,
 }
@@ -106,19 +91,25 @@ function isStartable(usable: any): usable is Startable {
   return checkPropertyIsFunctionOrGetter(usable, 'start')
 }
 function isContextInitializer(usable: any): usable is ContextInitializer {
-  return checkPropertyIsFunctionOrGetter(usable, 'initContext')
+  return checkPropertyIsFunctionOrGetter(usable, 'extendContext')
 }
 function isStopable(usable: any): usable is Stopable {
   return checkPropertyIsFunctionOrGetter(usable, 'stop')
 }
-function checkUsableMiddleware(usable: any): usable is UsableMiddleware {
+function isMiddleware<T>(usable: any): usable is UsableMiddleware<T> {
   const descriptor = getDescriptor(usable, 'middleware')
   if (typeof descriptor?.value === 'function') {
-    if (descriptor.value.length !== 2)
-      throw new TypeError('Middleware must accept two arguments, context and next')
+    if (descriptor.value.length !== 2) return false
     return true
   }
   return typeof descriptor?.get === 'function'
+}
+
+function checkUsableMiddleware<T>(usable: any): usable is UsableMiddleware<T> {
+  if (!isMiddleware(usable)) {
+    throw new TypeError('Middleware must accept two arguments, context and next')
+  }
+  return true
 }
 
 function canStart(state: AppState) {

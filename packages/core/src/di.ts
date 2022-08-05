@@ -9,9 +9,10 @@ import {
 } from 'injection-js'
 
 import { Type, DependencyCollectorList, DependencyCollector, Func } from './collector.js'
-
+import type { Startable } from './types.js'
+/* c8 ignore next */
 export * from './collector.js'
-export { Provider, Injectable } from 'injection-js'
+export { Provider, Injectable, InjectionToken } from 'injection-js'
 
 export interface Injector {
   get<T>(token: Type<T> | InjectionToken<T>, notFoundValue?: T): T
@@ -41,7 +42,7 @@ export { ContextToken }
 /**
  * @public
  */
-export class ModuleContainer implements Injector {
+export class ModuleContainer implements Injector, Startable {
   private rootInjector: ReflectiveInjector | null = null
   private resolvedChildProviders: ResolvedReflectiveProvider[] = []
   private ResolvedContextProvider: Type<ResolvedReflectiveProvider>
@@ -72,9 +73,9 @@ export class ModuleContainer implements Injector {
     Object.assign(this, { singletons, services })
     const key = ReflectiveKey.get(contextToken)
     this.ResolvedContextProvider = class<T> implements ResolvedReflectiveProvider {
-      public key = key
-      public resolvedFactories: ResolvedReflectiveFactory[]
-      public multiProvider = false
+      key = key
+      resolvedFactories: ResolvedReflectiveFactory[]
+      multiProvider = false
       constructor(value: T) {
         this.resolvedFactories = [
           {
@@ -116,7 +117,7 @@ export class ModuleContainer implements Injector {
     return this.createChild(new this.ResolvedContextProvider(context))
   }
 
-  public async start(app: any, next: Func<Promise<any>>): Promise<any> {
+  public async start(app?: any, next?: Func): Promise<any> {
     if (next) {
       await next()
     }
@@ -124,19 +125,25 @@ export class ModuleContainer implements Injector {
     if (app && app.container) {
       app.container.setup(this)
       if (app.container !== this) {
-        //remove sub-container initializers from the initContext pipeline.
+        //remove sub-container initializers from the extendContext pipeline.
         app.unUse(this)
       }
     } else {
       this.setup()
     }
-    for (const forward of this.forwardRefCollector.items) {
-      app.use(this.get(forward))
-    }
+    return app?.finalize(this.forwardRefCollector.items)
   }
 
   public setup(container = this) {
-    this.singletons = [
+    this.singletons = this.getAllSingletons(container)
+    this.services = [...new Set([...this.services, ...container.serviceCollector.items])]
+
+    this.rootInjector = ReflectiveInjector.resolveAndCreate(this.singletons)
+    this.resolvedChildProviders = ReflectiveInjector.resolve(this.services)
+  }
+
+  private getAllSingletons(container = this) {
+    return [
       ...new Set([
         ...this.singletons,
         ...container.singletons,
@@ -144,24 +151,18 @@ export class ModuleContainer implements Injector {
         ...container.forwardRefCollector.items,
       ]),
     ]
-    this.services = [...new Set([...this.services, ...container.serviceCollector.items])]
-
-    this.rootInjector = ReflectiveInjector.resolveAndCreate(this.singletons)
-    this.resolvedChildProviders = ReflectiveInjector.resolve(this.services)
   }
 
-  initContext(ctx: any): any {
+  extendContext(ctx: any): any {
     ctx.scope ||= this.createChildWithContext(ctx)
     return ctx
   }
 
-  public findRegisteredSingleton<T = any>(item: Type<T>): T | undefined {
-    if (this.singletonCollector.items.has(item)) {
-      return item as any as T
-    }
-    const provider: ValueProvider | undefined = this.singletons.find((x: any) => {
-      return x.provide === item
-    }) as any
+  public findProvidedSingleton<T = any>(item: Type<T> | InjectionToken<any>): T | undefined {
+    const singletons = this.getAllSingletons(this),
+      provider: ValueProvider | undefined = singletons.find((x: any) => {
+        return x.provide === item
+      }) as any
     return provider?.useValue
   }
 }
@@ -170,14 +171,6 @@ export class ModuleContainer implements Injector {
  * @public
  * @param options
  */
-export default function createModuleContainer(options?: ModuleContainerOptions): ModuleContainer {
+export function createContainer(options?: ModuleContainerOptions): ModuleContainer {
   return new ModuleContainer(options)
-}
-
-const createContainer = createModuleContainer
-export { createModuleContainer, createContainer }
-export { ModuleContainer as Container }
-
-export function tokenFor<T>(type: T): Type<T> {
-  return type as any as Type<T>
 }
