@@ -31,7 +31,11 @@ export function parseString<T = string>(
           return reject(new ING_PAYLOAD_TOO_LARGE())
         }
         try {
-          resolve((deserializer || identity)(body as any))
+          if (size) {
+            resolve((deserializer || identity)(body as any))
+          } else {
+            resolve(undefined as any)
+          }
         } catch (e: any) {
           if (!e.statusCode) reject(new ING_BAD_REQUEST(e.message))
           else reject(e)

@@ -2,8 +2,8 @@
   "root": true,
   "compilerOptions": {
     "strict": true,
-    "target": "es2020",
-    "module": "EsNext",
+    "target": "es2021",
+    "module": "esnext",
     "moduleResolution": "node",
     "lib": ["dom", "dom.iterable", "es2020"],
     "declaration": true,
@@ -11,19 +11,13 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "sourceMap": true,
-    //style
     "importsNotUsedAsValues": "error",
     "forceConsistentCasingInFileNames": true,
-    //reflection
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
   "exclude": [
     "**/node_modules",
     "**/.*/"
-  ],
-  // "ts-node": {
-  //   "transpileOnly": true,
-  //   "transpiler": "ts-node/transpilers/swc-experimental"
-  // },
+  ]
 }

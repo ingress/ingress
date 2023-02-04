@@ -19,9 +19,10 @@ export class TypeResolver {
     return this
   }
 
-  getResolver(type: Type<any>): Func | undefined {
-    if (this.types.has(type)) {
-      return this.types.get(type)
+  get(type: Type<any>): Func | undefined {
+    const resolver = this.types.get(type)
+    if (resolver) {
+      return resolver
     }
     for (const test of this.predicates) {
       if (test[0](type)) return test[1]
@@ -31,21 +32,33 @@ export class TypeResolver {
 
 const defaultResolvers = [
   {
+    type: Object,
+    convert: (value: any) => value,
+  },
+  {
     type: Number,
     convert: (value: number): number => {
       if (value === null || isNaN(value)) {
         throw new ING_BAD_REQUEST(`cannot convert ${JSON.stringify(value)} to number`)
       }
-      return +value
+      return Number(value)
     },
   },
   {
     type: Boolean,
-    convert(value: boolean | string | null | undefined): boolean {
-      if (value === 'true' || value === true) {
+    convert(value: boolean | string | null | undefined | number): boolean {
+      if (value === true || value === 'true' || value === 1 || value === '1') {
         return true
       }
-      if (value === 'false' || value === false || value === undefined || value === '') {
+      if (
+        value === false ||
+        value === 'false' ||
+        value === 0 ||
+        value === '0' ||
+        value === '' ||
+        value === undefined ||
+        value === null
+      ) {
         return false
       }
       throw new ING_BAD_REQUEST(`cannot convert ${JSON.stringify(value)} to boolean`)
@@ -55,9 +68,11 @@ const defaultResolvers = [
     type: String,
     convert: (value: string): string => {
       if (value === null || value === undefined) {
-        throw new ING_BAD_REQUEST(`cannot convert ${JSON.stringify(value)} to string`)
+        throw new ING_BAD_REQUEST(
+          `cannot convert ${value === null ? 'null' : 'undefined'} to string`
+        )
       }
-      return value.toString()
+      return value + ''
     },
   },
   {

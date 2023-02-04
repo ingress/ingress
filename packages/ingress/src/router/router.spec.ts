@@ -75,7 +75,7 @@ describe('Routing', () => {
       }
       @Route.Upgrade('something/$money/:variable')
       async handleRouteVariable(
-        @Route.Path('variable') something: string,
+        @Route.Param('variable') something: string,
         @Route.Body() body: UpgradeBody
       ) {
         routeSpy(something)
@@ -125,7 +125,7 @@ describe('Routing', () => {
       @Route.Post('parameterized/:a/:b/:c')
       parameterized(
         @Route.Query() query: Record<string, any>,
-        @Route.Path() path: Record<string, any>,
+        @Route.Param() path: Record<string, any>,
         @Route.Body() body: Record<string, any>
       ) {
         return {

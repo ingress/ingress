@@ -24,7 +24,7 @@ app.run()
 ```
 
 `app.run()` will activate the driver (http) and listen on the environment's defined PORT variable or a random port
-A driver, is a middleware that responds to events and executes the core middleware 
+A driver, is a middleware that responds to events and executes the core middleware
 
 
 
@@ -33,7 +33,7 @@ export interface Usable<T> {
   start?: Middleware<Ingress<T>>
   stop?: Middleware<Ingress<T>>
   middleware?: Middleware<T>
-  extendContext?: Func
+  initializeContext?: Func
 }
 ```
 

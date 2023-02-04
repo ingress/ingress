@@ -1,54 +1,50 @@
-import * as t from 'uvu/assert'
-import { test } from 'uvu'
+import 'reflect-metadata'
+import { beforeAll, describe, it, expect } from 'vitest'
 import type { HttpContext } from '@ingress/types'
 import { Started, start } from './request.util.test.js'
-import type { Func } from '@ingress/core'
+import type { NextFn } from '@ingress/core'
 
 let started: Started, request: Started['request']
 
-test('middleware return value', async () => {
-  const res = await request('/a'),
-    resB = await request('/b')
-  t.is(res.payload, resB.payload)
-  t.is(res.payload, 'value')
-  t.is(res.status, 200)
-  t.is(resB.status, 200)
-})
-
-test('explicit send with return value', async () => {
-  const res = await request('/c')
-  t.is(res.payload, 'reachable')
-  t.is(res.status, 200)
-})
-
-test('queryParameters', async () => {
-  const res = await request('/e?param=param')
-  t.is(res.payload, 'result')
-})
-
-test.before(async () => {
-  started = await start(void 0, ({ request, send }: HttpContext<any>, next: Func) => {
-    switch (request.pathname) {
-      case '/a':
-        return 'value'
-      case '/b':
-        return Promise.resolve('value')
-      case '/c':
-        send.code(200)('reachable')
-        return 'unreachable'
-      case '/d':
-        return send.code(200)()
-      case '/e':
-        t.equal(request.searchParams.get('param'), 'param')
-        return 'result'
-    }
-    return next()
+describe('response', () => {
+  it('middleware return value', async () => {
+    const res = await request('/a'),
+      resB = await request('/b')
+    expect(res.payload).toBe(resB.payload)
+    expect(res.payload).toBe('value')
+    expect(res.statusCode).toBe(200)
+    expect(resB.statusCode).toBe(200)
   })
-  request = started.request
-})
 
-test.after(async () => {
-  await started.app.stop()
-})
+  it('explicit send with return value', async () => {
+    const res = await request('/c')
+    expect(res.payload).toBe('reachable')
+    expect(res.statusCode).toBe(200)
+  })
 
-test.run()
+  it('queryParameters', async () => {
+    const res = await request('/e?param=param')
+    expect(res.payload).toBe('result')
+  })
+
+  beforeAll(async () => {
+    started = await start(void 0, ({ request, response }: HttpContext<any>, next: NextFn) => {
+      switch (request.pathname) {
+        case '/a':
+          return 'value'
+        case '/b':
+          return Promise.resolve('value')
+        case '/c':
+          response.code(200).send('reachable')
+          return 'unreachable'
+        case '/d':
+          return response.code(200).send()
+        case '/e':
+          expect(request.searchParams.get('param')).toBe('param')
+          return 'result'
+      }
+      return next()
+    })
+    request = started.request
+  })
+})

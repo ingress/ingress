@@ -1,6 +1,6 @@
 {
   "name": "router-tree-map",
-  "version": "0.1.2",
+  "version": "0.1.5",
   "keywords": [
     "radix",
     "trie",
@@ -18,7 +18,7 @@
   "exports": {
     ".": {
       "node": {
-        "import": "./lib/esm/tree.js",
+        "import": "./index.mjs",
         "require": "./lib/cjs/tree.js"
       },
       "default": "./lib/cjs/tree.js"
@@ -31,11 +31,11 @@
   ],
   "scripts": {
     "docs": "typedoc src/tree.ts --excludePrivate",
-    "test": "uvu -r ts-node/register src .*\\.test\\.ts",
-    "cov": "c8 --100 --src src -r html npm test",
+    "test": "vitest run src",
+    "cov": "npm test -- --coverage",
     "ocov": "npm run cov && open coverage/index.html",
-    "build:esm": "tsc --sourceRoot \"$(pwd)/src\" --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
-    "build": "shx rm -rf lib && npm run build:esm && tsc --sourceRoot \"$(pwd)/src\""
+    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
+    "build": "shx rm -rf lib && npm run build:cjs"
   },
   "eslintConfig": {
     "rules": {

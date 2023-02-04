@@ -8,6 +8,7 @@ import {
   createAnnotationFactory,
   Annotation,
   isAnnotationFactory,
+  isAnnotationInstance,
   AnnotationFactory,
   Type,
 } from './annotations.js'
@@ -87,5 +88,6 @@ export {
   setParameterAnnotations,
   createAnnotationFactory,
   isAnnotationFactory,
+  isAnnotationInstance,
   AnnotationFactory,
 }

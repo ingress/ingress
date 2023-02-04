@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ingress/ingress/HEAD/packages/ingress/logo.png" width="400" max-width="90%" alt="ingress" />
+  <picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ingress/ingress/HEAD/packages/ingress/logo-dark.png">
+  <img width="400" max-width="90%" alt="ingress logo" src="https://raw.githubusercontent.com/ingress/ingress/HEAD/packages/ingress/logo.png">
+</picture>
 </p>
 <p align="center">
 install: <code>npm i ingress</code><br><br>a utility for building applications using typescript and node.js<br>
@@ -11,9 +14,9 @@ install: <code>npm i ingress</code><br><br>a utility for building applications u
 
 **_Key Features_**
 
-- Dependency Injection, Discovery, IoC and lifecycle management
+- Dependency Injection, IoC and lifecycle management for your apps
 - Runtime type validation and coercion
-- Composable, connect-compatible, middleware integrations
+- Composable middleware
 
 ## Getting started (http):
 
@@ -22,7 +25,7 @@ import ingress, { Route } from "ingress";
 
 class MyController {
   @Route.Get("input-json/:name")
-  greeting(@Route.Path("name") name: string) {
+  greeting(@Route.Param("name") name: string) {
     return `Hello ${name}`
   }
 }
@@ -32,11 +35,22 @@ ingress(MyController)
   .then(x => `Listening on ${x.port}`)
 ```
 
-## Dependency Injection, Discovery, and IoC
+## Dependency Injection
 
-Each ingress app has a parent dependency injection container created from `@ingress/di`. Registering services or controllers can be done at app creation time, or using the collector decorators, after the app has been created, but not started. This facilitates a flexible dependency registration pattern, where the app can depend on the controllers, or, the controllers can depend on the app, With the example above, this would require each expression to be its own module (app, service, controller, startup respectively)
+Each ingress app has a DI container (`.container`), that pre-startup, enables registration of dependencies that will be wired up to the application's services.
+When applications are composed (e.g. multiple root containers `ingressApp1.use(ingressApp2)`), the containers are merged down (ingressApp2 into ingressApp1).
 
-When a request occurs, the ingress dependency injection container (`app.container`) will create a new child container (`context.scope`). This child container will be used to instantiate any `Service` or `Controller` used during that request. You can optionally inject any `Service`s or `SingletonService`s into these other dependencies. Note, that a `Service` has a per-request life-cycle and therefore cannot be injected into a `SingletonService` which lives for the life of the owning container. You should avoid patterns that result in needing circular dependencies. However, you can access dependencies circularly, by dynamically requesting them via a child container, `context.scope.get(...)`.
+
+## Inversion of Control and Lifecycle management
+
+When a `"Usable"` object is passed to `Ingress#use`. The following methods can optionally be present to tie into the application lifecycle.
+
+- `start(app, next): any` - a middleware function called once, when the app is started.
+- `initializeContext(ctx): ctx` - a synchronous method meant to decorate the context object, for every driver event.
+- `middleware(ctx, next): any` - a middleware function called for every driver event.
+- `stop(app, next): any` - a middleware function called once, when the app is stopped.
+
+When a driver event occurs (e.g. an Http Request), the ingress dependency injection container will create a new child container (`context.scope`). This child container will be used to instantiate any `Service` or `Controller` used during that event scope. You can optionally inject any `Service`s or `SingletonService`s into these other dependencies. Note, that a `Service` has a per-request life-cycle and therefore cannot be injected into a `SingletonService` which lives for the life of the owning container. You should avoid patterns that result in needing circular dependencies. However, you can access dependencies circularly, by dynamically requesting them via a child container, `context.scope.get(SomeOtherwiseCircularDependency)`.
 
 ## Runtime type validation and coercion
 

@@ -7,11 +7,17 @@ function isPrimitive(value: any) {
   return (typeof value !== 'object' && typeof value !== 'function') || value === null
 }
 
-enum MiddlewarePriority {
-  'BeforeBodyParser' = 'BeforeBodyParser',
+export const MiddlewarePriority = {
+  BeforeBodyParser: 'BeforeBodyParser',
 }
 
-export function defaultParser(context: RouterContext, next: () => Promise<any>): Promise<any> {
+export function defaultParser(
+  context: RouterContext,
+  next: () => Promise<any>
+): Promise<any> | void {
+  if (context.request.method === 'GET' || context.request.method === 'HEAD') {
+    return next()
+  }
   return context.request.parse({ mode: 'json' }).then((x: any) => {
     //eslint-disable-next-line
     context.request.body = x
@@ -76,7 +82,7 @@ function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) 
       continue
     }
     //search registered type resolvers
-    const resolver = typeResolver.getResolver(type)
+    const resolver = typeResolver.get(type)
     if (resolver) {
       resolvers.push((context: any) => resolver(pick(context)))
     }

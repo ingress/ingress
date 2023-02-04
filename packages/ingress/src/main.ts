@@ -36,7 +36,7 @@ export {
   Body,
   Header,
   Parse,
-  Path,
+  Param as Path,
   Query,
   ParseOptions,
   ParseAnnotation,

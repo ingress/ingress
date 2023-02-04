@@ -48,7 +48,6 @@ export class Router<T> {
     return map?.get(url) ?? { handle: null, params: [] }
   }
 }
-
 export class TreeNode<T> {
   constructor(
     private path = '',

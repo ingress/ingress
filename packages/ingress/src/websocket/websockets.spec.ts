@@ -45,7 +45,7 @@ describe('Websocket Connections', () => {
       constructor(private ws: Websockets) {}
 
       @Route.Post('/:channel')
-      sendMessageToChannel(@Route.Path('channel') channel: string, @Route.Body() message: any) {
+      sendMessageToChannel(@Route.Param('channel') channel: string, @Route.Body() message: any) {
         this.ws.group.send({ message, channels: [channel] })
       }
 

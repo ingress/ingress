@@ -1,6 +1,6 @@
-import type { Ingress, Middleware } from './core.js'
-import type { Annotation } from 'reflect-annotations'
-import type { ModuleContainerContext, Func } from './di.js'
+import type { NextFn } from './compose.js'
+import type { CoreContext } from './di.js'
+import type { Ingress } from './core.js'
 
 /**
  * Lifecycle stages of an app
@@ -13,76 +13,103 @@ export enum AppState {
   /**
    * The app is stopping
    */
-  Stopping = 1,
+  Stopping = 1 << 0,
   /**
    * The App is stopped after having been started
    */
-  Stopped = 2,
+  Stopped = 1 << 1,
   /**
    * The App is initializing
    */
-  Starting = 3,
+  Starting = 1 << 2,
   /**
    * The app is ready
    */
-  Started = 4,
+  Started = 1 << 3,
   /**
    * The app is ready
    */
-  Ready = 4,
+  Ready = 1 << 4,
   /**
    * The app is running
    */
-  Running = 5,
+  Running = 1 << 5,
 }
 
 export type RequireAtLeastOne<T> = {
   [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>
 }[keyof T]
 
-export interface Startable {
+const NoDecorations = {}
+export type EmptyExtend = typeof NoDecorations
+export type AnyFunc<A, R> = (...args: A[]) => R
+
+export type StartAndExtend<
+  Context extends CoreContext,
+  Decorations,
+  NewContext,
+  NewDecorations
+> = ContextInitializer<NewContext> & Startable<NewContext & Context, Decorations, NewDecorations>
+
+export interface Startable<
+  T extends CoreContext = any,
+  Decorations = EmptyExtend,
+  NewDecorations = EmptyExtend
+> {
   /**
    * Middleware that executes on start of the application, in the order it was registered
    */
-  start: Middleware<Ingress<any>>
+  start: (
+    app: Ingress<T, Decorations>,
+    next: NextFn
+  ) => ReturnType<NextFn> | Promise<NewDecorations> | NewDecorations
 }
-export interface ContextInitializer {
+export interface ContextInitializer<NewContext> {
   /**
    * Context initialization method invoked synchronously before the application's middleware
    */
-  extendContext: Func
+  initializeContext: (ctx: any) => NewContext
 }
-export interface Stopable {
+export interface Stoppable<T extends CoreContext = any, Decorations = EmptyExtend> {
   /**
    * Middleware that executes at the stop of the application, in the order it was registered
    */
-  stop: Middleware<Ingress<any>>
+  stop: UsableMiddleware<Ingress<T> & Decorations>['middleware']
 }
 export interface UsableMiddleware<T> {
   /**
    * Middleware that executes in the middleware of the application
    */
-  middleware: Middleware<T>
+  middleware: (context: T, next: NextFn) => ReturnType<NextFn>
+}
+export interface Usable<
+  Context extends CoreContext = CoreContext,
+  NewContext = EmptyExtend,
+  Decorations = EmptyExtend
+> {
+  stop: Stoppable<Context & NewContext, Decorations>['stop']
+  middleware: UsableMiddleware<Context & NewContext>['middleware']
 }
 
-export type UsableType<T> = Startable & ContextInitializer & Stopable & UsableMiddleware<T>
-export type Usable<T = any> = RequireAtLeastOne<UsableType<T>>
 /**
  * @public
  */
-export type Addon<T extends ModuleContainerContext> =
-  | Usable<T>
-  | Annotation<Usable<T>>
-  //  | AnnotationFactory<UsableType>
-  | Middleware<T>
-  | Ingress<T>
-  | (Usable<T> & Middleware<T>)
+export type Addon<
+  Context extends CoreContext = CoreContext,
+  NewContext = EmptyExtend,
+  Decorations = EmptyExtend
+> =
+  | Usable<Context, NewContext, Decorations>
+  | (Ingress<Context & NewContext> & Decorations)
+  | (Usable<Context, NewContext, Decorations> &
+      UsableMiddleware<Context & NewContext>['middleware'])
 
 export const guards = {
   isStartable,
   isContextInitializer,
-  isStopable,
+  isStoppable,
   isMiddleware,
+  hasMiddleware,
   checkUsableMiddleware,
   canStart,
 }
@@ -90,12 +117,18 @@ export const guards = {
 function isStartable(usable: any): usable is Startable {
   return checkPropertyIsFunctionOrGetter(usable, 'start')
 }
-function isContextInitializer(usable: any): usable is ContextInitializer {
-  return checkPropertyIsFunctionOrGetter(usable, 'extendContext')
+function isContextInitializer<T>(usable: any): usable is ContextInitializer<T> {
+  return checkPropertyIsFunctionOrGetter(usable, 'initializeContext')
 }
-function isStopable(usable: any): usable is Stopable {
+function isStoppable(usable: any): usable is Stoppable {
   return checkPropertyIsFunctionOrGetter(usable, 'stop')
 }
+
+function hasMiddleware<T>(usable: any): usable is UsableMiddleware<T> {
+  const descriptor = getDescriptor(usable, 'middleware')
+  return typeof descriptor?.value === 'function' || typeof descriptor?.get === 'function'
+}
+
 function isMiddleware<T>(usable: any): usable is UsableMiddleware<T> {
   const descriptor = getDescriptor(usable, 'middleware')
   if (typeof descriptor?.value === 'function') {
@@ -113,7 +146,10 @@ function checkUsableMiddleware<T>(usable: any): usable is UsableMiddleware<T> {
 }
 
 function canStart(state: AppState) {
-  return ![AppState.Starting, AppState.Started, AppState.Running].includes(state)
+  if (state & AppState.Running || state & AppState.Started || state & AppState.Starting) {
+    return false
+  }
+  return true
 }
 
 function getDescriptor(obj: any, prop: string) {

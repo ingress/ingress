@@ -8,7 +8,9 @@ import {
   ValueProvider,
 } from 'injection-js'
 
-import { Type, DependencyCollectorList, DependencyCollector, Func } from './collector.js'
+import { Type, DependencyCollectorList, DependencyCollector } from './collector.js'
+import type { NextFn } from './compose.js'
+
 import type { Startable } from './types.js'
 /* c8 ignore next */
 export * from './collector.js'
@@ -21,7 +23,7 @@ export interface Injector {
 /**
  * @public
  */
-export interface ModuleContainerContext {
+export interface CoreContext {
   scope: Injector
 }
 
@@ -117,20 +119,18 @@ export class ModuleContainer implements Injector, Startable {
     return this.createChild(new this.ResolvedContextProvider(context))
   }
 
-  public async start(app?: any, next?: Func): Promise<any> {
+  public async start(app?: any, next?: NextFn): Promise<any> {
     if (next) {
       await next()
     }
-    //merge into parent container
-    if (app && app.container) {
+    if (app?.container) {
       app.container.setup(this)
       if (app.container !== this) {
-        //remove sub-container initializers from the extendContext pipeline.
+        //remove sub-container initializers from the initializeContext pipeline.
         app.unUse(this)
       }
-    } else {
-      this.setup()
     }
+    if (!app?.container) this.setup()
     return app?.finalize(this.forwardRefCollector.items)
   }
 
@@ -153,7 +153,7 @@ export class ModuleContainer implements Injector, Startable {
     ]
   }
 
-  extendContext(ctx: any): any {
+  initializeContext(ctx: any): any {
     ctx.scope ||= this.createChildWithContext(ctx)
     return ctx
   }

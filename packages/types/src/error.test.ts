@@ -1,27 +1,26 @@
-import * as t from 'uvu/assert'
-import { test } from 'uvu'
+import { describe, it, expect } from 'vitest'
 import { createErrorType } from './error.js'
 
-test('createErrorType', () => {
-  const MyError = createErrorType('MyError', {
-      code: 'SOMETHING',
-      random: 'asdf',
-      message: 'default message',
-    }),
-    myError = new MyError(),
-    myErrorMessage = new MyError('Some Message'),
-    noNew = (MyError as any)()
+describe('createErrorType', () => {
+  it('createErrorType', () => {
+    const MyError = createErrorType('MyError', {
+        code: 'SOMETHING',
+        random: 'asdf',
+        message: 'default message',
+      }),
+      myError = new MyError(),
+      myErrorMessage = new MyError('Some Message'),
+      noNew = (MyError as any)()
 
-  t.is(MyError.name, 'MyError', 'Constructor has name')
-  t.is(myError.name, 'MyError', 'Instance has name')
-  t.is(myError.random, 'asdf', 'Extraneous typed properties')
-  t.is(myError.code, 'SOMETHING', 'Code is set')
-  t.is((MyError as any).code, undefined, 'Constructor code is not set')
-  t.ok(myError instanceof Error, 'Is instanceof Error')
-  t.ok(noNew instanceof Error, 'Not new-ing produces instance')
-  t.equal(noNew, myError)
-  t.is(myError.message, 'default message', 'Sets default message')
-  t.is(myErrorMessage.message, 'Some Message', 'Overrides message')
+    expect(MyError.name, 'Constructor has name').toBe('MyError')
+    expect(myError.name, 'Instance has name').toBe('MyError')
+    expect(myError.random, 'Extraneous typed properties').toBe('asdf')
+    expect(myError.code, 'Code is set').toBe('SOMETHING')
+    expect((MyError as any).code, 'Constructor code is not set').toBe(undefined)
+    expect(myError instanceof Error, 'Is instanceof Error').toBeTruthy()
+    expect(noNew instanceof Error, 'Not new-ing produces instance').toBeTruthy()
+    expect(noNew).toEqual(myError)
+    expect(myError.message, 'Sets default message').toBe('default message')
+    expect(myErrorMessage.message, 'Overrides message').toBe('Some Message')
+  })
 })
-
-test.run()

@@ -1,21 +1,13 @@
 import type { IncomingMessage, ServerResponse } from 'http'
-import type { Ingress } from '@ingress/core'
+import type { Ingress, Injector } from '@ingress/core'
 import { StatusCode } from '@ingress/types'
 import { parse } from 'secure-json-parse'
 import { parseBuffer, parseString } from './parser.js'
 import { finished, Readable } from 'readable-stream'
 import { Buffer, Blob } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
-import type {
-  HttpContext,
-  ParseMode,
-  ParseOptions,
-  Request,
-  Response,
-  ResponseBase,
-} from '@ingress/types'
+import type { HttpContext, ParseMode, ParseOptions, Request, Response } from '@ingress/types'
 import { exists, getContentType, readUrl, isObjectLike } from './util.js'
-import type { Injector } from 'injection-js'
 
 const DefaultErrorStatusText = 'Internal Server Error'
 const enum SendingState {
@@ -26,7 +18,7 @@ const enum SendingState {
   Errored,
 }
 
-export class NodeRequest<T> implements Request<T> {
+export class NodeRequest<T extends HttpContext<T>> implements Request<T> {
   public pathname: string
   public method: string
   public search = ''
@@ -69,7 +61,7 @@ export class NodeRequest<T> implements Request<T> {
     const req = this.raw as any as IncomingMessage,
       limit = 'sizeLimit' in options ? Number(options.sizeLimit) : DefaultParseOptions.sizeLimit
     if (options.mode === 'stream') {
-      //SOMEDAY? Handle limit?
+      //SOMEDAY Handle limit
       return req
     }
     if (options.mode === 'json') {
@@ -82,19 +74,15 @@ export class NodeRequest<T> implements Request<T> {
   }
 }
 
-class NodeResponseBase<T extends HttpContext<any>> implements ResponseBase<T> {
+class NodeResponse<T extends HttpContext<any>> implements Response<T> {
   #state = SendingState.New
-  static create<T>(...args: ConstructorParameters<typeof NodeResponseBase>): Response<T> {
-    const base = new NodeResponseBase(...args),
-      send = base.send.bind(base)
-    Object.setPrototypeOf(send, base)
-    return send as any as Response<T>
-  }
+  #headers: Record<string, string | undefined> = {}
   public serializers = {
     json: (x: any) => JSON.stringify(x),
   }
-  #headers: Record<string, string | undefined> = {}
-  constructor(public raw: ServerResponse, public context: T) {}
+  constructor(public raw: ServerResponse, public context: T) {
+    this.send = this.send.bind(this)
+  }
   get statusCode() {
     return this.raw.statusCode
   }
@@ -159,22 +147,18 @@ class NodeResponseBase<T extends HttpContext<any>> implements ResponseBase<T> {
     return this as any
   }
 }
-Object.setPrototypeOf(NodeResponseBase.prototype, Function.prototype)
-
 /**
  * HttpContext is a "Driver" context and assumes all the properties added by middleware.
  *
- * eg. Ingress's built-in DI middleware adds the `scope` child injector property.
- */
-export class NodeHttpContext<T> implements HttpContext<T> {
-  //core props
-  public scope!: Injector
+ **/
+export class NodeHttpContext<T extends HttpContext<any>> implements HttpContext<T> {
+  public scope: Injector = null as any
   public http = this
-  public request: NodeRequest<T>
-  public send: Response<T>
+  public request: Request<T>
+  public response: Response<T>
   constructor(public req: IncomingMessage, public res: ServerResponse, public app: Ingress<any>) {
-    this.request = new NodeRequest(req, this as unknown as T)
-    this.send = NodeResponseBase.create(res, this)
+    this.request = new NodeRequest<T>(req, this as unknown as T)
+    this.response = new NodeResponse<T>(res, this as unknown as T)
   }
 }
 

@@ -1,13 +1,20 @@
-import { isAnnotationFactory } from 'reflect-annotations'
-import { Func, ModuleContainer, ModuleContainerContext } from './di.js'
-import { exec, ContinuationMiddleware, executeByArity, Middleware } from './compose.js'
+import {
+  Annotation,
+  AnnotationFactory,
+  isAnnotationFactory,
+  isAnnotationInstance,
+} from 'reflect-annotations'
+import { Func, ModuleContainer, CoreContext } from './di.js'
+import { exec, ContinuationMiddleware, NextFn, executeByArity, Middleware } from './compose.js'
 import {
   Addon,
   AppState,
   ContextInitializer,
+  EmptyExtend,
   guards,
   Startable,
-  Stopable,
+  StartAndExtend,
+  Stoppable,
   Usable,
   UsableMiddleware,
 } from './types.js'
@@ -15,7 +22,7 @@ import {
 const _hosts = Symbol('ingress.hosts'),
   _middleware = Symbol('ingress.middleware')
 
-class Ingress<T extends ModuleContainerContext> {
+class Ingress<T extends CoreContext = CoreContext, D = EmptyExtend> {
   static [_hosts] = new WeakMap<any, Ingress<any>>();
   [_middleware]: ContinuationMiddleware<T> | null = null
 
@@ -26,35 +33,35 @@ class Ingress<T extends ModuleContainerContext> {
   private contextBase: Partial<T> | undefined = undefined
   private mw: UsableMiddleware<T>[] = []
   private setups: (Startable | undefined)[] = []
-  private teardowns: (Stopable | undefined)[] = []
-  private setupCtx: (ContextInitializer | undefined)[] = []
+  private teardowns: (Stoppable | undefined)[] = []
+  private setupCtx: (ContextInitializer<T> | undefined)[] = []
 
   constructor(options?: { context?: any; container?: ModuleContainer }) {
     this.contextBase = options?.context
     this.container = options?.container || new ModuleContainer()
   }
 
-  extendContext(ctx: Partial<T>): T {
+  initializeContext(ctx: CoreContext): T {
     ctx = ctx || Object.create(this.contextBase || null)
     for (const init of this.setupCtx) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      ctx = init!.extendContext(ctx)
+      ctx = init!.initializeContext(ctx)
     }
     //SOMEDAY use proxy to monitor dynamic properties during dev?
     return ctx as T
   }
+
   get middleware(): ContinuationMiddleware<T> {
     if (this[_middleware]) {
-      return this[_middleware]!
+      return this[_middleware] as ContinuationMiddleware<T>
     }
-    const executor = (u: UsableMiddleware<T>, context: T, next: Func) => {
-        return u.middleware(context, next)
-      },
-      mw = this.mw.filter((x) => x)
-
+    function executor(u: UsableMiddleware<T>, context: T, next: NextFn) {
+      return u.middleware(context, next)
+    }
+    const mw = this.mw.filter((x) => x)
     this.setupCtx = this.setupCtx.filter((x) => x)
     return (this[_middleware] = (ctx, next) => {
-      ctx = this.extendContext(ctx as T)
+      ctx = this.initializeContext(ctx as T)
       return exec(mw, ctx, next, executor)
     })
   }
@@ -62,7 +69,7 @@ class Ingress<T extends ModuleContainerContext> {
   /**
    * @param usable
    */
-  public unUse(usable: Addon<T>) {
+  public unUse(usable: any) {
     const host = Ingress[_hosts].get(usable)
     if (!host) {
       throw new Error("Unable to unUse an addon that has not been use'd")
@@ -75,85 +82,119 @@ class Ingress<T extends ModuleContainerContext> {
     Ingress[_hosts].delete(usable)
   }
 
-  public finalize(forwardRefs: Iterable<any>) {
+  public async finalize(forwardRefs: Iterable<any>): Promise<void> {
     const setups = this.setups.slice()
     for (const forward of forwardRefs) {
       this.use(this.container.get(forward))
     }
     const finalSetups = this.setups.filter((x) => !setups.includes(x))
-    return exec(finalSetups, this, void 0, startableExecutor)
+
+    await addDecorations(finalSetups, this, void 0)
   }
 
-  public use(...usables: Addon<T>[]): this {
-    if (usables.length > 1) {
-      for (const x of usables) this.use(x)
-      return this
-    }
-    let [usable] = usables
-    if ([AppState.Started, AppState.Running].includes(this.readyState)) {
-      throw new Error('Already started, Cannot "use" something now')
+  public use<Extensions = EmptyExtend, NewDecorations = EmptyExtend>(
+    usable: StartAndExtend<T, D, Extensions, NewDecorations> &
+      Partial<Usable<T, Extensions, NewDecorations>>
+  ): Ingress<T & Extensions, D & NewDecorations>
+  public use<Extensions = EmptyExtend>(
+    usable: ContextInitializer<Extensions> & Partial<Usable<T, Extensions>>
+  ): Ingress<T & Extensions, D>
+  public use<NewDecorations = EmptyExtend>(
+    usable: Startable<T, D, NewDecorations> & Partial<Usable<T, EmptyExtend, NewDecorations>>
+  ): Ingress<T, D & NewDecorations>
+  public use<NewDecorations = EmptyExtend>(
+    usable: Partial<Usable<T, EmptyExtend, NewDecorations>>
+  ): Ingress<T, D>
+
+  public use(usable: UsableMiddleware<T>['middleware']): Ingress<T, D>
+
+  public use<Extensions extends CoreContext, Decorations>(
+    app: Ingress<Extensions, Decorations>
+  ): Ingress<T & Extensions, D & Decorations>
+
+  public use<U>(
+    annotation: Annotation<U>
+  ): U extends StartAndExtend<T, D, infer Extensions, infer NewDecorations>
+    ? Ingress<T & Extensions, D & NewDecorations>
+    : U extends ContextInitializer<infer Extensions>
+    ? Ingress<T & Extensions, D>
+    : U extends Startable<T, D, infer NewDecorations>
+    ? Ingress<T, D & NewDecorations>
+    : Ingress<T, D>
+
+  public use<U>(
+    factory: AnnotationFactory<U>
+  ): U extends StartAndExtend<T, D, infer Extensions, infer NewDecorations>
+    ? Ingress<T & Extensions, D & NewDecorations>
+    : U extends ContextInitializer<infer Extensions>
+    ? Ingress<T & Extensions, D>
+    : U extends Startable<T, D, infer NewDecorations>
+    ? Ingress<T, D & NewDecorations>
+    : Ingress<T, D>
+
+  public use<Extensions = EmptyExtend, Decorations = EmptyExtend>(
+    usable: Addon<T, Extensions, Decorations>
+  ): any {
+    if (AppState.Started & this.readyState || AppState.Running & this.readyState) {
+      throw new Error('Already started, Cannot "use" now')
     }
     let used = false
-    if ('annotationInstance' in usable) {
-      return this.use(usable.annotationInstance)
+    if (isAnnotationInstance(usable)) {
+      return this.use(usable.annotationInstance) as any
     }
-    if (guards.isMiddleware<T>(usable)) {
-      this.mw.push(usable)
-      used = true
+    if (guards.hasMiddleware<T>(usable)) {
+      if (guards.checkUsableMiddleware<T>(usable)) {
+        this.mw.push(usable)
+        used = true
+      }
     }
     if (guards.isStartable(usable)) {
       this.setups.push(usable)
       used = true
     }
-
-    if (guards.isStopable(usable)) {
+    if (guards.isStoppable(usable)) {
       this.teardowns.push(usable)
       used = true
     }
-
-    if (guards.isContextInitializer(usable)) {
+    if (guards.isContextInitializer<T>(usable)) {
       this.setupCtx.push(usable)
       used = true
     }
-
     if (isAnnotationFactory(usable)) {
-      return this.use(usable().annotationInstance)
+      return this.use(usable().annotationInstance) as any
     }
-
     if (typeof usable === 'function') {
-      usable = { middleware: usable }
-      if (guards.checkUsableMiddleware(usable)) {
+      usable = { middleware: usable } as any
+      if (guards.checkUsableMiddleware<T>(usable)) {
         this.mw.push(usable)
         used = true
       }
     }
-
     if (!used) {
       throw new TypeError('Unable to use: ' + usable)
     }
-
     Ingress[_hosts].set(usable, this)
-
     return this
   }
 
-  public async start(app?: Ingress<any>, next?: Func<Promise<void>>): Promise<Ingress<T>> {
+  public async start(app?: Ingress<any, any>, next?: NextFn): Promise<Ingress<T, never> & D> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     app ||= this
     const isRoot = app === this
     if (isRoot && !guards.canStart(app.readyState)) {
       return Promise.reject(new Error('Already started or starting'))
     }
-    if (!isRoot) {
-      this.container = app.container
-    } else {
+    if (isRoot) {
       this.use(this.container)
+    } else {
+      this.container = app.container
     }
 
-    this.readyState = AppState.Starting
-    await exec(this.setups, app, next, startableExecutor)
-    this.readyState = AppState.Started
-    if (!this.#initializer) this.readyState = AppState.Running
-    return this
+    this.readyState |= AppState.Starting
+    await addDecorations(this.setups, app, next)
+    this.readyState |= AppState.Started
+    if (!this.#initializer) this.readyState |= AppState.Running
+    return this as any
   }
 
   #initializer: Func | null = null
@@ -164,55 +205,76 @@ class Ingress<T extends ModuleContainerContext> {
   }
 
   async run() {
-    if ([AppState.Stopped, AppState.Stopping].includes(this.readyState)) {
+    if (AppState.Stopped & this.readyState || AppState.Stopping & this.readyState) {
       throw new Error('Cannot run a stopped app')
     }
     if (this.readyState === AppState.New) {
       await this.start()
     }
 
-    if (this.readyState !== AppState.Running) {
+    if (!(this.readyState & AppState.Running)) {
       try {
         await this.#initializer?.()
       } finally {
-        this.readyState = AppState.Running
+        this.readyState |= AppState.Running
       }
     }
     return this
   }
 
-  public async stop(app?: Ingress<any>, next?: Func<Promise<void>>): Promise<Ingress<T>> {
+  public async stop(app?: Ingress<any, any>, next?: Func<Promise<void>>): Promise<Ingress<T, D>> {
     app = app || this
     if (
-      (app === this && AppState.Stopping === app.readyState) ||
-      [AppState.Stopped, AppState.New].includes(app.readyState)
+      app === this &&
+      (app.readyState & AppState.Stopping ||
+        app.readyState & AppState.Stopping ||
+        app.readyState & AppState.New)
     ) {
       throw new Error('Already stopped or stopping')
     }
-    this.readyState = AppState.Stopping
+    this.readyState |= AppState.Stopping
     try {
-      await exec(this.teardowns, app, next, executeByArity.bind(null, 'stop'))
+      await exec(this.teardowns, app, next, executeByArity.bind(null, 'stop', undefined))
     } finally {
-      this.readyState = AppState.Stopped
+      this.readyState = AppState.New
+      this.readyState |= AppState.Stopped
     }
     return this
   }
 }
 
-const startableExecutor = executeByArity.bind(null, 'start')
+async function addDecorations(setups: (Startable | undefined)[], app: Ingress<any>, next?: NextFn) {
+  const results: any[] = [],
+    startableExecutor = executeByArity.bind(null, 'start', results)
+  await exec(setups, app, next, startableExecutor)
+  const decorations = await Promise.all(results.flat())
+  decorations
+    .filter((x) => x && !(x instanceof Ingress))
+    .forEach((dec) => {
+      Object.assign(app, dec)
+    })
+}
 
 /** Core Objects */
 /** Main and Factory Exports */
 export { Ingress, AppState }
 export default ingress
-export function ingress<T extends ModuleContainerContext>(
-  ...args: ConstructorParameters<typeof Ingress>
-) {
+export function ingress<T extends CoreContext>(...args: ConstructorParameters<typeof Ingress>) {
   return new Ingress<T>(...args)
 }
 
 /** Core Types */
-export type { Addon, UsableMiddleware, Startable, Stopable, ContextInitializer, Middleware, Usable }
+export type {
+  Addon,
+  UsableMiddleware,
+  Startable,
+  Stoppable,
+  ContextInitializer,
+  Middleware,
+  Usable,
+  ContinuationMiddleware,
+  NextFn,
+}
 
 /** compositional execution helpers */
 export { compose, exec } from './compose.js'
@@ -228,4 +290,4 @@ export {
   ContextToken,
   createContainer,
 } from './di.js'
-export type { ModuleContainerOptions, Injector, ModuleContainerContext } from './di.js'
+export type { ModuleContainerOptions, Injector, CoreContext } from './di.js'

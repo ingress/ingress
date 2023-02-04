@@ -1,18 +1,20 @@
-import type { Func } from './di'
+import type { Func } from './di.js'
 
 export interface Middleware<T, R = any> {
-  (context: T, next: ContinuationMiddleware<T, R>): R | Promise<R>
+  (context: T, next: ContinuationMiddleware<T, R>): R
 }
-export interface ContinuationMiddleware<T, R = any> {
-  (context?: T, next?: Middleware<T, R>): R | Promise<R>
+
+export type NextFn = ContinuationMiddleware<any, void>
+
+export interface ContinuationMiddleware<T = any, R = any> {
+  (context?: T, next?: Middleware<T, R>): R
 }
 export interface StartingMiddleware<T, R = any> {
-  (context: T, next?: Middleware<T, R>): R | Promise<R>
+  (context: T, next?: Middleware<T, R>): R
 }
 
 /**
  * Checks to see if a function is a middleware function
- * Don't use in the hotpath
  * @param value
  * @returns
  */
@@ -21,9 +23,7 @@ export function isMiddlewareFunction(value: any): value is Func {
 }
 
 const defaultExecutor = (func: Func, ctx: any, next: any) => func(ctx, next),
-  noopNext = () => {
-    void 0
-  }
+  noopNext = () => void 0
 
 /**
  * Take a snapshot of middleware and return a function to invoke all with a single argument <T>context
@@ -52,7 +52,7 @@ export function exec<T>(
   mw: any[],
   ctx: T,
   next: Middleware<T> | undefined = noopNext,
-  executor: Func | undefined = defaultExecutor
+  executor: Func<any, any> | undefined = defaultExecutor
 ): Promise<void> | void {
   let i = -1
   const nxt = (): void | Promise<void> => {
@@ -65,17 +65,28 @@ export function exec<T>(
   return nxt()
 }
 
-export function executeByArity(prop: string, usable: any, ctx: any, next: any) {
+export function executeByArity(
+  prop: string,
+  results: any[] | undefined,
+  usable: any,
+  ctx: any,
+  next: any = noopNext
+) {
   if (usable?.[prop]) {
-    if (usable[prop].length >= 2) return usable[prop](ctx, next)
+    if (usable[prop].length >= 2) {
+      const res = usable[prop](ctx, next)
+      if (res && results) results.push(res)
+      return res
+    }
     const nxt = wrapNext(next),
       result = usable[prop](ctx, nxt)
-
+    if (result && results) results.push(result)
     if (typeof result?.then === 'function') return result.then(nxt)
-
     return nxt()
   }
-  return next()
+  const last = next()
+  last && results?.push(last)
+  return last
 }
 
 function wrapNext(fn: Func | null) {

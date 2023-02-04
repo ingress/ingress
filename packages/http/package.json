@@ -1,5 +1,6 @@
 {
   "name": "@ingress/http",
+  "packageManager": "npm@9.4.0",
   "version": "0.0.1-alpha.0",
   "keywords": [],
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
@@ -10,7 +11,8 @@
   "exports": {
     ".": {
       "node": {
-        "import": "./lib/esm/node.http.js",
+        "import": "./index.mjs",
+        "types": "./lib/cjs/node.http.d.ts",
         "require": "./lib/cjs/node.http.js"
       }
     }
@@ -20,19 +22,19 @@
     "docs"
   ],
   "scripts": {
-    "test": "uvu -r ts-node/register -r reflect-metadata src .*\\.test\\.ts -- --no-warnings",
-    "cov": "c8 --src src -r html npm test && open coverage/index.html",
-    "build:esm": "tsc --sourceRoot \"$(pwd)/src\" --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
-    "build": "shx rm -rf lib && npm run build:esm && tsc --sourceRoot \"$(pwd)/src\""
+    "test": "vitest run src",
+    "cov": "echo $npm_",
+    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
+    "build": "shx rm -rf lib && npm run build:cjs"
   },
   "dependencies": {
     "@ingress/core": "1.0.0-rc.1",
     "@ingress/types": "0.0.1",
-    "readable-stream": "^3.6.0",
-    "secure-json-parse": "^2.4.0"
+    "readable-stream": "^4.1.0",
+    "secure-json-parse": "^2.5.0"
   },
   "devDependencies": {
-    "@types/node": "^17.0.12",
-    "undici": "^4.12.2"
+    "@types/node": "^18.6.3",
+    "undici": "^5.8.0"
   }
 }

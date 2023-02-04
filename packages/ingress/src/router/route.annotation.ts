@@ -87,7 +87,7 @@ function createParamAnnotationFactory(property: string) {
  * @public
  */
 const Body = createParamAnnotationFactory('body'),
-  Path = createParamAnnotationFactory('params'),
+  Param = createParamAnnotationFactory('params'),
   Query = createParamAnnotationFactory('query')
 /**
  * @public
@@ -163,7 +163,7 @@ export interface Route extends PathFactory {
   /**
    * Extract the path parameters, or specific paramter to the decorated argument
    */
-  Path: RouteParamAnnotation
+  Param: RouteParamAnnotation
   /**
    * Extract the query parameters, or specific query parameter to the decorated argument
    */
@@ -195,7 +195,7 @@ export const Route = methods.reduce(
   },
   Object.assign(createAnnotationFactory(RouteAnnotation), {
     Body,
-    Path,
+    Param,
     Query,
     Header,
     Upgrade,
@@ -215,7 +215,7 @@ export {
   /**
    * @public
    */
-  Path,
+  Param,
   /**
    * @public
    */

@@ -60,7 +60,7 @@ describe('Parameters', () => {
         routeSpy = sinon.spy()
       }
       @Route.Get('path/:expected')
-      pathParam(@Route.Path('expected') result: string) {
+      pathParam(@Route.Param('expected') result: string) {
         routeSpy()
         return result
       }
@@ -92,7 +92,7 @@ describe('Parameters', () => {
       typeConversionBool(
         @Route.Header('expected') h: boolean,
         @Route.Query('expected') q: boolean,
-        @Route.Path('expected') p: boolean
+        @Route.Param('expected') p: boolean
       ) {
         routeSpy()
         return [h, q, p]
@@ -102,7 +102,7 @@ describe('Parameters', () => {
       typeConversionNumber(
         @Route.Header('expected') h: number,
         @Route.Body() b: number,
-        @Route.Path('expected') p: number
+        @Route.Param('expected') p: number
       ) {
         routeSpy()
         return [p, b, h]
@@ -111,19 +111,19 @@ describe('Parameters', () => {
       typeConversionString(
         @Route.Header('expected') h: string,
         @Route.Body() b: string,
-        @Route.Path('expected') p: string
+        @Route.Param('expected') p: string
       ) {
         routeSpy()
         return [p, b, h]
       }
       @Route.Get('type-conversion/custom/:expected')
-      typeConversionCustom(@Route.Path('expected') p: MyType) {
+      typeConversionCustom(@Route.Param('expected') p: MyType) {
         routeSpy()
         expect(p).toBeInstanceOf(MyType)
         return p
       }
       @Route.Get('/type-conversion/custom-predicate/:expected')
-      typeConversionCustomPredicate(@Route.Path('expected') p: PredicateType) {
+      typeConversionCustomPredicate(@Route.Param('expected') p: PredicateType) {
         routeSpy()
         expect(p).toBeInstanceOf(PredicateType)
         return p
@@ -285,7 +285,7 @@ describe('Parameters', () => {
     let error: Error | undefined = undefined
     class Routes {
       @Route.Get('somePath/:something')
-      somePath(@Route.Path('something') p: SomeType) {
+      somePath(@Route.Param('something') p: SomeType) {
         return p
       }
     }

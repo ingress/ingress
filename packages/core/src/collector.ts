@@ -5,8 +5,7 @@ export type DependencyProvider =
   | Omit<ValueProvider, 'provide'>
   | Omit<ClassProvider, 'provide'>
 
-export const Type = Function
-export interface Type<T> {
+export interface Type<T> extends Function {
   new (...args: any[]): T
 }
 

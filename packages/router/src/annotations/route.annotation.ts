@@ -141,7 +141,7 @@ const methods = ['Get', 'Post', 'Put', 'Delete', 'Head', 'Patch'],
   /**
    * @public
    */
-  Path = createAnnotationFactory(PathParamAnnotation),
+  Param = createAnnotationFactory(PathParamAnnotation),
   /**
    * @public
    */
@@ -182,7 +182,7 @@ export interface Route extends PathFactoryAnnotation {
   /**
    * Extract the path parameters, or specific parameter to the decorated argument
    */
-  Path: ParamAnnotationFactory
+  Param: ParamAnnotationFactory
   /**
    * Extract the query parameters, or specific query parameter to the decorated argument
    */
@@ -210,7 +210,7 @@ export const Route = methods.reduce(
   },
   Object.assign(createAnnotationFactory(RouteAnnotation), {
     Body,
-    Path,
+    Param,
     Query,
     Header,
     Upgrade,
@@ -234,7 +234,7 @@ export {
   /**
    * @public
    */
-  Path,
+  Param,
   /**
    * @public
    */

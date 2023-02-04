@@ -14,11 +14,15 @@ export function exists(x: any) {
 }
 
 export function isHtmlLike(data: any): data is string {
-  return typeof data === 'string' && data.startsWith('<') && data.endsWith('>')
+  return isText(data) && data.startsWith('<') && data.endsWith('>')
 }
 
 export function isText(data: any): data is string {
   return typeof data === 'string'
+}
+
+export function isStream(obj: any): obj is Stream {
+  return isObjectLike(obj) && typeof obj.pipe === 'function'
 }
 
 export function isJson(data: any) {
@@ -30,15 +34,11 @@ export function isBytes(data: any) {
 }
 
 export function getContentType(data: any) {
-  if (isBytes(data)) return 'application/octet-stream'
-  if (isHtmlLike(data)) return 'text/html'
-  if (isText(data)) return 'text/plain; charset=utf-8'
-  if (isJson(data)) return 'application/json'
-  return 'application/octet-stream'
-}
-
-export function isStream(obj: any): obj is Stream {
-  return obj && typeof obj.pipe === 'function'
+  if (isBytes(data)) return 'application/octet-stream' as const
+  if (isHtmlLike(data)) return 'text/html' as const
+  if (isText(data)) return 'text/plain; charset=utf-8' as const
+  if (isStream(data)) return 'application/octet-stream' as const
+  if (isJson(data)) return 'application/json' as const
 }
 
 export type Pathname = string

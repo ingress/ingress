@@ -24,15 +24,7 @@ const enum QuerySep {
   SemiColon = 59,
   QuestionMark = 63,
 }
-/**
- * Given the "path" which potentially includes additional fragments, split the two
- * eg. : /path/to/route?with=query&parameters=1 => ['/path/to/route', 'with=query&parameters=1']
- *
- *
- *
- * @param path
- * @returns
- */
+
 export function readUrl(path?: string): [Pathname, QueryString] {
   if (!path) return ['/', '']
   const pathName = path
@@ -48,12 +40,13 @@ export function readUrl(path?: string): [Pathname, QueryString] {
 }
 export class Router {
   private collector = new ControllerCollector()
-  private map!: RouteMap<Handle>
-  private enabled = true
   public metadata = new Set<RouteMetadata>()
-  public hasUpgrade = false
-  public Controller = this.collector.collect
   public registeredMetadata!: Map<PathMap, RouteMetadata>
+  public hasUpgrade = false
+
+  public Controller = this.collector.collect
+
+  private map!: RouteMap<Handle>
   private app!: Ingress<any>
   public _root!: Router
 
@@ -63,16 +56,17 @@ export class Router {
       this.collector.collect(ctrl)
     }
   }
-
-  public start(app: Ingress<any>, next: Func<Promise<any>>): Promise<void> {
+  initializeContext(ctx: RouterContext) {
+    return ctx
+  }
+  public start(app: Ingress<RouterContext>, next: Func<Promise<any>>): Promise<void> {
     //initialization w possible parent
-    let root = app.container.findRegisteredSingleton(Router)
+    let root = app.container.findProvidedSingleton(Router)
     if (!root) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       root = this
       app.container.registerSingleton({ provide: Router, useValue: this })
       root.app = app
-    } else {
-      this.enabled = false
     }
     root.map ||= new RouteMap()
     root.registeredMetadata ||= new Map()
@@ -103,7 +97,7 @@ export class Router {
   public registerRouteClass(type: Type<any>): this {
     const metadata = reflectAnnotations(type)
     for (const routeMetadata of metadata) {
-      this._root.registerRouteMetadata({
+      this.registerRouteMetadata({
         controllerAnnotations: routeMetadata.classAnnotations,
         controller: routeMetadata.parent,
         ...routeMetadata,
@@ -113,6 +107,10 @@ export class Router {
   }
 
   public registerRouteMetadata(routeMetadata: RouteMetadata): this {
+    if (!this.app) {
+      this.metadata.add(routeMetadata)
+      return this
+    }
     this.app.container.registerScoped(routeMetadata.controller)
     const handler = createHandler(routeMetadata, this.typeResolver),
       paths = resolvePaths(routeMetadata)
@@ -134,16 +132,15 @@ export class Router {
   }
 
   public middleware(context: RouterContext, next: any) {
-    if (!this.enabled) return next()
     const method = context.request.method || 'GET',
       { handle, params } = this._root.map.find(method, context.request.pathname)
 
     if (handle) {
-      context.send.code(StatusCode.Ok)
+      context.response.code(StatusCode.Ok)
       context.route = new RouteData(params, handle)
       return context.route.exec(context, next)
     } else {
-      context.send.code(StatusCode.NotFound)
+      context.response.code(StatusCode.NotFound)
     }
     return next()
   }

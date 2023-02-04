@@ -17,7 +17,8 @@
   "exports": {
     ".": {
       "node": {
-        "import": "./lib/esm/router.js",
+        "import": "./index.mjs",
+        "types": "./lib/cjs/router.d.ts",
         "require": "./lib/cjs/router.js"
       },
       "default": "./lib/esm/router.js"
@@ -30,19 +31,20 @@
   ],
   "scripts": {
     "docs": "typedoc src/router.ts --excludePrivate",
-    "build:esm": "tsc --sourceRoot \"$(pwd)/src\" --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
-    "build": "shx rm -rf lib && tsc --sourceRoot \"$(pwd)/src\" && npm run build:esm"
+    "test": "vitest run src",
+    "cov": "npm test -- --covreage && open coverage/index.html",
+    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
+    "build": "shx rm -rf lib && npm run build:cjs"
   },
   "dependencies": {
     "@ingress/core": "1.0.0-rc.1",
     "@ingress/types": "0.0.1",
-    "reflect-annotations": "4.0.0-alpha.6",
-    "router-tree-map": "^0.1.2",
-    "secure-json-parse": "^2.4.0"
+    "reflect-annotations": "4.0.0-alpha.9",
+    "router-tree-map": "^0.1.5",
+    "secure-json-parse": "^2.5.0"
   },
   "devDependencies": {
-    "@hapi/shot": "^5.0.5",
-    "@ingress/http": "0.0.1-alpha.0",
-    "@types/hapi__shot": "^4.1.2"
+    "@hapi/shot": "^6.0.0",
+    "@ingress/http": "0.0.1-alpha.0"
   }
 }

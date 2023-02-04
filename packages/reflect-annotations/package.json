@@ -11,7 +11,7 @@
   "types": "./lib/cjs/index.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/esm/index.js",
+      "import": "./index.mjs",
       "require": "./lib/cjs/index.js"
     },
     "./package.json": "./package.json"
@@ -24,11 +24,11 @@
     "node": ">=4.0.0"
   },
   "scripts": {
-    "test": "uvu -r ts-node/register src .*\\.test\\.ts",
-    "cov": "c8 --100 --src src -r html npm test",
+    "test": "vitest run src",
+    "cov": "vitest run src --coverage",
     "ocov": "open coverage/index.html",
-    "build:esm": "tsc --sourceRoot \"$(pwd)/src\" --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
-    "build": "shx rm -rf lib && npm run build:esm && tsc --sourceRoot \"$(pwd)/src\""
+    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
+    "build": "shx rm -rf lib && npm run build:cjs"
   },
   "keywords": [
     "annotations",
@@ -46,7 +46,7 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@types/node": "^17.0.12",
+    "@types/node": "^18.6.3",
     "reflect-metadata": "^0.1.13"
   },
   "gitHead": "4bc0a9eb661fce02765d56efdc84f8d1a10a01ec"

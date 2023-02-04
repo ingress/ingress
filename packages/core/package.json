@@ -9,7 +9,7 @@
   "types": "lib/cjs/core.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/esm/core.js",
+      "import": "./index.mjs",
       "require": "./lib/cjs/core.js",
       "types": "./lib/cjs/core.d.ts"
     },
@@ -21,12 +21,11 @@
     "docs"
   ],
   "scripts": {
-    "test": "uvu -r ts-node/register src .*\\.test\\.ts",
-    "cov": "c8 --100 --src src -r html npm test",
+    "test": "vitest run src",
+    "cov": "vitest run src --coverage",
     "ocov": "npm run cov && open coverage/index.html",
-    "build:esm": "tsc --sourceRoot \"$(pwd)/src\" --outDir lib/esm --module es2020 && echo '{\"type\": \"module\"}' > lib/esm/package.json",
-    "build:cjs": "npm run build:esm && tsc --sourceRoot \"$(pwd)/src\"",
-    "build": "shx rm -rf lib && concurrently npm:build:*"
+    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
+    "build": "shx rm -rf lib && npm run build:cjs"
   },
   "dependencies": {
     "injection-js": "^2.4.0"

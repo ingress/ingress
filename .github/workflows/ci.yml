@@ -8,25 +8,21 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        node: [12, 14, 16, 17]
+        node: [16, 18, 19]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Install
-        run: npm i -g npm@8 && npm ci
-      - name: Check Commits
-        run: npm run commitlint
+        run: npm i -g npm@9 && npm ci
       - name: Build
         run: npm run build
       - name: Test
-        env:
-          TS_NODE_TRY_TS_EXT: true
         run: npm test

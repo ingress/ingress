@@ -2,13 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
-    "outDir": "./lib/cjs",
+    "outDir": "./lib/cjs"
   },
   "exclude": ["node_modules"],
   "include": ["src/**/*.ts"],
   "ts-node": {
     "transpileOnly": true,
-    //SWC fails to emit return type, so use typescript
     "transpiler": null
-  },
+  }
 }

@@ -1,74 +1,74 @@
-// import * as t from 'uvu/assert'
-// import { test } from 'uvu'
-// import { RouteAnnotation, UpgradeRouteAnnotation } from './annotations/route.annotation.js'
-// import { resolvePaths, RouteMetadata } from './route-resolve.js'
+import { describe, it, expect } from 'vitest'
+import { RouteAnnotation, UpgradeRouteAnnotation } from './annotations/route.annotation.js'
+import { resolvePaths, RouteMetadata } from './route-resolve.js'
 
-// test('resolvePaths', () => {
-//   class TestRoute {
-//     myRoute(param1: any, param2: any, param3: any) {
-//       void param3
-//     }
-//   }
-//   const routeMetadata: RouteMetadata = {
-//     classAnnotations: [new RouteAnnotation('/base')],
-//     methodAnnotations: [
-//       new RouteAnnotation('/my-route', 'GET'),
-//       new RouteAnnotation('alternate', 'GET'),
-//       new RouteAnnotation('/alternate', 'POST'),
-//     ],
-//     parameterAnnotations: [],
-//     types: {
-//       parameters: [],
-//     },
-//     parent: TestRoute,
-//     name: 'myRoute',
-//   }
-//   t.equal(resolvePaths(routeMetadata), {
-//     GET: ['/base/my-route', '/base/alternate'],
-//     POST: ['/base/alternate'],
-//   })
+describe('route annotations', () => {
+  it('resolvePaths', () => {
+    class TestRoute {
+      myRoute(param1: any, param2: any, param3: any) {
+        void param3
+      }
+    }
+    const routeMetadata: RouteMetadata = {
+      controllerAnnotations: [new RouteAnnotation('/base')],
+      methodAnnotations: [
+        new RouteAnnotation('/my-route', 'GET'),
+        new RouteAnnotation('alternate', 'GET'),
+        new RouteAnnotation('/alternate', 'POST'),
+      ],
+      parameterAnnotations: [],
+      types: {
+        parameters: [],
+      },
+      controller: TestRoute,
+      name: 'myRoute',
+    }
+    expect(resolvePaths(routeMetadata)).toEqual({
+      GET: ['/base/my-route', '/base/alternate'],
+      POST: ['/base/alternate'],
+    })
 
-//   routeMetadata.classAnnotations = []
-//   t.equal(resolvePaths(routeMetadata), {
-//     GET: ['/my-route', '/alternate'],
-//     POST: ['/alternate'],
-//   })
+    routeMetadata.controllerAnnotations = []
+    expect(resolvePaths(routeMetadata)).toEqual({
+      GET: ['/my-route', '/alternate'],
+      POST: ['/alternate'],
+    })
 
-//   routeMetadata.classAnnotations = [new RouteAnnotation('/', 'PUT')]
-//   t.throws(
-//     () => resolvePaths(routeMetadata),
-//     'TestRoute.myRoute must provide Http Methods on the base OR sub route, but not both'
-//   )
+    routeMetadata.controllerAnnotations = [new RouteAnnotation('/', 'PUT')]
+    expect(() => resolvePaths(routeMetadata)).toThrow(
+      'TestRoute.myRoute must provide Http Methods on the base OR sub route, but not both'
+    )
 
-//   routeMetadata.methodAnnotations = [new RouteAnnotation('/')]
-//   t.equal(resolvePaths(routeMetadata), {
-//     PUT: ['/'],
-//   })
+    routeMetadata.methodAnnotations = [new RouteAnnotation('/')]
+    expect(resolvePaths(routeMetadata)).toEqual({ PUT: ['/'] })
 
-//   routeMetadata.methodAnnotations = [new RouteAnnotation()]
-//   routeMetadata.classAnnotations = []
-//   t.throws(() => resolvePaths(routeMetadata), 'TestRoute.myRoute has no Http Method defined')
+    routeMetadata.methodAnnotations = [new RouteAnnotation()]
+    routeMetadata.controllerAnnotations = []
+    expect(() => resolvePaths(routeMetadata)).toThrow(
+      'TestRoute.myRoute has no Http Method defined'
+    )
 
-//   routeMetadata.methodAnnotations = []
-//   routeMetadata.classAnnotations = []
-//   t.throws(() => resolvePaths(routeMetadata), 'Must provide at least one path')
-// })
+    routeMetadata.methodAnnotations = []
+    routeMetadata.controllerAnnotations = []
+    expect(() => resolvePaths(routeMetadata)).toThrow(
+      'Must provide at least one route with a method'
+    )
+  })
 
-// test('Upgrade Route annotation', () => {
-//   const annotation = new UpgradeRouteAnnotation('/'),
-//     noop: any = () => 'abc'
+  it('Upgrade Route annotation', () => {
+    const annotation = new UpgradeRouteAnnotation('/'),
+      noop: any = () => 'abc'
 
-//   t.equal(annotation.middleware({} as any, noop), 'abc', 'is a noop')
+    expect(annotation.middleware({} as any, noop)).toEqual('abc')
 
-//   const resolvedPaths = resolvePaths({
-//     classAnnotations: [],
-//     methodAnnotations: [annotation],
-//     name: 'somename',
-//     parameterAnnotations: [],
-//     parent: class {},
-//     types: { parameters: [] },
-//   })
-//   t.equal(resolvedPaths, { UPGRADE: ['/'] })
-// })
-
-// test.run()
+    const resolvedPaths = resolvePaths({
+      controllerAnnotations: [],
+      methodAnnotations: [annotation],
+      name: 'somename',
+      parameterAnnotations: [],
+      controller: class {},
+      types: { parameters: [] },
+    })
+    expect(resolvedPaths).toEqual({ UPGRADE: ['/'] })
+  })
+})

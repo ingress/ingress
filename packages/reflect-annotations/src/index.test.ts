@@ -1,5 +1,5 @@
-import { test } from 'uvu'
-import * as t from 'uvu/assert'
+import { describe, it } from 'vitest'
+import t from 'assert'
 import {
   getAnnotations,
   setAnnotations,
@@ -11,13 +11,13 @@ import {
 
 const isFunction = (x: any) => typeof x === 'function'
 
-test('api', () => {
-  t.ok(typeof AnnotationFactory === 'symbol')
-  t.ok(isFunction(getAnnotations))
-  t.ok(isFunction(getParameterAnnotations))
-  t.ok(isFunction(setAnnotations))
-  t.ok(isFunction(setParameterAnnotations))
-  t.ok(isFunction(createAnnotationFactory))
+describe('api surface', () => {
+  it('api', () => {
+    t.ok(typeof AnnotationFactory === 'symbol')
+    t.ok(isFunction(getAnnotations))
+    t.ok(isFunction(getParameterAnnotations))
+    t.ok(isFunction(setAnnotations))
+    t.ok(isFunction(setParameterAnnotations))
+    t.ok(isFunction(createAnnotationFactory))
+  })
 })
-
-test.run()

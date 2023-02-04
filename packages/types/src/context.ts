@@ -1,4 +1,4 @@
-import type { Func, Ingress, ModuleContainerContext } from '@ingress/core'
+import type { Func, Ingress, CoreContext } from '@ingress/core'
 import type { Readable } from 'node:stream'
 import type { Blob } from 'node:buffer'
 
@@ -24,7 +24,7 @@ export interface Request<T, Body = unknown> {
   rawBody: any
 }
 
-export interface ResponseBase<T> extends PromiseLike<void> {
+export interface Response<T> extends PromiseLike<void> {
   send(data?: any): this
   readonly headers: Record<string, string | string[] | undefined>
   header(name: string, value: string | number): this
@@ -34,8 +34,6 @@ export interface ResponseBase<T> extends PromiseLike<void> {
   context: T
 }
 
-export type Response<T> = ResponseBase<T> & ResponseBase<T>['send']
-
 /**
  * The Http "Driver" Context.
  * Can be used by varying protocol drivers
@@ -43,11 +41,10 @@ export type Response<T> = ResponseBase<T> & ResponseBase<T>['send']
  *
  * A "Driver" is responsible for invoking the application's middleware (acting as its main event source)
  */
-export interface HttpContext<T> extends ModuleContainerContext {
+export interface HttpContext<T extends CoreContext> extends CoreContext {
   request: Request<T>
-  //response alias
-  send: Response<T>
-  app: Ingress<HttpContext<T>>
+  response: Response<T>
+  app: Ingress<T>
 }
 
 export type ParseOptions = {
