@@ -10,9 +10,14 @@ describe('response', () => {
   it('middleware return value', async () => {
     const res = await request('/a'),
       resB = await request('/b')
-    expect(res.payload).toBe(resB.payload)
+    expect(res.headers['content-type']).toEqual('text/plain;charset=UTF-8')
+    expect(res.headers['content-length']).toEqual('5')
     expect(res.payload).toBe('value')
     expect(res.statusCode).toBe(200)
+
+    expect(resB.headers['content-type']).toEqual('text/plain;charset=UTF-8')
+    expect(resB.headers['content-length']).toEqual('5')
+    expect(resB.payload).toBe('value')
     expect(resB.statusCode).toBe(200)
   })
 

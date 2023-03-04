@@ -20,9 +20,7 @@ describe('type resolvers', () => {
         void a
       }
     }
-    const app = new Ingress<RouterContext>()
-      .use(new Http())
-      .use(new Router({ controllers: [Routes] }))
+    const app = new Ingress<RouterContext>().use(new Http()).use(new Router({ routes: [Routes] }))
 
     try {
       await app.start()
@@ -44,7 +42,7 @@ describe('type resolvers', () => {
         return payload
       }
     }
-    const router = new Router({ controllers: [Routes] })
+    const router = new Router({ routes: [Routes] })
     router.registerTypeResolver(Object, (x) => x + ' world')
 
     const app = new Ingress<RouterContext>().use(new Http()).use(router)
@@ -67,7 +65,7 @@ describe('type resolvers', () => {
         return payload
       }
     }
-    const router = new Router({ controllers: [Routes] })
+    const router = new Router({ routes: [Routes] })
     router.registerTypePredicateResolver(
       (_x) => false,
       (x) => x
@@ -108,9 +106,7 @@ describe('type resolvers', () => {
       }
     }
 
-    const app = new Ingress<RouterContext>()
-      .use(new Http())
-      .use(new Router({ controllers: [Routes] }))
+    const app = new Ingress<RouterContext>().use(new Http()).use(new Router({ routes: [Routes] }))
 
     await app.start()
     const result = await inject(app.driver, {

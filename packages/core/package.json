@@ -6,12 +6,14 @@
   "license": "MIT",
   "description": "Core ingress objects, application lifecycle and http handlers",
   "type": "commonjs",
-  "types": "lib/cjs/core.d.ts",
+  "types": "./lib/cjs/core.d.ts",
+  "main": "./lib/cjs/core.js",
   "exports": {
     ".": {
       "import": "./index.mjs",
       "require": "./lib/cjs/core.js",
-      "types": "./lib/cjs/core.d.ts"
+      "types": "./lib/cjs/core.d.ts",
+      "default": "./lib/cjs/core.js"
     },
     "./package.json": "./package.json"
   },

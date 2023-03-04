@@ -1,7 +1,3 @@
-import type { BaseContext, Middleware } from '../context.js'
-import { createAnnotationFactory, Annotation } from 'reflect-annotations'
-import { StatusCode } from '@ingress/http-status'
-
 interface Authenticator<T extends BaseContext<any, any>> {
   (context: T): Promise<boolean> | boolean
   scheme?: string

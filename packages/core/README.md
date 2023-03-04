@@ -18,7 +18,7 @@ import core from '@ingress/core'
 import http from '@ingress/http'
 import router from '@ingress/router'
 
-const app = core().use(http(), router())
+const app = core().use(http()).use(router())
 
 app.run()
 ```

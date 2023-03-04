@@ -1,5 +1,5 @@
-import type { IncomingMessage } from 'http'
-import { Buffer } from 'buffer'
+import type { IncomingMessage } from 'node:http'
+import { Buffer } from 'node:buffer'
 import { ING_PAYLOAD_TOO_LARGE, ING_BAD_REQUEST } from '@ingress/types'
 
 const identity = <T>(x: string) => x as any as T

@@ -6,7 +6,7 @@ export type Func<T = any> = (...args: any[]) => T
 import { ING_BAD_REQUEST } from '@ingress/types'
 
 export class TypeResolver {
-  public types = new Map<Type<any>, Func>(defaultResolvers.map((x) => [x.type, x.convert]))
+  public types = new Map<Type<any>, Func>(defaultResolvers.map((x) => [x.type, x.parse]))
   public predicates: Array<[Func<boolean>, Func]> = []
 
   register(type: Type<any>, resolver: Func): this {
@@ -33,11 +33,11 @@ export class TypeResolver {
 const defaultResolvers = [
   {
     type: Object,
-    convert: (value: any) => value,
+    parse: (value: any) => value,
   },
   {
     type: Number,
-    convert: (value: number): number => {
+    parse: (value: number): number => {
       if (value === null || isNaN(value)) {
         throw new ING_BAD_REQUEST(`cannot convert ${JSON.stringify(value)} to number`)
       }
@@ -46,7 +46,7 @@ const defaultResolvers = [
   },
   {
     type: Boolean,
-    convert(value: boolean | string | null | undefined | number): boolean {
+    parse(value: boolean | string | null | undefined | number): boolean {
       if (value === true || value === 'true' || value === 1 || value === '1') {
         return true
       }
@@ -66,7 +66,7 @@ const defaultResolvers = [
   },
   {
     type: String,
-    convert: (value: string): string => {
+    parse: (value: string): string => {
       if (value === null || value === undefined) {
         throw new ING_BAD_REQUEST(
           `cannot convert ${value === null ? 'null' : 'undefined'} to string`
@@ -77,7 +77,7 @@ const defaultResolvers = [
   },
   {
     type: Date,
-    convert: (value: string | Date): Date => {
+    parse: (value: string | Date): Date => {
       const date = new Date(value)
 
       if (date.toString() === 'Invalid Date') {

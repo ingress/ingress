@@ -9,7 +9,7 @@ import {
 } from './annotations/controller.annotation.js'
 import { resolvePaths, RouteMetadata, PathMap } from './route-resolve.js'
 
-import type { Middleware, Ingress } from '@ingress/core'
+import type { Middleware, Ingress, NextFn } from '@ingress/core'
 import type { HttpContext } from '@ingress/types'
 import { Func, TypeResolver } from './type-resolver.js'
 
@@ -48,18 +48,19 @@ export class Router {
 
   private map!: RouteMap<Handle>
   private app!: Ingress<any>
-  public _root!: Router
+  private _root!: Router
 
-  constructor({ controllers }: { controllers?: Iterable<Type<any>> } = {}) {
-    controllers = controllers ?? []
-    for (const ctrl of controllers) {
+  constructor({ routes }: { routes?: Iterable<Type<any>> } = {}) {
+    routes = routes ?? []
+    for (const ctrl of routes) {
       this.collector.collect(ctrl)
     }
   }
   initializeContext(ctx: RouterContext) {
+    ctx.route = null
     return ctx
   }
-  public start(app: Ingress<RouterContext>, next: Func<Promise<any>>): Promise<void> {
+  public async start(app: Ingress<any>, next: NextFn): Promise<{ router: Router }> {
     //initialization w possible parent
     let root = app.container.findProvidedSingleton(Router)
     if (!root) {
@@ -80,7 +81,10 @@ export class Router {
       root.registerRouteMetadata(route)
     }
     this.metadata.clear()
-    return next()
+    await next()
+    return {
+      router: root,
+    }
   }
 
   private typeResolver = new TypeResolver()
@@ -152,4 +156,6 @@ export class RouteData {
 export type Body = any
 export type ParamEntries = [string, string][]
 export type Handle = Middleware<any>
-export type RouterContext = HttpContext<any> & { route: RouteData; exec: Handle }
+export interface RouterContext extends HttpContext<any> {
+  route: RouteData | null
+}

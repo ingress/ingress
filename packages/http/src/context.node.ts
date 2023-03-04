@@ -3,13 +3,28 @@ import type { Ingress, Injector } from '@ingress/core'
 import { StatusCode } from '@ingress/types'
 import { parse } from 'secure-json-parse'
 import { parseBuffer, parseString } from './parser.js'
-import { finished, Readable } from 'readable-stream'
+import { finished } from 'readable-stream'
+import { Readable } from 'node:stream'
 import { Buffer, Blob } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
-import type { HttpContext, ParseMode, ParseOptions, Request, Response } from '@ingress/types'
-import { exists, getContentType, readUrl, isObjectLike } from './util.js'
+import type {
+  HttpContext,
+  ParseMode,
+  ParseOptions,
+  IngressRequest,
+  IngressResponse,
+} from '@ingress/types'
+import {
+  exists,
+  getContentType,
+  readUrl,
+  isObjectLike,
+  hasLength,
+  isStream,
+  isSerializableError,
+  isError,
+} from './util.js'
 
-const DefaultErrorStatusText = 'Internal Server Error'
 const enum SendingState {
   New,
   Sending,
@@ -18,12 +33,13 @@ const enum SendingState {
   Errored,
 }
 
-export class NodeRequest<T extends HttpContext<T>> implements Request<T> {
+export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> {
   public pathname: string
   public method: string
   public search = ''
   public body: any
   public rawBody: Readable
+  public protocol: 'http://' | 'https://' = 'http://'
   get headers(): Record<string, string | string[] | undefined> {
     return this.raw.headers
   }
@@ -37,10 +53,13 @@ export class NodeRequest<T extends HttpContext<T>> implements Request<T> {
     ;[this.pathname, this.search] = readUrl(raw.url ?? '/')
     this.method = raw.method ?? 'GET'
     this.rawBody = raw as Readable
+    if ((raw.socket as any)?.encrypted) {
+      this.protocol = 'https://'
+    }
   }
   public id: string
   public json<J = unknown>(): Promise<J> {
-    return this.parse({ mode: 'json' })
+    return this.parse<J>({ mode: 'json' })
   }
   public text(): Promise<string> {
     return this.parse({ mode: 'string' })
@@ -74,7 +93,7 @@ export class NodeRequest<T extends HttpContext<T>> implements Request<T> {
   }
 }
 
-class NodeResponse<T extends HttpContext<any>> implements Response<T> {
+class NodeResponse<T extends HttpContext<any>> implements IngressResponse<T> {
   #state = SendingState.New
   #headers: Record<string, string | undefined> = {}
   public serializers = {
@@ -96,36 +115,60 @@ class NodeResponse<T extends HttpContext<any>> implements Response<T> {
   }
   send(data: any): this {
     if (this.#state !== SendingState.New) {
-      //TODO determine error state...
       return this
     }
-    if (data instanceof Error) {
-      const error = data as any
-      if (isObjectLike(error) && 'statusCode' in error) {
-        this.code(error.statusCode)
-        this.raw.statusMessage =
-          error.statusText || StatusCode[error.statusCode] || DefaultErrorStatusText
-        this.raw.end()
-      } else {
-        this.code(500)
-        this.raw.end()
+
+    if (isSerializableError(data)) {
+      this.raw.statusCode = data.statusCode || 500
+      this.raw.statusMessage =
+        data.statusMessage || StatusCode[this.raw.statusCode] || StatusCode[500]
+      const message = data.toString()
+      this.raw.setHeader('content-type', data.contentType || 'text/plain;charset=UTF-8')
+      this.raw.setHeader('content-length', Buffer.byteLength(message).toString())
+      this.raw.end(message || '')
+      return this
+    }
+
+    if (isError(data)) {
+      //TODO global handler
+      this.code(500)
+      this.raw.end()
+    } else if (data instanceof Response) {
+      data.headers.forEach((value, key) => {
+        this.raw.setHeader(key, value)
+      })
+      const body = data.body as any
+      if (isObjectLike(body) && typeof body.pipeTo === 'function') {
+        Readable.fromWeb(body as any).pipe(this.raw)
       }
+      this.#state = SendingState.Sent
     } else {
-      this.raw.end(this.serializer(this.#headers['content-type'], data))
+      const [content, type] = this.serializer(this.#headers['content-type'], data)
+      for (const header of Object.entries(this.#headers)) {
+        this.raw.setHeader(header[0], header[1] as string)
+      }
+      if (exists(type)) this.raw.setHeader('content-type', type)
+      if (hasLength(content)) this.raw.setHeader('content-length', String(content.length))
+      if (isStream(content)) {
+        content.pipe(this.raw)
+      } else {
+        this.raw.end(content)
+      }
     }
     this.#state = SendingState.Sent
     return this
   }
-  serializer(contentType: string | null | undefined, data: any): string | Buffer {
+  serializer(contentType: string | null | undefined, data: any) {
     const hasContentType = exists(contentType)
     if (!hasContentType && exists(data)) {
       contentType = getContentType(data)
     }
     if (contentType && contentType.indexOf('json') > -1) {
-      return this.serializers.json(data)
+      return [this.serializers.json(data), contentType] as const
     }
-    return data
+    return [data, exists(data) && exists(contentType) ? contentType : undefined] as const
   }
+
   get headers() {
     return this.#headers
   }
@@ -154,8 +197,8 @@ class NodeResponse<T extends HttpContext<any>> implements Response<T> {
 export class NodeHttpContext<T extends HttpContext<any>> implements HttpContext<T> {
   public scope: Injector = null as any
   public http = this
-  public request: Request<T>
-  public response: Response<T>
+  public request: IngressRequest<T>
+  public response: IngressResponse<T>
   constructor(public req: IncomingMessage, public res: ServerResponse, public app: Ingress<any>) {
     this.request = new NodeRequest<T>(req, this as unknown as T)
     this.response = new NodeResponse<T>(res, this as unknown as T)

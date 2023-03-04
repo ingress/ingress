@@ -12,122 +12,56 @@ install: <code>npm i ingress</code><br><br>a utility for building applications u
 <a href="https://www.npmjs.com/package/ingress"><img src="https://img.shields.io/npm/v/ingress.svg" alt="Version"></a>
 <a href="https://github.com/ingress/ingress/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/ingress.svg" alt="License"></a>
 
-**_Key Features_**
+## Getting started (web):
 
-- Dependency Injection, IoC and lifecycle management for your apps
-- Runtime type validation and coercion
-- Composable middleware
-
-## Getting started (http):
 
 ```typescript
+//@filename: app.ts
 import ingress, { Route } from "ingress";
 
 class MyController {
-  @Route.Get("input-json/:name")
-  greeting(@Route.Param("name") name: string) {
-    return `Hello ${name}`
-  }
+    @Route.Get("/greet/:name")
+    greeting(@Route.Param("name") name: string) {
+        return `Hello ${name}`
+    }
 }
 
-ingress(MyController)
-  .listen(1111)
-  .then(x => `Listening on ${x.port}`)
+export const app = ingress(MyController)
+
+//@filename: package.json
+{
+    "scripts": {
+        "start": "ing start app.ts"
+    }
+}
 ```
 
-## Dependency Injection
+## Ingress CLI
 
-Each ingress app has a DI container (`.container`), that pre-startup, enables registration of dependencies that will be wired up to the application's services.
-When applications are composed (e.g. multiple root containers `ingressApp1.use(ingressApp2)`), the containers are merged down (ingressApp2 into ingressApp1).
+The ingress cli (`ing`) is provided to support composition of multiple ingress applications.
+For the single file example above, it is roughly equivalent of running the following javascript:
+```typescript
+import('./app').then(x => x.app.run())
+```
+For running multiple ingress applications together, specify more modules with an `app` export.
 
-
-## Inversion of Control and Lifecycle management
-
-When a `"Usable"` object is passed to `Ingress#use`. The following methods can optionally be present to tie into the application lifecycle.
-
-- `start(app, next): any` - a middleware function called once, when the app is started.
-- `initializeContext(ctx): ctx` - a synchronous method meant to decorate the context object, for every driver event.
-- `middleware(ctx, next): any` - a middleware function called for every driver event.
-- `stop(app, next): any` - a middleware function called once, when the app is stopped.
-
-When a driver event occurs (e.g. an Http Request), the ingress dependency injection container will create a new child container (`context.scope`). This child container will be used to instantiate any `Service` or `Controller` used during that event scope. You can optionally inject any `Service`s or `SingletonService`s into these other dependencies. Note, that a `Service` has a per-request life-cycle and therefore cannot be injected into a `SingletonService` which lives for the life of the owning container. You should avoid patterns that result in needing circular dependencies. However, you can access dependencies circularly, by dynamically requesting them via a child container, `context.scope.get(SomeOtherwiseCircularDependency)`.
-
-## Runtime type validation and coercion
-
-To validate incoming data, Ingress uses metadata emitted by the compiler. Specifically,
-The `tsconfig.json` must specify these options, which are already inherent for use using decorators.
+```bash
+ing start app.ts app2.ts app3.ts
+```
+If your deployment environment does not contain the cli, you can choose to `build` instead.
 
 ```
-  "experimentalDecorators": true,
-  "emitDecoratorMetadata": true,
+ing build app.js
 ```
 
-Specifically, these options cause typescript to emit rich type data for decorated classes.
-A controller might have a method with the following signature:
+
+Various targets are supported
+
 
 ```typescript
-  @Route.Post('/')
-  toNumber(@Route.Body() age: number) {
-    return typeof age === 'number' // true
-  }
+type Middleware<T> = (context: T, next: () => Promise<void>)
+  => Promise<void>;
 ```
-
-By default ingress defines a set of type converters that will convert number, string, boolean and date types. These converters are customizable via the `typeConverters` option.
-Or, custom types that have a static `convert` function will be automatically used as their own type converter.
-
-For example, a custom type might look like the following:
-
-```typescript
-class MyType {
-  static convert(value: any) {
-    return new MyType(Number(value));
-  }
-  constructor(public value: any) {}
-}
-
-//Note: an error in the `convert` method will cause a HTTP 400 StatusCode failure
-@Route.Post('/')
-toNumber(@Route.Body() body: MyType) {
-  return typeof body.value === 'number' // true
-}
-
-```
-
-For advanced run-time type coercion and validation and compile-time types using JSON schema, [`tjs`](https://github.com/sberan/typed-json-schema) is recommended.
-
-## Middleware
-
-Ingress applications are based on, and built with middleware.
-Ingress function middleware supports the following signature:
-
-```typescript
-interface Middleware<T> {
-  (context: T, next: () => Promise<any>): Promise<any>;
-}
-```
-
-[Ingress middleware](https://github.com/ingress/app-builder) follows the [before/after](https://esbenp.github.io/2015/07/31/implementing-before-after-middleware/) pattern common in many web frameworks
-
-Additionally, Ingress supports addons, an Ingress app is also an Ingress Addon.
-
-```typescript
-interface Addon {
-  /**
-   * An Ingress instance will call start on Addons in the order that they're added to it
-   */
-  start?: (app: Ingress) => Promise<any>;
-  /**
-   * An Ingress instance will call stop on Addons in the reverse order that they're added to it
-   */
-  stop?: (app: Ingress) => Promise<any>;
-  /**
-   * A middleware function that is added to the ingress instance
-   */
-  middleware?: Middleware<T>;
-}
-```
-
-The `.use` method supports any combination of these two types. `Addon & Middleware | (Middleware | Addon)`
 
 ### Graceful shutdown
 

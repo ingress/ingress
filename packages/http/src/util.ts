@@ -1,20 +1,36 @@
-import type { Stream } from 'stream'
+import type { Stream } from 'node:stream'
 
 export function isThenable<T = void>(obj: any): obj is PromiseLike<T> {
   return isObjectLike(obj) && typeof obj.then === 'function'
 }
 
-export function isObjectLike(obj: any): boolean {
+export function isObjectLike(obj: any): obj is Record<string, unknown> {
   const type = typeof obj
   return obj && (type === 'function' || type === 'object')
 }
 
-export function exists(x: any) {
+export function exists<T>(x: T | null | undefined): x is T {
   return x !== null && x !== void 0
 }
 
-export function isHtmlLike(data: any): data is string {
-  return isText(data) && data.startsWith('<') && data.endsWith('>')
+export function hasLength(x: any): x is { length: number } {
+  return isText(x) || isBytes(x)
+}
+
+export function isNumber(x: any): x is number {
+  return typeof x === 'number' && !Number.isNaN(x)
+}
+
+export function isSerializableError(
+  x: any
+): x is { contentType?: string; statusCode: number; statusMessage?: string } {
+  return isError(x) && 'statusCode' in x
+}
+
+const toString = {}.toString,
+  errorTag = '[object Error]'
+export function isError(x: any): x is Error {
+  return toString.call(x) === errorTag
 }
 
 export function isText(data: any): data is string {
@@ -35,10 +51,10 @@ export function isBytes(data: any) {
 
 export function getContentType(data: any) {
   if (isBytes(data)) return 'application/octet-stream' as const
-  if (isHtmlLike(data)) return 'text/html' as const
-  if (isText(data)) return 'text/plain; charset=utf-8' as const
+  if (isText(data)) return 'text/plain;charset=UTF-8' as const
   if (isStream(data)) return 'application/octet-stream' as const
   if (isJson(data)) return 'application/json' as const
+  return null
 }
 
 export type Pathname = string

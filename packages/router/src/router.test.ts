@@ -4,7 +4,7 @@ import { inject } from '@hapi/shot'
 
 //Deps
 import 'reflect-metadata'
-import { Ingress } from '@ingress/core'
+import { CoreContext, Ingress } from '@ingress/core'
 import { Http } from '@ingress/http'
 import { createAnnotationFactory } from 'reflect-annotations'
 
@@ -107,7 +107,7 @@ describe('router', () => {
         void 0
       }
     }
-    const router = new Router({ controllers: [Routes] }),
+    const router = new Router({ routes: [Routes] }),
       app = new Ingress<any>().use(router)
     await app.start()
     expect(router.hasUpgrade).toEqual(true)
@@ -140,15 +140,15 @@ describe('router', () => {
         return context.order
       }
     }
-    const app = new Ingress<any>()
+    const app = new Ingress()
       .use({
-        initializeContext(ctx: any) {
+        initializeContext(ctx: CoreContext & { order: string }) {
           ctx.order = '1'
           return ctx
         },
       })
       .use(new Http())
-      .use(new Router({ controllers: [Routes] }))
+      .use(new Router({ routes: [Routes] }))
     await app.start()
     const response = await inject(app.driver, {
       method: 'GET',
@@ -156,6 +156,13 @@ describe('router', () => {
     })
 
     expect(response.payload).toEqual('1234')
+  })
+
+  it('should decorate the ingress instance', async () => {
+    const router = new Router(),
+      decorated = new Ingress().use(router),
+      app = await decorated.start()
+    expect(app.router).toEqual(router)
   })
 
   it('with more than one router', async () => {

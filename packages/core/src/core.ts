@@ -19,12 +19,11 @@ import {
   UsableMiddleware,
 } from './types.js'
 
-const _hosts = Symbol('ingress.hosts'),
-  _middleware = Symbol('ingress.middleware')
+const _hosts = Symbol('ingress.hosts')
 
-class Ingress<T extends CoreContext = CoreContext, D = EmptyExtend> {
-  static [_hosts] = new WeakMap<any, Ingress<any>>();
-  [_middleware]: ContinuationMiddleware<T> | null = null
+class Ingress<T extends CoreContext, D = EmptyExtend> {
+  static [_hosts] = new WeakMap<any, Ingress<any>>()
+  private _middleware: ContinuationMiddleware<T> | null = null
 
   public readyState: AppState = AppState.New
   public container!: ModuleContainer
@@ -52,15 +51,15 @@ class Ingress<T extends CoreContext = CoreContext, D = EmptyExtend> {
   }
 
   get middleware(): ContinuationMiddleware<T> {
-    if (this[_middleware]) {
-      return this[_middleware] as ContinuationMiddleware<T>
+    if (this._middleware) {
+      return this._middleware as ContinuationMiddleware<T>
     }
     function executor(u: UsableMiddleware<T>, context: T, next: NextFn) {
       return u.middleware(context, next)
     }
     const mw = this.mw.filter((x) => x)
     this.setupCtx = this.setupCtx.filter((x) => x)
-    return (this[_middleware] = (ctx, next) => {
+    return (this._middleware = (ctx, next) => {
       ctx = this.initializeContext(ctx as T)
       return exec(mw, ctx, next, executor)
     })
@@ -89,23 +88,19 @@ class Ingress<T extends CoreContext = CoreContext, D = EmptyExtend> {
     }
     const finalSetups = this.setups.filter((x) => !setups.includes(x))
 
-    await addDecorations(finalSetups, this, void 0)
+    await addDecorations(finalSetups, this as any, void 0)
   }
 
   public use<Extensions = EmptyExtend, NewDecorations = EmptyExtend>(
-    usable: StartAndExtend<T, D, Extensions, NewDecorations> &
-      Partial<Usable<T, Extensions, NewDecorations>>
+    usable: StartAndExtend<Extensions, NewDecorations> & Partial<Usable<T, Extensions>>
   ): Ingress<T & Extensions, D & NewDecorations>
   public use<Extensions = EmptyExtend>(
     usable: ContextInitializer<Extensions> & Partial<Usable<T, Extensions>>
   ): Ingress<T & Extensions, D>
   public use<NewDecorations = EmptyExtend>(
-    usable: Startable<T, D, NewDecorations> & Partial<Usable<T, EmptyExtend, NewDecorations>>
+    usable: Startable<NewDecorations> & Partial<Usable<T, EmptyExtend>>
   ): Ingress<T, D & NewDecorations>
-  public use<NewDecorations = EmptyExtend>(
-    usable: Partial<Usable<T, EmptyExtend, NewDecorations>>
-  ): Ingress<T, D>
-
+  public use(usable: Partial<Usable<T, EmptyExtend>>): Ingress<T, D>
   public use(usable: UsableMiddleware<T>['middleware']): Ingress<T, D>
 
   public use<Extensions extends CoreContext, Decorations>(
@@ -114,23 +109,23 @@ class Ingress<T extends CoreContext = CoreContext, D = EmptyExtend> {
 
   public use<U>(
     annotation: Annotation<U>
-  ): U extends StartAndExtend<T, D, infer Extensions, infer NewDecorations>
+  ): U extends StartAndExtend<infer Extensions, infer NewDecorations>
     ? Ingress<T & Extensions, D & NewDecorations>
     : U extends ContextInitializer<infer Extensions>
     ? Ingress<T & Extensions, D>
-    : U extends Startable<T, D, infer NewDecorations>
+    : U extends Startable<infer NewDecorations>
     ? Ingress<T, D & NewDecorations>
-    : Ingress<T, D>
+    : Ingress<T, D> //TODO: partial usable
 
   public use<U>(
     factory: AnnotationFactory<U>
-  ): U extends StartAndExtend<T, D, infer Extensions, infer NewDecorations>
+  ): U extends StartAndExtend<infer Extensions, infer NewDecorations>
     ? Ingress<T & Extensions, D & NewDecorations>
     : U extends ContextInitializer<infer Extensions>
     ? Ingress<T & Extensions, D>
-    : U extends Startable<T, D, infer NewDecorations>
+    : U extends Startable<infer NewDecorations>
     ? Ingress<T, D & NewDecorations>
-    : Ingress<T, D>
+    : Ingress<T, D> // TODO: partial usable
 
   public use<Extensions = EmptyExtend, Decorations = EmptyExtend>(
     usable: Addon<T, Extensions, Decorations>
@@ -173,7 +168,7 @@ class Ingress<T extends CoreContext = CoreContext, D = EmptyExtend> {
     if (!used) {
       throw new TypeError('Unable to use: ' + usable)
     }
-    Ingress[_hosts].set(usable, this)
+    Ingress[_hosts].set(usable, this as any)
     return this
   }
 
@@ -204,7 +199,7 @@ class Ingress<T extends CoreContext = CoreContext, D = EmptyExtend> {
     this.driver = driver
   }
 
-  async run() {
+  async run(): Promise<Ingress<T, never> & D> {
     if (AppState.Stopped & this.readyState || AppState.Stopping & this.readyState) {
       throw new Error('Cannot run a stopped app')
     }
@@ -219,7 +214,7 @@ class Ingress<T extends CoreContext = CoreContext, D = EmptyExtend> {
         this.readyState |= AppState.Running
       }
     }
-    return this
+    return this as any as Ingress<T, never> & D
   }
 
   public async stop(app?: Ingress<any, any>, next?: Func<Promise<void>>): Promise<Ingress<T, D>> {

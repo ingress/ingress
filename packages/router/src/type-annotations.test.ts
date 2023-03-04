@@ -27,9 +27,7 @@ describe('type annotations', () => {
         return forward + backward
       }
     }
-    const app = new Ingress<RouterContext>()
-      .use(new Http())
-      .use(new Router({ controllers: [Routes] }))
+    const app = new Ingress<RouterContext>().use(new Http()).use(new Router({ routes: [Routes] }))
     await app.start()
     const result = await inject(app.driver, {
       method: 'GET',
@@ -52,7 +50,7 @@ describe('type annotations', () => {
         expect(arg).toEqual(expectedBackward)
       }
     }
-    void new Router({ controllers: [Routes] })
+    void new Router({ routes: [Routes] })
   })
 
   it('default type resolvers', async () => {
@@ -72,7 +70,7 @@ describe('type annotations', () => {
         expect(e).toBe(true)
       }
     }
-    const router = new Router({ controllers: [Routes] }),
+    const router = new Router({ routes: [Routes] }),
       app = new Ingress<RouterContext>().use(new Http())
     await router.start(app, () => Promise.resolve())
     //await router.middleware(mockContext(`/1/false/true/10-10-2020/true`, 'GET'), () => t.end())

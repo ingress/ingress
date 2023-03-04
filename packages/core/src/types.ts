@@ -44,23 +44,15 @@ const NoDecorations = {}
 export type EmptyExtend = typeof NoDecorations
 export type AnyFunc<A, R> = (...args: A[]) => R
 
-export type StartAndExtend<
-  Context extends CoreContext,
-  Decorations,
-  NewContext,
-  NewDecorations
-> = ContextInitializer<NewContext> & Startable<NewContext & Context, Decorations, NewDecorations>
+export type StartAndExtend<NewContext, NewDecorations> = ContextInitializer<NewContext> &
+  Startable<NewDecorations>
 
-export interface Startable<
-  T extends CoreContext = any,
-  Decorations = EmptyExtend,
-  NewDecorations = EmptyExtend
-> {
+export interface Startable<NewDecorations = EmptyExtend> {
   /**
    * Middleware that executes on start of the application, in the order it was registered
    */
   start: (
-    app: Ingress<T, Decorations>,
+    app: Ingress<any>,
     next: NextFn
   ) => ReturnType<NextFn> | Promise<NewDecorations> | NewDecorations
 }
@@ -70,11 +62,11 @@ export interface ContextInitializer<NewContext> {
    */
   initializeContext: (ctx: any) => NewContext
 }
-export interface Stoppable<T extends CoreContext = any, Decorations = EmptyExtend> {
+export interface Stoppable {
   /**
    * Middleware that executes at the stop of the application, in the order it was registered
    */
-  stop: UsableMiddleware<Ingress<T> & Decorations>['middleware']
+  stop: UsableMiddleware<Ingress<any>>['middleware']
 }
 export interface UsableMiddleware<T> {
   /**
@@ -82,12 +74,8 @@ export interface UsableMiddleware<T> {
    */
   middleware: (context: T, next: NextFn) => ReturnType<NextFn>
 }
-export interface Usable<
-  Context extends CoreContext = CoreContext,
-  NewContext = EmptyExtend,
-  Decorations = EmptyExtend
-> {
-  stop: Stoppable<Context & NewContext, Decorations>['stop']
+export interface Usable<Context extends CoreContext = CoreContext, NewContext = EmptyExtend> {
+  stop: Stoppable['stop']
   middleware: UsableMiddleware<Context & NewContext>['middleware']
 }
 
@@ -99,10 +87,9 @@ export type Addon<
   NewContext = EmptyExtend,
   Decorations = EmptyExtend
 > =
-  | Usable<Context, NewContext, Decorations>
+  | Usable<Context, Decorations>
   | (Ingress<Context & NewContext> & Decorations)
-  | (Usable<Context, NewContext, Decorations> &
-      UsableMiddleware<Context & NewContext>['middleware'])
+  | (Usable<Context, NewContext> & UsableMiddleware<Context & NewContext>['middleware'])
 
 export const guards = {
   isStartable,

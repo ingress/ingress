@@ -22,7 +22,7 @@ class RouteGroup {
 }
 ```
 
-The above example, declares a route at `/group/handler` that returns an `HTTP 200 OK` with a body content of `Hello World` and a Content-Type of `text/plain; charset=utf-8`
+The above example, declares a route at `/group/handler` that returns an `HTTP 200 OK` with a body content of `Hello World` and a Content-Type of `ttext/plain;charset=UTF-8`
 
 Alternatively, instead of through decorators, routes can be defined using the API
 

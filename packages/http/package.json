@@ -1,6 +1,6 @@
 {
   "name": "@ingress/http",
-  "packageManager": "npm@9.4.0",
+  "packageManager": "npm@9.4.1",
   "version": "0.0.1-alpha.0",
   "keywords": [],
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
@@ -8,14 +8,15 @@
   "description": "Core ingress objects, application lifecycle and helpers",
   "type": "commonjs",
   "types": "./lib/cjs/node.http.d.ts",
+  "main": "./lib/cjs/node.http.js",
   "exports": {
     ".": {
-      "node": {
-        "import": "./index.mjs",
-        "types": "./lib/cjs/node.http.d.ts",
-        "require": "./lib/cjs/node.http.js"
-      }
-    }
+      "import": "./index.mjs",
+      "require": "./lib/cjs/node.http.js",
+      "default": "./lib/cjs/node.http.js",
+      "types": "./lib/cjs/node.http.d.ts"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "lib",

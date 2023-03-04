@@ -387,7 +387,7 @@ describe('core', () => {
       initializeContext(ctx: UsableContext) {
         return ctx
       }
-      start(app: Ingress<any>, next: NextFn) {
+      start(app: Ingress<UsableContext>, next: NextFn) {
         return next()
       }
       middleware(ctx: UsableContext, next: NextFn) {

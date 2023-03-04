@@ -19,7 +19,13 @@ export interface StartingMiddleware<T, R = any> {
  * @returns
  */
 export function isMiddlewareFunction(value: any): value is Func {
-  return typeof value === 'function' && value.toString().indexOf('class') !== 0
+  return typeof value === 'function' && !isClass(value)
+}
+
+export function isClass(c: any): boolean {
+  return (
+    typeof c === 'function' && Object.getOwnPropertyDescriptor(c, 'prototype')?.writable === false
+  )
 }
 
 const defaultExecutor = (func: Func, ctx: any, next: any) => func(ctx, next),

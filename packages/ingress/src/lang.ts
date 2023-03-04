@@ -1,15 +1,12 @@
-export const noop = (): void => void 0
-export const identity = <T = any>(x: T): T => x
-export type Func<T = any> = (...args: any[]) => T
-
-/**
- * Execute {fn} one time and [after=noop] for every subsequent invocation
- */
-export function once<T extends Func>(fn: T, after: Func = noop): T {
-  const one = function (this: any, ...args: any[]) {
-    const res = fn.call(this, ...args)
-    fn = after as any
-    return res
+export function pick<T, K extends keyof T>(from?: T, ...keys: K[]): Pick<T, K> | undefined {
+  if (!from) return undefined
+  const picked: any = {}
+  let found = false
+  for (const key of keys) {
+    if (picked.hasOwnProperty.call(from, key)) {
+      found = true
+      picked[key] = from[key]
+    }
   }
-  return one as T
+  return found ? picked : undefined
 }

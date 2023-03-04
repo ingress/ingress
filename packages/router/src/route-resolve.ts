@@ -1,6 +1,7 @@
 import { RouteAnnotation } from './annotations/route.annotation.js'
 import type { HttpMethod } from 'router-tree-map'
 import type { Type } from '@ingress/core'
+import { Annotation, AnnotationFactory, isAnnotationFactory } from 'reflect-annotations'
 
 export type RouteMetadata = {
   controller: Type<any>
@@ -15,6 +16,14 @@ export type RouteMetadata = {
 }
 export type PathMap = { [key in HttpMethod]: string[] }
 
+function maybeUnwrapAnnotation(
+  x: Annotation<RouteAnnotation> | AnnotationFactory<RouteAnnotation>
+) {
+  if (isAnnotationFactory(x)) return x().annotationInstance
+  if (x && 'annotationInstance' in x) return x.annotationInstance
+  return x
+}
+
 function isRouteAnnotation(x: any): x is RouteAnnotation {
   return Boolean(x.isRouteAnnotation)
 }
@@ -25,8 +34,9 @@ function isRouteAnnotation(x: any): x is RouteAnnotation {
  * @param baseUrl
  */
 export function resolvePaths(route: RouteMetadata, baseUrl = '/'): PathMap {
-  const parents = route.controllerAnnotations?.filter(isRouteAnnotation) ?? [],
-    children = route.methodAnnotations?.filter(isRouteAnnotation) ?? [],
+  const parents =
+      route.controllerAnnotations?.map(maybeUnwrapAnnotation).filter(isRouteAnnotation) ?? [],
+    children = route.methodAnnotations?.map(maybeUnwrapAnnotation).filter(isRouteAnnotation) ?? [],
     paths = {} as PathMap
 
   let resolveFrom = '/'

@@ -8,7 +8,9 @@
     ".": {
       "node": {
         "import": "./index.mjs",
-        "require": "./lib/cjs/index.js"
+        "require": "./lib/cjs/index.js",
+        "default": "./lib/cjs/index.js",
+        "types": "./lib/cjs/index.d.ts"
       },
       "default": "./lib/cjs/index.js"
     },

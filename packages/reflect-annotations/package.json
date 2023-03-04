@@ -48,6 +48,5 @@
   "devDependencies": {
     "@types/node": "^18.6.3",
     "reflect-metadata": "^0.1.13"
-  },
-  "gitHead": "4bc0a9eb661fce02765d56efdc84f8d1a10a01ec"
+  }
 }

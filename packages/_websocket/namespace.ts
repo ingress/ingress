@@ -2,7 +2,6 @@ import type WebSocket from 'ws'
 import { Subject, fromEvent, merge, Observable, SubscriptionLike, Subscription } from 'rxjs'
 import { Ack } from './ack.js'
 import { createBackChannel } from './backchannel.js'
-import { noop, once } from '../lang.js'
 
 //cross compatible entrypoint for cjs and esm
 import * as cjsMap from 'rxjs/internal/operators/map'

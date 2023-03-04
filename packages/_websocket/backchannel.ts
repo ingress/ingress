@@ -1,5 +1,5 @@
+import { randomUUID } from 'node:crypto'
 import { Subject } from 'rxjs'
-import { v4 as uuid } from 'uuid'
 
 type PubSub = {
   channel: string
@@ -21,7 +21,7 @@ class LocalChannel<T> extends Subject<T> {
   private channel: string
   constructor(opts: { channel?: string } = {}) {
     super()
-    this.channel = opts.channel || uuid()
+    this.channel = opts.channel || randomUUID()
     const existing = LocalChannel.instances[this.channel]
     if (existing) {
       return existing

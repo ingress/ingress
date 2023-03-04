@@ -4,7 +4,7 @@ import type { Blob } from 'node:buffer'
 
 export type Serializer = Func
 
-export interface Request<T, Body = unknown> {
+export interface IngressRequest<T, Body = unknown> {
   context: T
   id: string
   json<T = unknown>(): Promise<T>
@@ -15,6 +15,7 @@ export interface Request<T, Body = unknown> {
   parse(options: { mode: 'buffer' } & ParseOptions): Promise<Buffer>
   parse<T = any>(options: { mode: 'json' } & ParseOptions): Promise<T>
   parse(options: { mode: 'stream' } & ParseOptions): Readable
+  protocol: 'http://' | 'https://'
   pathname: string
   method: string
   search: string
@@ -24,7 +25,7 @@ export interface Request<T, Body = unknown> {
   rawBody: any
 }
 
-export interface Response<T> extends PromiseLike<void> {
+export interface IngressResponse<T> extends PromiseLike<void> {
   send(data?: any): this
   readonly headers: Record<string, string | string[] | undefined>
   header(name: string, value: string | number): this
@@ -42,8 +43,8 @@ export interface Response<T> extends PromiseLike<void> {
  * A "Driver" is responsible for invoking the application's middleware (acting as its main event source)
  */
 export interface HttpContext<T extends CoreContext> extends CoreContext {
-  request: Request<T>
-  response: Response<T>
+  request: IngressRequest<T>
+  response: IngressResponse<T>
   app: Ingress<T>
 }
 

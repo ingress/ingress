@@ -1,7 +1,7 @@
 import { IncomingMessage, Server as HttpServer, ServerResponse } from 'node:http'
 import { NodeHttpContext } from './context.node.js'
 import { isThenable } from './util.js'
-import { Injectable, AppState, Ingress } from '@ingress/core'
+import { AppState, Ingress, CoreContext } from '@ingress/core'
 import type { ListenOptions } from 'node:net'
 import type { Duplex } from 'node:stream'
 import type { HttpContext } from '@ingress/types'
@@ -12,7 +12,6 @@ type HttpOptions = {
   clientErrorHandler: (err: Error, socket: Duplex) => any
 }
 
-@Injectable()
 export class Http {
   options: HttpOptions
   constructor(options?: Partial<HttpOptions>) {
@@ -27,10 +26,10 @@ export class Http {
   }
   public server: HttpServer = null as any
   private handler: (req: IncomingMessage, res: ServerResponse) => void = null as any
-  initializeContext(ctx: HttpContext<any>) {
-    return ctx
+  initializeContext(ctx: CoreContext): HttpContext<any> {
+    return ctx as HttpContext<any>
   }
-  async start(app: Ingress<HttpContext<any>>, next: NextFn) {
+  async start(app: Ingress<HttpContext<any>>, next: NextFn): Promise<{ http: Http }> {
     this.options.clientErrorHandler = this.options.clientErrorHandler?.bind(app)
     let root = app.container.findProvidedSingleton(Http)
     if (!root) {
@@ -75,13 +74,11 @@ export class Http {
       error = err
     }
     if (error !== null) return context.response.send(error)
-
     if (isThenable(result)) return result.then(context.response.send, context.response.send)
-
     return context.response.send(result)
   }
 
-  stop(app: Ingress<HttpContext<any>>, next: NextFn) {
+  stop(app: Ingress<HttpContext<any>>, next: NextFn): Promise<void> | void {
     if (this.handler) {
       this.server.removeListener('request', this.handler)
       if (app.readyState & AppState.Running && app.readyState & AppState.Stopping) {
@@ -103,9 +100,4 @@ function defaultClientError(this: any, err: Error & { code?: string }, socket: D
   }
 }
 
-export { HttpContext }
-
-const app = new Ingress(),
-  u = app.use(new Http())
-
-void u
+export { HttpContext, HttpOptions }

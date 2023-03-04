@@ -1,12 +1,12 @@
 import 'reflect-metadata'
 import { beforeAll, expect, describe, it } from 'vitest'
-import { createConnection } from 'net'
+import { createConnection } from 'node:net'
+import { finished } from 'node:stream'
 import { Ingress } from '@ingress/core'
+import { start, Started } from './request.util.test.js'
 import { Http } from './node.http.js'
-import { finished } from 'stream'
 import type { AddressInfo } from 'node:net'
 import type { HttpContext } from '@ingress/types'
-import { start, Started } from './request.util.test.js'
 
 let started: Started, request: Started['request']
 
@@ -27,7 +27,6 @@ describe('node http ctx', () => {
     })
     request = started.request
   })
-
   it('no handlers (404)', async () => {
     const res = await request('/a'),
       expectedMessage = 'OK'
@@ -52,13 +51,14 @@ describe('node http ctx', () => {
     const res = await request('/c'),
       expectedMessage = 'Bad Gateway'
 
-    expect(res.payload).toEqual('')
-    expect(res.headers['content-type']).toEqual(void 0)
+    expect(res.payload).toEqual('Error: some error')
+    expect(res.headers['content-type']).toEqual('text/plain;charset=UTF-8')
     expect(res.statusCode).toEqual(502)
     expect(res.statusMessage).toEqual(expectedMessage)
   })
 
   it('user handled status', async () => {
+    console.log(process.version)
     const res = await request('/d'),
       expectedMessage = 'OK'
     expect(res.payload).toEqual('')
