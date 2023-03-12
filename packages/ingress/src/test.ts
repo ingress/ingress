@@ -1,5 +1,5 @@
 import { Route } from '@ingress/router'
-import { ingress } from './ingress'
+import { ingress } from './ingress.js'
 
 const app = ingress()
 

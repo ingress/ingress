@@ -7,6 +7,8 @@ const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
   result = (x: string) => '/' + trim(x),
   upper = (x: any) => x.toString().toUpperCase()
 
+export const kInjectAnnotation = Symbol('ingress.inject')
+
 /**
  * @public
  */
@@ -58,7 +60,31 @@ export interface ParamAnnotationFactory {
  * @public
  */
 export interface ParamAnnotationBase {
-  extractValue(context: RouterContext): any
+  extractValue(context: RouterContext, type?: any): any
+}
+
+export class InjectParamAnnotation implements ParamAnnotationBase {
+  [kInjectAnnotation] = true
+  transient = false
+  token: any
+  constructor(token?: { transient: boolean } | any, options?: { transient: boolean }) {
+    if (token && 'transient' in token && token.transient) {
+      this.transient = true
+    } else {
+      this.token = token
+    }
+    if (options && 'transient' in options && options.transient) {
+      this.transient = true
+    }
+  }
+  extractValue(context: RouterContext, type: any) {
+    let container = context.scope
+    if (this.transient) {
+      container = context.app.container.createChildWithContext(context)
+    }
+
+    return container.get(this.token || type)
+  }
 }
 
 /**
@@ -145,7 +171,11 @@ const methods = ['Get', 'Post', 'Put', 'Delete', 'Head', 'Patch'],
   /**
    * @public
    */
-  Query = createAnnotationFactory(QueryParamAnnotation)
+  Query = createAnnotationFactory(QueryParamAnnotation),
+  /**
+   * @public
+   */
+  Inject = createAnnotationFactory(InjectParamAnnotation)
 
 /**
  * @public
@@ -188,6 +218,10 @@ export interface Route extends PathFactoryAnnotation {
    */
   Query: ParamAnnotationFactory
   /**
+   * Inject a provided item
+   */
+  Inject: (...args: ConstructorParameters<typeof InjectParamAnnotation>) => Annotation
+  /**
    * Extract the specific header to the decorated argument
    */
   Header: typeof Header
@@ -213,6 +247,7 @@ export const Route = methods.reduce(
     Param,
     Query,
     Header,
+    Inject,
     Upgrade,
   }) as any
 ) as Route
@@ -239,4 +274,8 @@ export {
    * @public
    */
   Body,
+  /**
+   * @public
+   */
+  Inject,
 }

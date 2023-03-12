@@ -46,7 +46,7 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@types/node": "^18.6.3",
+    "@types/node": "^18.15.0",
     "reflect-metadata": "^0.1.13"
   }
 }

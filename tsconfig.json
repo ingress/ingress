@@ -2,6 +2,7 @@
   "root": true,
   "compilerOptions": {
     "strict": true,
+    "noUnusedLocals": false,
     "target": "es2021",
     "module": "esnext",
     "moduleResolution": "node",

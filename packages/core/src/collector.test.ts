@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Ingress } from './core.js'
+import { Ingress, NextFn } from './core.js'
 
 describe('Collectors', () => {
   it('UseSingleton', async () => {
@@ -22,6 +22,7 @@ describe('Collectors', () => {
         plan++
       }
     }
+
     await app.start()
     expect(plan).toBe(1)
     await app.middleware()
@@ -29,6 +30,47 @@ describe('Collectors', () => {
     await app.stop()
     expect(plan).toBe(4)
   })
+
+  it('UseSingleton priority', async () => {
+    const app = new Ingress(),
+      UseSingleton = app.container.UseSingleton
+    let plan = ''
+    class WontBeFirst {
+      middleware(_: any, next: NextFn) {
+        plan += 'd'
+        return next()
+      }
+    }
+    app.use(new WontBeFirst())
+    @UseSingleton({ priority: { before: WontBeFirst } })
+    class A {
+      middleware(context: any, next: any) {
+        plan += 'c'
+        return next()
+      }
+    }
+    @UseSingleton({ priority: { before: A } })
+    class B {
+      middleware(context: any, next: any) {
+        plan += 'a'
+        return next()
+      }
+    }
+
+    @UseSingleton({ priority: { after: B } })
+    class C {
+      middleware(context: any, next: any) {
+        plan += 'b'
+        return next()
+      }
+    }
+
+    await app.start()
+    await app.middleware()
+    await app.stop()
+    expect(plan).toBe('abcd')
+  })
+
   it('Singleton', async () => {
     const app = new Ingress(),
       Singleton = app.container.SingletonService

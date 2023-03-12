@@ -16,6 +16,19 @@ import type { Startable } from './types.js'
 export * from './collector.js'
 export { Provider, Injectable, InjectionToken } from 'injection-js'
 
+const kForwardRef = Symbol.for('ingress_forwardRef')
+
+export function resolveForwardRef<T>(fn: T | (() => T)): T {
+  if (typeof fn === 'function' && (fn as any)[kForwardRef]) {
+    return (fn as any)() as T
+  }
+  return fn as T
+}
+
+export function forwardRef(fn: () => Type<any>): () => Type<any> {
+  return Object.assign(fn, { [kForwardRef]: true })
+}
+
 export interface Injector {
   get<T>(token: Type<T> | InjectionToken<T>, notFoundValue?: T): T
 }
@@ -173,4 +186,8 @@ export class ModuleContainer implements Injector, Startable {
  */
 export function createContainer(options?: ModuleContainerOptions): ModuleContainer {
   return new ModuleContainer(options)
+}
+
+export interface ForwardRefFn {
+  (): any
 }

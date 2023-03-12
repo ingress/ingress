@@ -22,7 +22,7 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "lint": "eslint \"./packages/**/src/**/*.ts\" --fix",
-    "test": "npm run test --workspaces && npm run test:modules",
+    "test": "npx vitest --run && npm run test:modules",
     "test:modules": "node scripts/test-exports.test.mjs",
     "commitlint": "commitlint -f $(git rev-list --tags --max-count=1) -t $(git log --pretty=%H | head -1)",
     "ncu": "npm exec --workspaces -c \"ncu\" && ncu",
@@ -31,17 +31,17 @@
   "devDependencies": {
     "@commitlint/cli": "^17.4.4",
     "@commitlint/config-angular": "^17.4.4",
-    "@swc/core": "^1.3.37",
-    "@typescript-eslint/eslint-plugin": "^5.54.0",
-    "@typescript-eslint/parser": "^5.54.0",
+    "@swc/core": "^1.3.39",
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
     "@vitest/coverage-c8": "^0.29.2",
     "concurrently": "^7.6.0",
-    "eslint": "^8.35.0",
-    "eslint-config-prettier": "~8.6.0",
+    "eslint": "^8.36.0",
+    "eslint-config-prettier": "~8.7.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.2.1",
     "node-dev": "^8.0.0",
-    "npm-check-updates": "^16.7.10",
+    "npm-check-updates": "^16.7.12",
     "prettier": "^2.8.4",
     "reflect-metadata": "^0.1.13",
     "shx": "^0.3.4",
@@ -86,7 +86,8 @@
         {
           "args": "after-used",
           "ignoreRestSiblings": true,
-          "argsIgnorePattern": "^_"
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^[A-Z]"
         }
       ],
       "@typescript-eslint/no-use-before-define": 0,

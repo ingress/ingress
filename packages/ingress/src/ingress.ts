@@ -1,10 +1,10 @@
 import 'reflect-metadata'
-import { Ingress, Type } from '@ingress/core'
+import { Ingress, Type, NextFn, forwardRef } from '@ingress/core'
 import { Http, HttpOptions } from '@ingress/http'
 import { Route, Router } from '@ingress/router'
 import { pick } from './lang.js'
 
-export { Ingress, Router, Http, Route }
+export { Ingress, Router, Http, Route, NextFn, forwardRef }
 export default ingress
 
 type Prettify<T> = {

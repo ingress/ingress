@@ -52,7 +52,7 @@ export class Http {
       const starter = () =>
         new Promise<void>((resolve, reject) => {
           this.server.once('error', reject)
-          this.server.on('clientError', this.options.clientErrorHandler!)
+          this.server.on('clientError', this.options.clientErrorHandler)
           this.server.listen(this.options.listen, () => {
             this.server.removeListener('error', reject)
             resolve()

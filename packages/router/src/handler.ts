@@ -1,4 +1,5 @@
 import { compose, Middleware } from '@ingress/core'
+import { InjectParamAnnotation, kInjectAnnotation } from './annotations/route.annotation.js'
 import type { RouteMetadata } from './route-resolve.js'
 import type { RouterContext } from './router.js'
 import { Func, TypeResolver } from './type-resolver.js'
@@ -81,10 +82,6 @@ function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) 
       type = route.types?.parameters?.[i],
       pick =
         annotation?.extractValue?.bind(annotation) || type?.extractValue?.bind(type) || pickRequest
-    if (!type) {
-      resolvers.push(pick)
-      continue
-    }
 
     if (Request === type) {
       parseBody = false
@@ -100,14 +97,22 @@ function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) 
       continue
     }
 
-    if ('transformValue' in type) {
-      resolvers.push((context: RouterContext) => type.transformValue(pick(context)))
+    if (!type || annotation?.[kInjectAnnotation]) {
+      resolvers.push((ctx: RouterContext) => pick(ctx, type))
+      continue
+    }
+
+    if ('parse' in type && typeof type.parse === 'function') {
+      resolvers.push((context: RouterContext) => type.parse(pick(context, type)))
+      continue
+    } else if ('transformValue' in type) {
+      resolvers.push((context: RouterContext) => type.transformValue(pick(context, type)))
       continue
     }
     //search registered type resolvers
     const resolver = typeResolver.get(type)
     if (resolver) {
-      resolvers.push((context: any) => resolver(pick(context)))
+      resolvers.push((context: any) => resolver(pick(context, type)))
     }
     if (!resolver) {
       throw new Error(

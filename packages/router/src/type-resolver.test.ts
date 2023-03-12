@@ -129,12 +129,14 @@ describe('type resolvers', () => {
 
   it('default type converters', () => {
     const r = new TypeResolver(),
-      num = r.get(Number)!,
-      str = r.get(String)!,
-      date = r.get(Date)!,
-      bool = r.get(Boolean)!
-    expect(num('5')).toEqual(5)
-    expect(str(1234)).toEqual('1234')
+      num = r.get(Number),
+      str = r.get(String),
+      date = r.get(Date),
+      bool = r.get(Boolean)
+    expect(num?.('5')).toEqual(5)
+    expect(str?.(1234)).toEqual('1234')
+    if (!bool) throw 'expected boolean converter'
+    if (!date) throw 'expected date converter'
     expect(
       bool(0) === bool('0') &&
         bool() === bool(null) &&
@@ -157,7 +159,7 @@ describe('type resolvers', () => {
       ] as const,
       r = new TypeResolver()
     for (const [type, input, errorText] of tests) {
-      const error = await throws(() => r.get(type as any)!(input), errorText)
+      const error = await throws(() => r.get(type as any)?.(input), errorText)
       expect(error.statusCode).toEqual(400)
     }
   })

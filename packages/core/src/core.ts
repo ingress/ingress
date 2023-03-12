@@ -4,7 +4,14 @@ import {
   isAnnotationFactory,
   isAnnotationInstance,
 } from 'reflect-annotations'
-import { Func, ModuleContainer, CoreContext } from './di.js'
+import {
+  Func,
+  ModuleContainer,
+  CoreContext,
+  DependencyCollectorList,
+  resolveForwardRef,
+  PriorityOptions,
+} from './di.js'
 import { exec, ContinuationMiddleware, NextFn, executeByArity, Middleware } from './compose.js'
 import {
   Addon,
@@ -57,11 +64,37 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
     function executor(u: UsableMiddleware<T>, context: T, next: NextFn) {
       return u.middleware(context, next)
     }
-    const mw = this.mw.filter((x) => x)
+    const prioritized: [PriorityOptions, UsableMiddleware<T>][] = [],
+      sorted: UsableMiddleware<T>[] = []
+    for (const mw of this.mw) {
+      if (!mw) continue
+      const priority = DependencyCollectorList.priorities.get(mw.constructor)
+      if (priority) prioritized.push([priority, mw])
+      else sorted.push(mw)
+    }
+    let l = prioritized.length
+    const cap = 2 * l
+    let i = 0
+    while (l) {
+      if (++i > cap) throw new Error('Unable to satisfy priority order')
+      const unpicked = prioritized.slice()
+      for (let j = 0; j < unpicked.length; j++) {
+        const [{ priority }, mw] = unpicked[j]
+        let idx = sorted.findIndex(
+          (x) => x instanceof resolveForwardRef(priority.before || priority.after)
+        )
+        if (idx === -1) continue
+        if (priority.after) idx += 1
+        l--
+        prioritized.splice(j, 1)
+        sorted.splice(idx, 0, mw)
+      }
+    }
+
     this.setupCtx = this.setupCtx.filter((x) => x)
     return (this._middleware = (ctx, next) => {
       ctx = this.initializeContext(ctx as T)
-      return exec(mw, ctx, next, executor)
+      return exec(sorted, ctx, next, executor)
     })
   }
 
@@ -284,5 +317,6 @@ export {
   ModuleContainer,
   ContextToken,
   createContainer,
+  forwardRef,
 } from './di.js'
 export type { ModuleContainerOptions, Injector, CoreContext } from './di.js'

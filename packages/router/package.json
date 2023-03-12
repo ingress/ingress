@@ -41,10 +41,10 @@
     "@ingress/types": "0.0.1",
     "reflect-annotations": "4.0.0-alpha.9",
     "router-tree-map": "^0.1.5",
-    "secure-json-parse": "^2.5.0"
+    "secure-json-parse": "^2.7.0"
   },
   "devDependencies": {
-    "@hapi/shot": "^6.0.0",
+    "@hapi/shot": "^6.0.1",
     "@ingress/http": "0.0.1-alpha.0"
   }
 }

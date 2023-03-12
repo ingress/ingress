@@ -10,6 +10,7 @@ const Ingress = module.Ingress,
   ingress = module.ingress,
   compose = module.compose,
   exec = module.exec,
+  forwardRef = module.forwardRef,
   InjectionToken = module.InjectionToken,
   Injectable = module.Injectable,
   ModuleContainer = module.ModuleContainer,
@@ -28,6 +29,7 @@ export {
   ModuleContainer,
   ContextToken,
   createContainer,
+  forwardRef,
 }
 
 export default def
