@@ -20,6 +20,9 @@ import { AppState, guards } from './types.js'
 const _hosts = Symbol('ingress.hosts')
 
 class Ingress<T extends CoreContext, D = EmptyExtend> {
+  get [Symbol.toStringTag]() {
+    return 'Ingress'
+  }
   static [_hosts] = new WeakMap<any, Ingress<any>>()
   private _middleware: ContinuationMiddleware<T> | null = null
 
@@ -267,12 +270,13 @@ async function addDecorations(setups: (Startable | undefined)[], app: Ingress<an
     startableExecutor = executeByArity.bind(null, 'start', results)
   await exec(setups, app, next, startableExecutor)
   const decorations = await Promise.all(results.flat())
-  decorations
-    .filter((x) => x && !(x instanceof Ingress))
-    .forEach((dec) => {
-      Object.assign(app, dec)
-    })
+  for (const dec of decorations) {
+    if (dec && !isIngress(dec)) Object.assign(app, dec)
+  }
 }
+
+const isIngress = (x: any): x is Ingress<any, any> =>
+  Object.prototype.toString.call(x) === '[object Ingress]'
 
 /** Core Objects */
 /** Main and Factory Exports */
