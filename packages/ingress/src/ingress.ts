@@ -1,6 +1,8 @@
 import 'reflect-metadata'
-import { Ingress, Type, NextFn, forwardRef } from '@ingress/core'
-import { Http, HttpOptions } from '@ingress/http'
+import type { Type } from '@ingress/core'
+import { Ingress, NextFn, forwardRef } from '@ingress/core'
+import type { HttpOptions } from '@ingress/http'
+import { Http } from '@ingress/http'
 import { Route, Router } from '@ingress/router'
 import { pick } from './lang.js'
 

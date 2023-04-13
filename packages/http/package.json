@@ -35,6 +35,6 @@
     "secure-json-parse": "^2.7.0"
   },
   "devDependencies": {
-    "@types/node": "^18.15.0"
+    "@types/node": "^18.15.11"
   }
 }

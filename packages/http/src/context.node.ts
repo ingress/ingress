@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'http'
+import { Logger } from '@ingress/core'
 import type { Ingress, Injector } from '@ingress/core'
 import { StatusCode } from '@ingress/types'
 import { parse } from 'secure-json-parse'
@@ -7,13 +8,6 @@ import { finished } from 'readable-stream'
 import { Readable } from 'node:stream'
 import { Buffer, Blob } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
-import type {
-  HttpContext,
-  ParseMode,
-  ParseOptions,
-  IngressRequest,
-  IngressResponse,
-} from '@ingress/types'
 import {
   exists,
   getContentType,
@@ -23,7 +17,17 @@ import {
   isStream,
   isSerializableError,
   isError,
+  isResponse,
 } from './util.js'
+import type {
+  HttpContext,
+  IngressRequest,
+  IngressResponse,
+  ParseMode,
+  ParseOptions,
+} from './http.context.js'
+import type { Http } from './node.http.js'
+import { ING_UNHANDLED_INTERNAL_SERVER_ERROR } from '@ingress/types'
 
 const enum SendingState {
   New,
@@ -91,6 +95,23 @@ export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> 
     }
     return parseBuffer(req, limit)
   }
+  toRequest(): Request {
+    const protocol = this.protocol,
+      headers: [string, string][] = []
+    for (const [key, value] of Object.entries(this.headers)) {
+      if (key && value) {
+        headers.push([key, Array.isArray(value) ? value.join(',') : value])
+      }
+    }
+    const method = this.method,
+      body = method === 'GET' || method === 'HEAD' ? undefined : this.rawBody,
+      url = protocol + this.headers['host'] + this.pathname + this.search
+    return new Request(url, {
+      body: body as any,
+      method,
+      headers,
+    })
+  }
 }
 
 class NodeResponse<T extends HttpContext<any>> implements IngressResponse<T> {
@@ -117,6 +138,7 @@ class NodeResponse<T extends HttpContext<any>> implements IngressResponse<T> {
     if (this.#state !== SendingState.New) {
       return this
     }
+    this.#state = SendingState.Sending
 
     if (isSerializableError(data)) {
       this.raw.statusCode = data.statusCode || 500
@@ -125,15 +147,14 @@ class NodeResponse<T extends HttpContext<any>> implements IngressResponse<T> {
       const message = data.toString()
       this.raw.setHeader('content-type', data.contentType || 'text/plain;charset=UTF-8')
       this.raw.setHeader('content-length', Buffer.byteLength(message).toString())
-      this.raw.end(message || '')
+      this.raw.end(message)
       return this
     }
-
     if (isError(data)) {
-      //TODO global handler
+      this.context.scope.get(Logger).error('[ingress]:INTERNAL_SERVER_ERROR', data)
       this.code(500)
       this.raw.end()
-    } else if (data instanceof Response) {
+    } else if (isResponse(data)) {
       data.headers.forEach((value, key) => {
         this.raw.setHeader(key, value)
       })
@@ -181,6 +202,7 @@ class NodeResponse<T extends HttpContext<any>> implements IngressResponse<T> {
     onFailed?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
   ): PromiseLike<TResult1 | TResult2> {
     finished(this.raw, (err) => {
+      this.context
       if (err) {
         if (onFailed) onFailed(err)
       } else if (onSent) {
@@ -199,7 +221,11 @@ export class NodeHttpContext<T extends HttpContext<any>> implements HttpContext<
   public http = this
   public request: IngressRequest<T>
   public response: IngressResponse<T>
-  constructor(public req: IncomingMessage, public res: ServerResponse, public app: Ingress<any>) {
+  constructor(
+    public req: IncomingMessage,
+    public res: ServerResponse,
+    public app: Ingress<T, { http: Http }>
+  ) {
     this.request = new NodeRequest<T>(req, this as unknown as T)
     this.response = new NodeResponse<T>(res, this as unknown as T)
   }

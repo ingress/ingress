@@ -1,8 +1,9 @@
 import 'reflect-metadata'
 import { beforeAll, describe, it, expect } from 'vitest'
-import type { HttpContext } from '@ingress/types'
-import { Started, start } from './request.util.test.js'
+import type { Started } from './request.util.test.js'
+import { start } from './request.util.test.js'
 import type { NextFn } from '@ingress/core'
+import type { HttpContext } from './http.context.js'
 
 let started: Started, request: Started['request']
 

@@ -1,11 +1,12 @@
-import { IncomingMessage, Server as HttpServer, ServerResponse } from 'node:http'
+import type { IncomingMessage, ServerResponse } from 'node:http'
+import { Server as HttpServer } from 'node:http'
 import { NodeHttpContext } from './context.node.js'
 import { isThenable } from './util.js'
-import { AppState, Ingress, CoreContext } from '@ingress/core'
+import { AppState } from '@ingress/core'
 import type { ListenOptions } from 'node:net'
 import type { Duplex } from 'node:stream'
-import type { HttpContext } from '@ingress/types'
-import type { NextFn } from '@ingress/core'
+import type { NextFn, Ingress, CoreContext } from '@ingress/core'
+import { HttpContext } from './http.context.js'
 
 type HttpOptions = {
   listen: ListenOptions | number | string
@@ -22,6 +23,7 @@ export class Http {
     if (!options?.clientErrorHandler) {
       options.clientErrorHandler = defaultClientError
     }
+
     this.options = options as HttpOptions
   }
   public server: HttpServer = null as any
@@ -45,7 +47,7 @@ export class Http {
       app.unUse(this)
     } else {
       const ingress = (req: IncomingMessage, res: ServerResponse) => {
-        app.middleware(new NodeHttpContext(req, res, app))
+        app.middleware(new NodeHttpContext(req, res, app as any))
       }
       this.handler = ingress
       this.server.addListener('request', ingress)

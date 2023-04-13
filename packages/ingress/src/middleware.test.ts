@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import ingress, { Http, forwardRef, NextFn } from './ingress.js'
+import type { NextFn } from './ingress.js'
+import ingress, { Http, forwardRef } from './ingress.js'
 import { inject } from '@hapi/shot'
+import { Logger } from '@ingress/core'
 
 describe('ingress', () => {
   it('middleware', async () => {
@@ -37,6 +39,7 @@ describe('ingress', () => {
         return context.abc
       }
     }
+
     await app.start()
 
     const response = await inject(app.driver, '/hello')

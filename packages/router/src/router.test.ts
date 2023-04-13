@@ -4,7 +4,8 @@ import { inject } from '@hapi/shot'
 
 //Deps
 import 'reflect-metadata'
-import { CoreContext, Ingress } from '@ingress/core'
+import type { CoreContext } from '@ingress/core'
+import { Ingress } from '@ingress/core'
 import { Http } from '@ingress/http'
 import { createAnnotationFactory } from 'reflect-annotations'
 

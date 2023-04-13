@@ -4,6 +4,7 @@ export type DependencyProvider =
   | Omit<FactoryProvider, 'provide'>
   | Omit<ValueProvider, 'provide'>
   | Omit<ClassProvider, 'provide'>
+  | Omit<ClassProvider, 'useClass'>
 
 export type MaybeForwardRef = Type<any> | (() => Type<any>)
 
@@ -34,6 +35,12 @@ export class DependencyCollectorList {
       if ('priority' in target) {
         return (provider: any) => {
           DependencyCollectorList.priorities.set(provider, target)
+          this.items.add(provider)
+        }
+      }
+      if ('provide' in target) {
+        return (clazz: any) => {
+          const provider: any = { provide: target.provide, useClass: clazz }
           this.items.add(provider)
         }
       }

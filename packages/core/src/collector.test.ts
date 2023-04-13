@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { Ingress, NextFn } from './core.js'
+import type { NextFn } from './core.js'
+import { Ingress } from './core.js'
 
 describe('Collectors', () => {
   it('UseSingleton', async () => {

@@ -10,7 +10,8 @@ import {
 
 import { Ingress } from '@ingress/core'
 import { Http } from '@ingress/http'
-import { Router, RouterContext } from '../router.js'
+import type { RouterContext } from '../router.js'
+import { Router } from '../router.js'
 import { inject } from '@hapi/shot'
 import type { RouteMetadata } from '../route-resolve.js'
 

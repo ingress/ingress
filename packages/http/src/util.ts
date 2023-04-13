@@ -24,13 +24,17 @@ export function isNumber(x: any): x is number {
 export function isSerializableError(
   x: any
 ): x is { contentType?: string; statusCode: number; statusMessage?: string } {
-  return isError(x) && 'statusCode' in x
+  return isError(x) && 'statusCode' in x && typeof x.statusCode === 'number'
 }
 
 const toString = {}.toString,
   errorTag = '[object Error]'
 export function isError(x: any): x is Error {
   return toString.call(x) === errorTag
+}
+
+export function isResponse(x: any): x is Response {
+  return x instanceof Response || toString.call(x) === '[object Response]'
 }
 
 export function isText(data: any): data is string {

@@ -7,7 +7,8 @@ import { Http } from '@ingress/http'
 
 import { Route } from './annotations/route.annotation.js'
 import { TypeResolver } from './type-resolver.js'
-import { Router, RouterContext } from './router.js'
+import type { RouterContext } from './router.js'
+import { Router } from './router.js'
 
 describe('type resolvers', () => {
   it('no registered type converter', async () => {

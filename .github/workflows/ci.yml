@@ -5,10 +5,11 @@ on: [push]
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         node: [18, 19]
+        os: [ubuntu-latest, windows-latest, 'macos-latest']
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -19,7 +20,7 @@ jobs:
           path: ~/.npm
           key: ${{ runner.os }}-${{ matrix.node }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-${{ matrix.node }}-node-
       - name: Install
         run: npm i -g npm@9 && npm ci
       - name: Build

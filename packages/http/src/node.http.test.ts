@@ -3,10 +3,11 @@ import { beforeAll, expect, describe, it } from 'vitest'
 import { createConnection } from 'node:net'
 import { finished } from 'node:stream'
 import { Ingress } from '@ingress/core'
-import { start, Started } from './request.util.test.js'
+import type { Started } from './request.util.test.js'
+import { start } from './request.util.test.js'
+import type { HttpContext } from './node.http.js'
 import { Http } from './node.http.js'
 import type { AddressInfo } from 'node:net'
-import type { HttpContext } from '@ingress/types'
 
 let started: Started, request: Started['request']
 
@@ -41,6 +42,10 @@ describe('node http ctx', () => {
     const res = await request('/b'),
       expectedMessage = 'Internal Server Error'
 
+    // expect(started.app.container.get(started.logger).error).toHaveBeenCalledWith(
+    //   '[ingress]:INTERNAL_SERVER_ERROR',
+    //   new Error('some error')
+    // )
     expect(res.payload).toEqual('')
     expect(res.headers['content-type']).toEqual(void 0)
     expect(res.statusCode).toEqual(500)
@@ -58,7 +63,6 @@ describe('node http ctx', () => {
   })
 
   it('user handled status', async () => {
-    console.log(process.version)
     const res = await request('/d'),
       expectedMessage = 'OK'
     expect(res.payload).toEqual('')

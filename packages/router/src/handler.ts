@@ -1,8 +1,10 @@
-import { compose, Middleware } from '@ingress/core'
+import type { Middleware } from '@ingress/core'
+import { compose } from '@ingress/core'
 import { InjectParamAnnotation, kInjectAnnotation } from './annotations/route.annotation.js'
 import type { RouteMetadata } from './route-resolve.js'
 import type { RouterContext } from './router.js'
-import { Func, TypeResolver } from './type-resolver.js'
+import type { Func } from './type-resolver.js'
+import { TypeResolver } from './type-resolver.js'
 
 function isPrimitive(value: any) {
   return (typeof value !== 'object' && typeof value !== 'function') || value === null
@@ -143,21 +145,7 @@ function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) 
 }
 
 function toRequest(ctx: RouterContext): Request {
-  const protocol = ctx.request.protocol,
-    headers: [string, string][] = []
-  for (const [key, value] of Object.entries(ctx.request.headers)) {
-    if (key && value) {
-      headers.push([key, Array.isArray(value) ? value.join(',') : value])
-    }
-  }
-  const method = ctx.request.method,
-    body = method === 'GET' || method === 'HEAD' ? undefined : ctx.request.rawBody,
-    url = protocol + ctx.request.headers['host'] + ctx.request.pathname + ctx.request.search
-  return new Request(url, {
-    body,
-    method,
-    headers,
-  })
+  return ctx.request.toRequest()
 }
 
 function isRegularMiddleware(x: any) {

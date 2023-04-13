@@ -1,12 +1,14 @@
 import type { Func, Ingress, CoreContext } from '@ingress/core'
 import type { Readable } from 'node:stream'
 import type { Blob } from 'node:buffer'
+import type { Http } from './node.http'
 
 export type Serializer = Func
 
 export interface IngressRequest<T, Body = unknown> {
   context: T
   id: string
+  toRequest(): Request
   json<T = unknown>(): Promise<T>
   text(): Promise<string>
   arrayBuffer(): Promise<ArrayBuffer>
@@ -45,7 +47,7 @@ export interface IngressResponse<T> extends PromiseLike<void> {
 export interface HttpContext<T extends CoreContext> extends CoreContext {
   request: IngressRequest<T>
   response: IngressResponse<T>
-  app: Ingress<T>
+  app: Ingress<T, { http: Http }>
 }
 
 export type ParseOptions = {

@@ -1,5 +1,7 @@
 {
-  "packages": ["packages/*"],
+  "packages": [
+    "packages/*"
+  ],
   "npmClient": "npm",
   "version": "independent",
   "command": {
@@ -11,7 +13,11 @@
     "publish": {
       "verifyAccess": false,
       "fromPackage": true,
-      "ignoreChanges": ["*.md", "*.spec.ts", "*.test.ts"],
+      "ignoreChanges": [
+        "*.md",
+        "*.spec.ts",
+        "*.test.ts"
+      ],
       "message": "release: update package versions"
     }
   }

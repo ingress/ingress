@@ -1,4 +1,5 @@
-import { compose, Middleware, exec } from './core.js'
+import type { Middleware } from './core.js'
+import { compose, exec } from './core.js'
 import { describe, it, expect } from 'vitest'
 import { executeByArity } from './compose.js'
 

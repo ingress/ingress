@@ -1,3 +1,4 @@
+import type { Type } from './annotations.js'
 import {
   getAnnotations,
   setAnnotations,
@@ -10,7 +11,6 @@ import {
   isAnnotationFactory,
   isAnnotationInstance,
   AnnotationFactory,
-  Type,
 } from './annotations.js'
 import { reflectClassProperties } from './reflect-class.js'
 interface AnnotatedPropertyDescription {

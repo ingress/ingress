@@ -1,17 +1,19 @@
 import { StatusCode } from '@ingress/types'
 import { reflectAnnotations } from 'reflect-annotations'
-import { HttpMethod, Router as RouteMap } from 'router-tree-map'
+import type { Readable } from 'node:stream'
+import type { HttpMethod } from 'router-tree-map'
+import { Router as RouteMap } from 'router-tree-map'
 import { createHandler } from './handler.js'
+import type { Type } from './annotations/controller.annotation.js'
 import {
   ControllerCollector,
-  Type,
   ControllerDependencyCollector,
 } from './annotations/controller.annotation.js'
-import { resolvePaths, RouteMetadata, PathMap } from './route-resolve.js'
-
-import type { Middleware, Ingress, NextFn } from '@ingress/core'
-import type { HttpContext } from '@ingress/types'
-import { Func, TypeResolver } from './type-resolver.js'
+import type { RouteMetadata, PathMap } from './route-resolve.js'
+import { resolvePaths } from './route-resolve.js'
+import type { Middleware, Ingress, NextFn, CoreContext } from '@ingress/core'
+import type { Func } from './type-resolver.js'
+import { TypeResolver } from './type-resolver.js'
 
 export { ControllerDependencyCollector }
 export { Route } from './annotations/route.annotation.js'
@@ -156,6 +158,24 @@ export class RouteData {
 export type Body = any
 export type ParamEntries = [string, string][]
 export type Handle = Middleware<any>
-export interface RouterContext extends HttpContext<any> {
+export interface RouterContext extends CoreContext {
+  app: Ingress<RouterContext>
+  request: {
+    method: string
+    body: any
+    pathname: string
+    searchParams: URLSearchParams
+    headers: Record<string, string | string[] | undefined>
+    parse(options: { mode: 'string' } & ParseOptions): Promise<string>
+    parse(options: { mode: 'buffer' } & ParseOptions): Promise<Buffer>
+    parse<T = any>(options: { mode: 'json' } & ParseOptions): Promise<T>
+    parse(options: { mode: 'stream' } & ParseOptions): Readable
+    toRequest(): Request
+  }
+  response: { code: (code: number) => void }
   route: RouteData | null
+}
+export type ParseOptions = {
+  sizeLimit?: number
+  deserializer?: <T>(body: string) => T | Promise<T>
 }

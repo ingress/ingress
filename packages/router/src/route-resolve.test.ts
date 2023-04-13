@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { RouteAnnotation, UpgradeRouteAnnotation } from './annotations/route.annotation.js'
-import { resolvePaths, RouteMetadata } from './route-resolve.js'
+import type { RouteMetadata } from './route-resolve.js'
+import { resolvePaths } from './route-resolve.js'
 
 describe('route annotations', () => {
   it('resolvePaths', () => {

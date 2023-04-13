@@ -5,6 +5,7 @@
 `@ingress/core` manages:
 - middleware composition
 - startup and shutdown
+- dependency injection
 - the main application event (the driver)
 
 ## Example
@@ -26,8 +27,6 @@ app.run()
 `app.run()` will activate the driver (http) and listen on the environment's defined PORT variable or a random port
 A driver, is a middleware that responds to events and executes the core middleware
 
-
-
 ```typescript
 export interface Usable<T> {
   start?: Middleware<Ingress<T>>
@@ -39,16 +38,8 @@ export interface Usable<T> {
 
 The Ingress app itself is also a Usable Addon, allowing nested applications to be composed.
 
-An Addon can alternatively be a plain middleware function or anything fitting this type definition:
 
-```typescript
-type Addon<T> =
-  | Usable<T>
-  | Middleware<T>
-  | Ingress<T>
-  | (Usable<T> & Middleware<T>)
-  | Annotation<Usable<T>>
-  | AnnotationFactory<Usable<T>>
-```
+### Why all the classes?
 
-
+Sometimes classes are viewed as a code smell. While this can certainly be the case, they offer a mechanism of carrying synctactic metadata which can prove useful. Any paradigm can be abused. It's important to make any implementation a focused one.
+The goal with ingress is to make composition of your applications easy. So prefer the composition of parts that is catered to.

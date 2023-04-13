@@ -1,8 +1,10 @@
 import 'reflect-metadata'
 import { describe, it, expect } from 'vitest'
-import { createContainer, ModuleContainer, Injectable, CoreContext } from './di.js'
+import type { CoreContext } from './di.js'
+import { createContainer, ModuleContainer, Injectable } from './di.js'
 import { createAnnotationFactory } from 'reflect-annotations'
-import { Ingress, AppState, Middleware, ingress } from './core.js'
+import type { Middleware } from './core.js'
+import { Ingress, AppState, ingress } from './core.js'
 import type { Startable, Stoppable, UsableMiddleware } from './types.js'
 import type { NextFn } from './compose.js'
 

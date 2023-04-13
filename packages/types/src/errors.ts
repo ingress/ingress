@@ -3,6 +3,15 @@ import { StatusCode } from './status-code.js'
 
 export { createErrorType }
 
+export const ING_UNHANDLED_INTERNAL_SERVER_ERROR = createErrorType(
+  'IngUnhandledInternalServerError',
+  {
+    code: 'ING_UNHANDLED_INTERNAL_SERVER_ERROR',
+    message: 'Bad Request',
+    statusCode: StatusCode.InternalServerError,
+  }
+)
+
 export const ING_BAD_REQUEST = createErrorType('IngBadRequest', {
   code: 'ING_BAD_REQUEST',
   message: 'Bad Request',

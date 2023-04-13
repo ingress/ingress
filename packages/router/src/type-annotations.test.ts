@@ -5,7 +5,8 @@ import { inject } from '@hapi/shot'
 import { Ingress } from '@ingress/core'
 import { Http } from '@ingress/http'
 import { Route } from './annotations/route.annotation.js'
-import { Router, RouterContext } from './router.js'
+import type { RouterContext } from './router.js'
+import { Router } from './router.js'
 
 describe('type annotations', () => {
   it('type parameters extract and transform', async () => {
@@ -13,7 +14,7 @@ describe('type annotations', () => {
       backward = forward.split('').reverse().join('')
     class MyType {
       static extractValue(context: RouterContext) {
-        expect(context.request.pathname).toEqual('/')
+        expect(context.request.toRequest().url).toEqual('http://localhost/')
         return forward
       }
       static transformValue(_value: string) {

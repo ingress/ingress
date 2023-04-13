@@ -1,22 +1,22 @@
-import {
-  ReflectiveInjector,
-  InjectionToken,
+import type {
   Provider,
   ResolvedReflectiveProvider,
   ResolvedReflectiveFactory,
-  ReflectiveKey,
   ValueProvider,
 } from 'injection-js'
+import { ReflectiveInjector, InjectionToken, ReflectiveKey } from 'injection-js'
 
-import { Type, DependencyCollectorList, DependencyCollector } from './collector.js'
+import type { Type, DependencyCollector } from './collector.js'
+import { DependencyCollectorList } from './collector.js'
 import type { NextFn } from './compose.js'
 
 import type { Startable } from './types.js'
+import { Logger } from './logger.js'
 /* c8 ignore next */
 export * from './collector.js'
 export { Provider, Injectable, InjectionToken } from 'injection-js'
 
-const kForwardRef = Symbol.for('ingress_forwardRef')
+const kForwardRef = Symbol.for('ingress.forwardRef')
 
 export function resolveForwardRef<T>(fn: T | (() => T)): T {
   if (typeof fn === 'function' && (fn as any)[kForwardRef]) {
@@ -149,21 +149,23 @@ export class ModuleContainer implements Injector, Startable {
 
   public setup(container = this) {
     this.singletons = this.getAllSingletons(container)
-    this.services = [...new Set([...this.services, ...container.serviceCollector.items])]
+    this.services = uniqProviders(this.services, container.serviceCollector.items)
 
     this.rootInjector = ReflectiveInjector.resolveAndCreate(this.singletons)
     this.resolvedChildProviders = ReflectiveInjector.resolve(this.services)
   }
 
   private getAllSingletons(container = this) {
-    return [
-      ...new Set([
-        ...this.singletons,
-        ...container.singletons,
-        ...container.singletonCollector.items,
-        ...container.forwardRefCollector.items,
-      ]),
-    ]
+    const defaultProviders = [Logger],
+      providers = uniqProviders(
+        this.singletons,
+        container.singletons,
+        container.singletonCollector.items,
+        container.forwardRefCollector.items,
+        defaultProviders
+      )
+
+    return providers
   }
 
   initializeContext(ctx: any): any {
@@ -190,4 +192,18 @@ export function createContainer(options?: ModuleContainerOptions): ModuleContain
 
 export interface ForwardRefFn {
   (): any
+}
+
+function uniqProviders(...providers: Iterable<Provider>[]): Provider[] {
+  const tokens = new Set<Provider>(),
+    uniq: Provider[] = []
+  for (const list of providers) {
+    for (const provider of list) {
+      if (!tokens.has('provide' in provider ? provider.provide : provider)) {
+        tokens.add('provide' in provider ? provider.provide : provider)
+        uniq.push(provider)
+      }
+    }
+  }
+  return uniq
 }

@@ -1,30 +1,21 @@
-import {
-  Annotation,
-  AnnotationFactory,
-  isAnnotationFactory,
-  isAnnotationInstance,
-} from 'reflect-annotations'
-import {
-  Func,
-  ModuleContainer,
-  CoreContext,
-  DependencyCollectorList,
-  resolveForwardRef,
-  PriorityOptions,
-} from './di.js'
-import { exec, ContinuationMiddleware, NextFn, executeByArity, Middleware } from './compose.js'
-import {
+import type { Annotation, AnnotationFactory } from 'reflect-annotations'
+import { isAnnotationFactory, isAnnotationInstance } from 'reflect-annotations'
+import type { Func, CoreContext, PriorityOptions } from './di.js'
+import { Logger } from './logger.js'
+import { ModuleContainer, DependencyCollectorList, resolveForwardRef } from './di.js'
+import type { ContinuationMiddleware, NextFn, Middleware } from './compose.js'
+import { exec, executeByArity } from './compose.js'
+import type {
   Addon,
-  AppState,
   ContextInitializer,
   EmptyExtend,
-  guards,
   Startable,
   StartAndExtend,
   Stoppable,
   Usable,
   UsableMiddleware,
 } from './types.js'
+import { AppState, guards } from './types.js'
 
 const _hosts = Symbol('ingress.hosts')
 
@@ -148,7 +139,7 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
     ? Ingress<T & Extensions, D>
     : U extends Startable<infer NewDecorations>
     ? Ingress<T, D & NewDecorations>
-    : Ingress<T, D> //TODO: partial usable
+    : Ingress<T, D>
 
   public use<U>(
     factory: AnnotationFactory<U>
@@ -158,7 +149,7 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
     ? Ingress<T & Extensions, D>
     : U extends Startable<infer NewDecorations>
     ? Ingress<T, D & NewDecorations>
-    : Ingress<T, D> // TODO: partial usable
+    : Ingress<T, D>
 
   public use<Extensions = EmptyExtend, Decorations = EmptyExtend>(
     usable: Addon<T, Extensions, Decorations>
@@ -285,7 +276,7 @@ async function addDecorations(setups: (Startable | undefined)[], app: Ingress<an
 
 /** Core Objects */
 /** Main and Factory Exports */
-export { Ingress, AppState }
+export { Ingress, AppState, Logger }
 export default ingress
 export function ingress<T extends CoreContext>(...args: ConstructorParameters<typeof Ingress>) {
   return new Ingress<T>(...args)

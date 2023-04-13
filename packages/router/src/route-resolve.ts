@@ -1,7 +1,8 @@
 import { RouteAnnotation } from './annotations/route.annotation.js'
 import type { HttpMethod } from 'router-tree-map'
 import type { Type } from '@ingress/core'
-import { Annotation, AnnotationFactory, isAnnotationFactory } from 'reflect-annotations'
+import type { Annotation, AnnotationFactory } from 'reflect-annotations'
+import { isAnnotationFactory } from 'reflect-annotations'
 
 export type RouteMetadata = {
   controller: Type<any>
