@@ -9,7 +9,8 @@
     ".": {
       "import": "./index.mjs",
       "require": "./lib/cjs/ingress.js",
-      "default": "./lib/cjs/ingress.js"
+      "default": "./lib/cjs/ingress.js",
+      "types": "./lib/cjs/ingress.d.ts"
     },
     "./package.json": "./package.json"
   },
@@ -43,13 +44,14 @@
     "middleware"
   ],
   "dependencies": {
-    "@ingress/core": "1.0.0-rc.1",
-    "@ingress/http": "0.0.1-alpha.0",
-    "@ingress/router": "0.1.0-alpha.2",
+    "@ingress/core": "workspace:*",
+    "@ingress/http": "workspace:*",
+    "@ingress/router": "workspace:*",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
     "@swc/cli": "^0.1.62",
-    "@swc/core": "^1.3.46"
+    "@swc/core": "^1.3.46",
+    "@hapi/shot": "6.0.1"
   }
 }

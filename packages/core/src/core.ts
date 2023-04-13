@@ -284,6 +284,7 @@ export function ingress<T extends CoreContext>(...args: ConstructorParameters<ty
 
 /** Core Types */
 export type {
+  Annotation,
   Addon,
   UsableMiddleware,
   Startable,

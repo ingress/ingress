@@ -1,12 +1,15 @@
+import 'reflect-metadata'
 import assert from 'node:assert'
 import { createRequire } from 'node:module'
-import { relative } from 'node:path'
-import 'reflect-metadata'
+import { relative, dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
 
 const requireCjs = createRequire(import.meta.url),
-  packageJson = requireCjs('../package.json')
+  dir = dirname(fileURLToPath(import.meta.url)),
+  workspaces = JSON.parse(readFileSync(join(dir, '../pnpm-workspace.yaml')))
 
-for (const module of packageJson.workspaces) {
+for (const module of workspaces.packages) {
   let name = relative('./packages', module)
   if (!['reflect-annotations', 'ingress', 'router-tree-map'].includes(name)) {
     name = `@ingress/${name}`
@@ -26,3 +29,5 @@ for (const module of packageJson.workspaces) {
     throw `Failed loading ${name}:\n\t ` + e.stack
   }
 }
+
+assert.ok(workspaces.packages.length > 5)

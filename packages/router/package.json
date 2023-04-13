@@ -16,11 +16,9 @@
   "types": "./lib/cjs/router.d.ts",
   "exports": {
     ".": {
-      "node": {
-        "import": "./index.mjs",
-        "types": "./lib/cjs/router.d.ts",
-        "require": "./lib/cjs/router.js"
-      },
+      "import": "./index.mjs",
+      "types": "./lib/cjs/router.d.ts",
+      "require": "./lib/cjs/router.js",
       "default": "./lib/esm/router.js"
     },
     "./package.json": "./package.json"
@@ -37,14 +35,14 @@
     "build": "shx rm -rf lib && npm run build:cjs"
   },
   "dependencies": {
-    "@ingress/core": "1.0.0-rc.1",
-    "@ingress/types": "0.0.1",
-    "reflect-annotations": "4.0.0-alpha.9",
-    "router-tree-map": "^0.1.5",
+    "@ingress/core": "workspace:*",
+    "@ingress/types": "workspace:*",
+    "reflect-annotations": "workspace:*",
+    "router-tree-map": "workspace:*",
     "secure-json-parse": "^2.7.0"
   },
   "devDependencies": {
-    "@hapi/shot": "^6.0.1",
-    "@ingress/http": "0.0.1-alpha.0"
+    "@ingress/http": "workspace:*",
+    "@hapi/shot": "6.0.1"
   }
 }

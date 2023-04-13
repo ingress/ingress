@@ -17,10 +17,9 @@
   "types": "./lib/cjs/tree.d.ts",
   "exports": {
     ".": {
-      "node": {
-        "import": "./index.mjs",
-        "require": "./lib/cjs/tree.js"
-      },
+      "import": "./index.mjs",
+      "require": "./lib/cjs/tree.js",
+      "types": "./lib/cjs/tree.d.ts",
       "default": "./lib/cjs/tree.js"
     },
     "./package.json": "./package.json"

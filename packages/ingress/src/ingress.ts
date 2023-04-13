@@ -5,6 +5,8 @@ import type { HttpOptions } from '@ingress/http'
 import { Http } from '@ingress/http'
 import { Route, Router } from '@ingress/router'
 import { pick } from './lang.js'
+//required for typescript inferrence...
+import type { Annotation } from 'reflect-annotations'
 
 export { Ingress, Router, Http, Route, NextFn, forwardRef }
 export default ingress

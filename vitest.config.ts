@@ -1,11 +1,9 @@
-import { defineConfig } from 'vite'
 import swc from 'vite-plugin-swc-only'
 
-// use all plugins (serve, build, minify)
-export default defineConfig({
+const config = {
   test: {
     include: ['**/*.test.ts'],
-    exclude: ['**/*.util.test.ts', 'node_modules'],
+    exclude: ['packages/*/node_modules', '**/*.util.test.ts', 'node_modules/**/*'],
   },
   plugins: [
     swc({
@@ -22,4 +20,6 @@ export default defineConfig({
       },
     }),
   ],
-})
+}
+
+export default config

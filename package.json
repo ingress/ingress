@@ -3,16 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "type": "commonjs",
-  "packageManager": "npm@8.15.1",
-  "workspaces": [
-    "./packages/router-tree-map",
-    "./packages/reflect-annotations",
-    "./packages/core",
-    "./packages/types",
-    "./packages/http",
-    "./packages/router",
-    "./packages/ingress"
-  ],
+  "packageManager": "pnpm@8.2.0",
   "exports": {
     "./package.json": "./package.json"
   },
@@ -20,18 +11,16 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "pnpm -r build",
     "lint": "eslint \"./packages/**/src/**/*.ts\" --fix",
-    "test": "npx vitest --run && npm run test:modules",
+    "test": "vitest --run && npm run test:modules",
     "test:modules": "node scripts/test-exports.test.mjs",
-    "commitlint": "commitlint -f $(git rev-list --tags --max-count=1) -t $(git log --pretty=%H | head -1)",
-    "ncu": "npm exec --workspaces -c \"ncu\" && ncu",
-    "ncuu": "npm exec --workspaces -c \"ncu -u\" && ncu -u"
+    "commitlint": "commitlint -f $(git rev-list --tags --max-count=1) -t $(git log --pretty=%H | head -1)"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.5.1",
-    "@commitlint/config-angular": "^17.4.4",
-    "@swc/core": "^1.3.49",
+    "@commitlint/cli": "^17.6.0",
+    "@commitlint/config-angular": "^17.6.0",
+    "@swc/core": "^1.3.50",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.58.0",
     "@vitest/coverage-c8": "^0.30.1",
@@ -45,13 +34,19 @@
     "prettier": "^2.8.7",
     "reflect-metadata": "^0.1.13",
     "shx": "^0.3.4",
-    "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typedoc": "^0.24.1",
     "typedoc-plugin-markdown": "^3.15.1",
     "typescript": "^5.0.4",
     "vite-plugin-swc-only": "^0.1.17",
-    "vitest": "^0.30.1"
+    "vitest": "^0.30.1",
+    "router-tree-map": "workspace:*",
+    "reflect-annotations": "workspace:*",
+    "@ingress/core": "workspace:*",
+    "@ingress/types": "workspace:*",
+    "@ingress/http": "workspace:*",
+    "@ingress/router": "workspace:*",
+    "ingress": "workspace:*"
   },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",

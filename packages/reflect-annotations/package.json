@@ -12,7 +12,8 @@
   "exports": {
     ".": {
       "import": "./index.mjs",
-      "require": "./lib/cjs/index.js"
+      "require": "./lib/cjs/index.js",
+      "types": "./lib/cjs/index.d.ts"
     },
     "./package.json": "./package.json"
   },

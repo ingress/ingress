@@ -1,0 +1,12 @@
+{
+  "$comment": "this is intentionally json in yaml",
+  "packages": [
+    "./packages/router-tree-map",
+    "./packages/reflect-annotations",
+    "./packages/core",
+    "./packages/types",
+    "./packages/http",
+    "./packages/router",
+    "./packages/ingress"
+  ]
+}

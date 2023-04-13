@@ -56,4 +56,4 @@ function value<T>(value: T) {
 
 /* istanbul ignore next: not node env */
 const noop = () => void 0,
-  cst = Error.captureStackTrace.bind(Error) || noop
+  cst = (Error as any).captureStackTrace?.bind(Error) ?? noop

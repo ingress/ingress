@@ -30,7 +30,8 @@
     "build": "shx rm -rf lib && npm run build:cjs"
   },
   "dependencies": {
-    "injection-js": "^2.4.0"
+    "injection-js": "^2.4.0",
+    "reflect-annotations": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^18.15.11"

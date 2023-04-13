@@ -29,12 +29,13 @@
     "build": "shx rm -rf lib && npm run build:cjs"
   },
   "dependencies": {
-    "@ingress/core": "1.0.0-rc.1",
-    "@ingress/types": "0.0.1",
+    "@ingress/core": "workspace:*",
+    "@ingress/types": "workspace:*",
     "readable-stream": "^4.3.0",
     "secure-json-parse": "^2.7.0"
   },
   "devDependencies": {
+    "@hapi/shot": "6.0.1",
     "@types/node": "^18.15.11"
   }
 }

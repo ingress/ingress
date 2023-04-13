@@ -10,7 +10,7 @@ export interface Type<T> {
   new (...args: any[]): T
 }
 export const AnnotationFactory = Symbol.for('reflect-annotations.factory')
-export interface AnnotationFactory<T> {
+export interface AnnotationFactory<T = any> {
   (...args: any[]): Annotation<T>
 }
 export type Target = any
@@ -58,7 +58,7 @@ export function getReturnType(target: Target, key: string | symbol): Array<any> 
   return Reflect.getMetadata(RETURN_TYPE, target, key)
 }
 
-export type Annotation<T> = ClassDecorator &
+export type Annotation<T = any> = ClassDecorator &
   MethodDecorator &
   ParameterDecorator & { annotationInstance: T }
 
