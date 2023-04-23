@@ -1,6 +1,6 @@
 {
   "name": "@ingress/router",
-  "version": "0.1.0-alpha.2",
+  "version": "1.0.0-beta.16",
   "keywords": [
     "radix",
     "trie",
