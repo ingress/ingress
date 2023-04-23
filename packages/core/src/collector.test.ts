@@ -156,7 +156,6 @@ describe('Collectors', () => {
     await app.stop()
     expect(plan).toBe(1)
 
-    //process.env.NODE_ENV = 'test'
     const app2 = new Ingress()
     class MockB {
       hello = 'test provider'
