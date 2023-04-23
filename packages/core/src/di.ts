@@ -6,12 +6,13 @@ import type {
 } from 'injection-js'
 import { ReflectiveInjector, InjectionToken, ReflectiveKey } from 'injection-js'
 
-import type { Type, DependencyCollector } from './collector.js'
+import type { Type, DependencyCollector, DependencyProvider } from './collector.js'
 import { DependencyCollectorList } from './collector.js'
 import type { NextFn } from './compose.js'
 
 import type { Startable } from './types.js'
 import { Logger } from './logger.js'
+import { isTestEnv } from './util.js'
 /* c8 ignore next */
 export * from './collector.js'
 export { Provider, Injectable, InjectionToken } from 'injection-js'
@@ -192,6 +193,13 @@ export function createContainer(options?: ModuleContainerOptions): ModuleContain
 
 export interface ForwardRefFn {
   (): any
+}
+
+export function forTest(opts: DependencyProvider): DependencyProvider | undefined {
+  if (isTestEnv()) {
+    return opts
+  }
+  return undefined
 }
 
 function uniqProviders(...providers: Iterable<Provider>[]): Provider[] {

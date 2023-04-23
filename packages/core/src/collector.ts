@@ -21,6 +21,7 @@ export interface DependencyCollector {
   (opts?: PriorityOptions): ClassDecorator
   (opts?: DependencyProvider): ClassDecorator
   (target: any): void
+  (): void
 }
 
 export class DependencyCollectorList {
