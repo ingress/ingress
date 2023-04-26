@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import type { NextFn } from './ingress.js'
 import ingress, { Http, forwardRef } from './ingress.js'
 import { inject } from '@hapi/shot'
-import { Logger } from '@ingress/core'
 
 describe('ingress', () => {
   it('middleware', async () => {

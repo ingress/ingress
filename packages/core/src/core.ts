@@ -314,5 +314,6 @@ export {
   ContextToken,
   createContainer,
   forwardRef,
+  forTest,
 } from './di.js'
 export type { ModuleContainerOptions, Injector, CoreContext } from './di.js'
