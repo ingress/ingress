@@ -34,7 +34,7 @@ export function isError(x: any): x is Error {
 }
 
 export function isResponse(x: any): x is Response {
-  return x instanceof Response || toString.call(x) === '[object Response]'
+  return x && toString.call(x) === '[object Response]'
 }
 
 export function isText(data: any): data is string {

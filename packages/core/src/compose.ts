@@ -1,4 +1,4 @@
-import type { Func } from './di.js'
+import type { Func, Type } from './di.js'
 
 export interface Middleware<T, R = any> {
   (context: T, next: ContinuationMiddleware<T, R>): R
@@ -22,10 +22,14 @@ export function isMiddlewareFunction(value: any): value is Func {
   return typeof value === 'function' && !isClass(value)
 }
 
-export function isClass(c: any): boolean {
+export function isClass(c: any): c is Type<any> {
   return (
     typeof c === 'function' && Object.getOwnPropertyDescriptor(c, 'prototype')?.writable === false
   )
+}
+
+export function is<T>(obj: any, tag: string): obj is T {
+  return Object.prototype.toString.call(obj) === `[object ${tag}]`
 }
 
 const defaultExecutor = (func: Func, ctx: any, next: any) => func(ctx, next),

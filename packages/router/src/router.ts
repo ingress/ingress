@@ -163,6 +163,7 @@ export interface RouterContext extends CoreContext {
   request: {
     method: string
     body: any
+    url: string
     pathname: string
     searchParams: URLSearchParams
     headers: Record<string, string | string[] | undefined>

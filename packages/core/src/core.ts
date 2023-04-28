@@ -300,8 +300,8 @@ export type {
   NextFn,
 }
 
-/** compositional execution helpers */
-export { compose, exec } from './compose.js'
+/** helpers */
+export { compose, exec, isClass, is } from './compose.js'
 
 /** dependency injection */
 export {

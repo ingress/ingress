@@ -80,17 +80,19 @@ describe('ingress', () => {
       })
     )
 
-    const response7 = await inject(app.driver, '/greet/fetch/world')
-    expect(response7.headers['content-length']).toEqual(undefined)
-    expect(response7.headers['content-type']).toEqual('text/plain;charset=UTF-8')
-    expect(response7.statusCode).toEqual(200)
-    expect(response7.payload).toEqual('Hello world')
+    if (typeof Response !== 'undefined') {
+      const response7 = await inject(app.driver, '/greet/fetch/world')
+      expect(response7.headers['content-length']).toEqual(undefined)
+      expect(response7.headers['content-type']).toEqual('text/plain;charset=UTF-8')
+      expect(response7.statusCode).toEqual(200)
+      expect(response7.payload).toEqual('Hello world')
 
-    const response6 = await inject(app.driver, '/greet/response/world')
-    expect(response6.headers['content-length']).toEqual(undefined)
-    expect(response6.headers['content-type']).toEqual('text/plain;charset=UTF-8')
-    expect(response6.statusCode).toEqual(200)
-    expect(response6.payload).toEqual('Hello world')
+      const response6 = await inject(app.driver, '/greet/response/world')
+      expect(response6.headers['content-length']).toEqual(undefined)
+      expect(response6.headers['content-type']).toEqual('text/plain;charset=UTF-8')
+      expect(response6.statusCode).toEqual(200)
+      expect(response6.payload).toEqual('Hello world')
+    }
 
     const response5 = await inject(app.driver, '/greet/stream/world')
     expect(response5.headers['content-length']).toEqual(undefined)

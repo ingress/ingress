@@ -1,5 +1,5 @@
 import type { Middleware } from '@ingress/core'
-import { compose } from '@ingress/core'
+import { compose, isClass, is } from '@ingress/core'
 import { InjectParamAnnotation, kInjectAnnotation } from './annotations/route.annotation.js'
 import type { RouteMetadata } from './route-resolve.js'
 import type { RouterContext } from './router.js'
@@ -63,7 +63,7 @@ export function resolveRouteMiddleware(route: RouteMetadata, typeResolver = new 
   ] as const
 }
 
-const pickRequest = (context: any) => context.request
+const pickIngRequest = (context: any) => context.request
 
 /**
  * Get a function that resolves route parameter metadata to arguments for the route
@@ -83,20 +83,23 @@ function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) 
     const annotation = route.parameterAnnotations?.[i],
       type = route.types?.parameters?.[i],
       pick =
-        annotation?.extractValue?.bind(annotation) || type?.extractValue?.bind(type) || pickRequest
+        annotation?.extractValue?.bind(annotation) ||
+        type?.extractValue?.bind(type) ||
+        pickIngRequest
 
-    if (Request === type) {
-      parseBody = false
-      resolvers.push(toRequest)
-      continue
-    }
-
-    if (URLSearchParams === type) {
-      resolvers.push((context: RouterContext) => {
-        //eslint-disable-next-line
-        return context.request.searchParams
-      })
-      continue
+    if (isClass(type)) {
+      if (is<Request>(type.prototype, 'Request')) {
+        parseBody = false
+        resolvers.push(toRequest)
+        continue
+      }
+      if (is<URLSearchParams>(type.prototype, 'URLSearchParams')) {
+        resolvers.push((context: RouterContext) => {
+          //eslint-disable-next-line
+          return context.request.searchParams
+        })
+        continue
+      }
     }
 
     if (!type || annotation?.[kInjectAnnotation]) {

@@ -1,10 +1,10 @@
 import 'reflect-metadata'
 import type { Type } from '@ingress/core'
-import { Ingress, NextFn, forwardRef, forTest } from '@ingress/core'
+import { isClass, Ingress, NextFn, forwardRef, forTest } from '@ingress/core'
 import type { HttpOptions } from '@ingress/http'
 import { Http } from '@ingress/http'
 import { Route, Router } from '@ingress/router'
-import { pick, isClass } from './lang.js'
+import { pick } from './lang.js'
 //required for typescript inferrence...
 import type { Annotation } from 'reflect-annotations'
 

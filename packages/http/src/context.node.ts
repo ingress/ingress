@@ -96,6 +96,9 @@ export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> 
     return parseBuffer(req, limit)
   }
   toRequest(): Request {
+    if (typeof Request === 'undefined') {
+      throw new Error('Request is not defined')
+    }
     const protocol = this.protocol,
       headers: [string, string][] = []
     for (const [key, value] of Object.entries(this.headers)) {

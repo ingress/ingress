@@ -14,7 +14,7 @@ describe('type annotations', () => {
       backward = forward.split('').reverse().join('')
     class MyType {
       static extractValue(context: RouterContext) {
-        expect(context.request.toRequest().url).toEqual('http://localhost/')
+        expect((context.request as any).raw.url).toEqual('/')
         return forward
       }
       static transformValue(_value: string) {

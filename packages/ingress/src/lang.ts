@@ -1,5 +1,3 @@
-import type { Type } from '@ingress/core'
-
 export function pick<T, K extends keyof T>(from?: T, ...keys: K[]): Pick<T, K> | undefined {
   if (!from) return undefined
   if (typeof from !== 'object' || !from) return undefined
@@ -12,10 +10,4 @@ export function pick<T, K extends keyof T>(from?: T, ...keys: K[]): Pick<T, K> |
     }
   }
   return found ? picked : undefined
-}
-
-export function isClass(c: any): c is Type<any> {
-  return (
-    typeof c === 'function' && Object.getOwnPropertyDescriptor(c, 'prototype')?.writable === false
-  )
 }
