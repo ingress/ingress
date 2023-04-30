@@ -1,0 +1,31 @@
+{
+  "name": "@ingress/cli",
+  "version": "0.0.1",
+  "description": "Ingress CLI",
+  "main": "./lib/cjs/cli.js",
+  "bin": {
+    "ing": "./lib/cjs/bin.js"
+  },
+  "type": "commonjs",
+  "types": "./lib/cjs/cli.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./lib/cjs/cli.js"
+    }
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "vitest run src",
+    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
+    "build": "shx rm -rf lib && npm run build:cjs"
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.3"
+  },
+  "dependencies": {
+    "@ingress/cli": "^0.0.1"
+  }
+}

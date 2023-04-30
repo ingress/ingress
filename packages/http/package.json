@@ -12,7 +12,10 @@
   "exports": {
     ".": {
       "import": "./index.mjs",
-      "require": "./lib/cjs/node.http.js",
+      "node": {
+        "require": "./lib/cjs/node.http.js",
+        "default": "./lib/cjs/node.http.js"
+      },
       "default": "./lib/cjs/node.http.js",
       "types": "./lib/cjs/node.http.d.ts"
     },
@@ -36,6 +39,6 @@
   },
   "devDependencies": {
     "@hapi/shot": "6.0.1",
-    "@types/node": "^18.15.11"
+    "@types/node": "^18.16.3"
   }
 }

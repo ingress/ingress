@@ -22,7 +22,11 @@ export function isAnnotationFactory(
 }
 
 export function isAnnotationInstance(annotation: any): annotation is Annotation<any> {
-  return Boolean(annotation && 'annotationInstance' in annotation)
+  return Boolean(
+    annotation &&
+      (typeof annotation === 'object' || typeof annotation === 'function') &&
+      'annotationInstance' in annotation
+  )
 }
 
 export function getAnnotations(target: Target, key?: string | symbol): Array<any> {

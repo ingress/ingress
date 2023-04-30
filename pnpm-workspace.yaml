@@ -7,6 +7,7 @@
     "./packages/types",
     "./packages/http",
     "./packages/router",
-    "./packages/ingress"
+    "./packages/ingress",
+    "./packages/cli"
   ]
 }
