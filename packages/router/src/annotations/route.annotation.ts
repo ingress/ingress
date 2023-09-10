@@ -6,8 +6,6 @@ const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
   result = (x: string) => '/' + trim(x),
   upper = (x: any) => x.toString().toUpperCase()
 
-export const kInjectAnnotation = Symbol('ingress.inject')
-
 /**
  * @public
  */
@@ -57,11 +55,10 @@ export interface ParamAnnotationFactory {
  * @public
  */
 export interface ParamAnnotationBase {
-  pick(context: RouterContext, type?: any): any
+  pick(context: RouterContext): any
 }
 
 export class InjectParamAnnotation implements ParamAnnotationBase {
-  [kInjectAnnotation] = true
   transient = false
   token: any
   constructor(token?: { transient: boolean } | any, options?: { transient: boolean }) {
@@ -74,13 +71,13 @@ export class InjectParamAnnotation implements ParamAnnotationBase {
       this.transient = true
     }
   }
-  pick(context: RouterContext, type: any) {
+  pick(context: RouterContext) {
     let container = context.scope
     if (this.transient) {
       container = context.app.container.createChildWithContext(context)
     }
 
-    return container.get(this.token || type)
+    return container.get(this.token)
   }
 }
 

@@ -134,25 +134,23 @@ describe('type resolvers', () => {
       str = r.get(String),
       date = r.get(Date),
       bool = r.get(Boolean)
-    expect('parse' in num! && num.parse('5')).toBe(5)
-    expect('parse' in str! && str.parse(1234)).toEqual('1234')
-    const parse =
+    expect(num?.parse?.('5')).toBe(5)
+    expect(str?.parse?.(1234)).toEqual('1234')
+    const parseBool =
       ('parse' in bool! && bool.parse) ||
       (() => {
         throw new Error('Expected bool.parse')
       })
     expect(
-      parse(0) === parse('0') &&
-        parse(undefined) === parse(null) &&
-        parse(false) === parse('') &&
-        parse(undefined) === false &&
-        parse('1') === parse(1) &&
-        parse(true) === true &&
-        parse('true') === true,
+      parseBool(0) === parseBool('0') &&
+        parseBool(undefined) === parseBool(null) &&
+        parseBool(false) === parseBool('') &&
+        parseBool(undefined) === false &&
+        parseBool('1') === parseBool(1) &&
+        parseBool(true) === true &&
+        parseBool('true') === true,
     ).toBe(true)
-    expect('parse' in date! && date.parse('2021-12-12').toISOString()).toEqual(
-      new Date('2021-12-12').toISOString(),
-    )
+    expect(date?.parse?.('2021-12-12').toISOString()).toEqual(new Date('2021-12-12').toISOString())
   })
 
   it('default type converter errors', async () => {
@@ -164,10 +162,7 @@ describe('type resolvers', () => {
       ] as const,
       r = new TypeResolver()
     for (const [type, input, errorText] of tests) {
-      const error = await throws(() => {
-        const resolver = r.get(type as any)
-        return 'parse' in resolver! && resolver.parse(input)
-      }, errorText)
+      const error = await throws(() => r.get(type as any)?.parse?.(input), errorText)
       expect(error.statusCode).toEqual(400)
     }
   })

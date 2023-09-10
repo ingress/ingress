@@ -1,6 +1,5 @@
 import type { Middleware } from '@ingress/core'
 import { compose, isClass, is } from '@ingress/core'
-import { kInjectAnnotation } from './annotations/route.annotation.js'
 import type { RouteMetadata } from './route-resolve.js'
 import { type RouterContext } from './router.js'
 import type { Func } from './type-resolver.js'
@@ -91,8 +90,7 @@ function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) 
 
   for (let i = 0; i < paramLength; i++) {
     const annotation = route.parameterAnnotations?.[i],
-      type = route.types?.parameters?.[i],
-      pick = annotation?.pick?.bind(annotation) || type?.pick?.bind(type) || pickIngRequest
+      type = route.types?.parameters?.[i]
 
     if (isClass(type)) {
       if (is<Request>(type.prototype, 'Request')) {
@@ -106,22 +104,24 @@ function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) 
       }
     }
 
-    if (!type || annotation?.[kInjectAnnotation]) {
-      resolvers.push((ctx: RouterContext) => pick(ctx, type))
+    if (!type) {
+      const parse = annotation?.parse?.bind(annotation),
+        pick = annotation?.pick?.bind(annotation) ?? pickIngRequest
+      resolvers.push((ctx: RouterContext) => (parse ? parse(pick(ctx)) : pick(ctx)))
       continue
     }
 
-    if ('parse' in type && typeof type.parse === 'function' && type !== Date) {
-      const pluck = 'pick' in type ? type.pick.bind(type) : pick
-      resolvers.push((context: RouterContext) => type.parse(pluck(context, type)))
+    if (type !== Date && typeof type?.parse === 'function') {
+      const pick = annotation?.pick?.bind(annotation) ?? type?.pick?.bind(type) ?? pickIngRequest
+      resolvers.push((context: RouterContext) => type.parse(pick(context, type)))
       continue
     }
 
-    //search registered type resolvers
     const resolver = typeResolver.get(type)
-    if (resolver && 'parse' in resolver) {
-      const pluck = 'pick' in resolver ? resolver.pick.bind(type) : pick
-      resolvers.push((context: any) => resolver.parse(pluck(context, type)))
+    if (typeof resolver?.parse === 'function') {
+      const pick =
+        resolver?.pick?.bind(resolver) ?? annotation?.pick?.bind(annotation) ?? pickIngRequest
+      resolvers.push((context: any) => resolver.parse?.(pick(context, type)))
     }
     if (!resolver) {
       throw new Error(

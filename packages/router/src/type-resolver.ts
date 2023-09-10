@@ -7,17 +7,10 @@ export interface Type<T> {
   new (...args: any[]): T
 }
 
-export type Resolver<TPicked = unknown, TParsed = unknown> =
-  | {
-      pick: Func<RouterContext, TPicked>
-      parse: Func<TPicked, TParsed>
-    }
-  | {
-      pick: Func<RouterContext, TPicked>
-    }
-  | {
-      parse: Func<any, TParsed>
-    }
+export type Resolver<TPicked = unknown, TParsed = unknown> = {
+  pick?: Func<RouterContext, TPicked>
+  parse?: Func<TPicked, TParsed>
+}
 
 export type Func<TArg = unknown, TReturn = unknown> =
   | ((a: TArg) => TReturn)

@@ -14,6 +14,9 @@ for (const module of workspaces.packages) {
   if (!['reflect-annotations', 'ingress', 'router-tree-map'].includes(name)) {
     name = `@ingress/${name}`
   }
+  if (name == 'create') {
+    name = 'create-ingress'
+  }
   try {
     const cjsExports = Object.keys(requireCjs(name)).sort(),
       mod = await import(name)
@@ -23,7 +26,7 @@ for (const module of workspaces.packages) {
       `Expected cjs and esm exports to be equivalent for ${name}\nESM:\n\t` +
         Object.keys(mod).sort().join(',\n\t') +
         '\n\nCJS:\n\t' +
-        cjsExports.join(',\n\t')
+        cjsExports.join(',\n\t'),
     )
   } catch (e) {
     throw `Failed loading ${name}:\n\t ` + e.stack
