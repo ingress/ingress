@@ -287,21 +287,10 @@ export function ingress<T extends CoreContext>(...args: ConstructorParameters<ty
 }
 
 /** Core Types */
-export type {
-  Annotation,
-  Addon,
-  UsableMiddleware,
-  Startable,
-  Stoppable,
-  ContextInitializer,
-  Middleware,
-  Usable,
-  ContinuationMiddleware,
-  NextFn,
-}
+export * from './types.js'
 
 /** helpers */
-export { compose, exec, isClass, is } from './compose.js'
+export * from './compose.js'
 
 /** dependency injection */
 export {
@@ -312,6 +301,7 @@ export {
   Injectable,
   ModuleContainer,
   ContextToken,
+  DependencyCollector,
   createContainer,
   forwardRef,
   forTest,

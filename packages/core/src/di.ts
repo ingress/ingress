@@ -51,7 +51,7 @@ export interface ModuleContainerOptions {
 }
 
 const EMPTY_DEPS: Array<any> = [],
-  ContextToken = new InjectionToken('ingress.context')
+  ContextToken = new InjectionToken<CoreContext>('ingress.context')
 
 export { ContextToken }
 

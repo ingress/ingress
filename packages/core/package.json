@@ -25,9 +25,9 @@
   "scripts": {
     "test": "vitest run src",
     "cov": "vitest run src --coverage",
-    "ocov": "npm run cov && open coverage/index.html",
+    "ocov": "$npm_execpath run cov && open coverage/index.html",
     "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
-    "build": "shx rm -rf lib && npm run build:cjs"
+    "build": "shx rm -rf lib && $npm_execpath run build:cjs"
   },
   "dependencies": {
     "injection-js": "^2.4.0",

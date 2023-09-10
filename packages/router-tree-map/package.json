@@ -26,15 +26,16 @@
   },
   "files": [
     "lib",
-    "docs"
+    "docs",
+    "index.mjs"
   ],
   "scripts": {
     "docs": "typedoc src/tree.ts --excludePrivate",
     "test": "vitest run src",
     "cov": "npm test -- --coverage",
-    "ocov": "npm run cov && open coverage/index.html",
+    "ocov": "$npm_execpath run cov && open coverage/index.html",
     "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
-    "build": "shx rm -rf lib && npm run build:cjs"
+    "build": "shx rm -rf lib && $npm_execpath run build:cjs"
   },
   "eslintConfig": {
     "rules": {

@@ -8,6 +8,8 @@ import type { Duplex } from 'node:stream'
 import type { NextFn, Ingress, CoreContext } from '@ingress/core'
 import { HttpContext } from './http.context.js'
 
+export { IngressRequest, IngressResponse } from './http.context.js'
+
 type HttpOptions = {
   listen: ListenOptions | number | string
   clientErrorHandler: (err: Error, socket: Duplex) => any

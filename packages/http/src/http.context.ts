@@ -8,6 +8,7 @@ export type Serializer = Func
 export interface IngressRequest<T, Body = unknown> {
   context: T
   id: string
+  readonly url: string
   toRequest(): Request
   json<T = unknown>(): Promise<T>
   text(): Promise<string>
@@ -17,7 +18,7 @@ export interface IngressRequest<T, Body = unknown> {
   parse(options: { mode: 'buffer' } & ParseOptions): Promise<Buffer>
   parse<T = any>(options: { mode: 'json' } & ParseOptions): Promise<T>
   parse(options: { mode: 'stream' } & ParseOptions): Readable
-  protocol: 'http://' | 'https://'
+  protocol: 'http:' | 'https:'
   pathname: string
   method: string
   search: string

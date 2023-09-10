@@ -1,5 +1,5 @@
 {
-  "$comment": "this is intentionally json in yaml",
+  "$comment": "this is intentionally valid json in yaml",
   "packages": [
     "./packages/router-tree-map",
     "./packages/reflect-annotations",
@@ -7,7 +7,6 @@
     "./packages/types",
     "./packages/http",
     "./packages/router",
-    "./packages/ingress",
-    "./packages/cli"
+    "./packages/ingress"
   ]
 }

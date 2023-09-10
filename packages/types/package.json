@@ -28,7 +28,7 @@
     "test": "vitest run src",
     "cov": "npm test -- --coverage && open coverage/index.html",
     "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
-    "build": "shx rm -rf lib && npm run build:cjs"
+    "build": "shx rm -rf lib && $npm_execpath run build:cjs"
   },
   "dependencies": {}
 }

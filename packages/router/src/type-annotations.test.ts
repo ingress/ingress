@@ -9,15 +9,15 @@ import type { RouterContext } from './router.js'
 import { Router } from './router.js'
 
 describe('type annotations', () => {
-  it('type parameters extract and transform', async () => {
+  it('type parameters pick and parse', async () => {
     const forward = Math.random().toString(36),
       backward = forward.split('').reverse().join('')
     class MyType {
-      static extractValue(context: RouterContext) {
-        expect((context.request as any).raw.url).toEqual('/')
+      static pick(context: RouterContext) {
+        expect((context.request as any).url).toEqual('http://localhost:80/')
         return forward
       }
-      static transformValue(_value: string) {
+      static parse(_value: string) {
         return backward
       }
     }
@@ -37,11 +37,14 @@ describe('type annotations', () => {
     expect(result.payload).toEqual(forward + backward)
   })
 
-  it('type parameters transform with param annotation extract', async () => {
+  it('type parameters transform with param annotation preferred pick', async () => {
     const forward = Math.random().toString(36),
       expectedBackward = forward.split('').reverse().join('')
     class MyType {
-      static transformValue(value: string) {
+      static pick(_: RouterContext) {
+        throw new Error('unreachable: should not be called')
+      }
+      static parse(value: string) {
         return value.split('').reverse().join('')
       }
     }
@@ -51,10 +54,19 @@ describe('type annotations', () => {
         expect(arg).toEqual(expectedBackward)
       }
     }
-    void new Router({ routes: [Routes] })
+    const app = new Ingress<RouterContext>().use(new Http()).use(new Router({ routes: [Routes] }))
+    await app.start()
+
+    const result = await inject(app.driver, {
+      method: 'GET',
+      url: `/${forward}`,
+    })
+
+    expect(result.statusCode).toBe(200)
   })
 
   it('default type resolvers', async () => {
+    let asserted = false
     class Routes {
       @Route.Get('/:a/:b/:c/:d/:e')
       someRoute(
@@ -62,18 +74,27 @@ describe('type annotations', () => {
         @Route.Param('b') b: boolean,
         @Route.Param('c') c: string,
         @Route.Param('d') d: Date,
-        @Route.Param('e') e: boolean
+        @Route.Param('e') e: boolean,
       ) {
         expect(a).toBe(1)
         expect(b).toBe(false)
         expect(c).toBe('true')
-        expect(d.toISOString()).toBe(new Date('10-10-2020').toISOString())
+        expect(d.toISOString()).toBe(new Date('2020-10-10').toISOString())
         expect(e).toBe(true)
+        asserted = true
       }
     }
     const router = new Router({ routes: [Routes] }),
-      app = new Ingress<RouterContext>().use(new Http())
-    await router.start(app, () => Promise.resolve())
-    //await router.middleware(mockContext(`/1/false/true/10-10-2020/true`, 'GET'), () => t.end())
+      app = new Ingress<RouterContext>().use(new Http()).use(router)
+
+    await app.start()
+
+    const result = await inject(app.driver, {
+      method: 'GET',
+      url: '/1/false/true/2020-10-10/true',
+    })
+
+    expect(result.statusCode).toBe(200)
+    expect(asserted).toBe(true)
   })
 })

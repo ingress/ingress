@@ -1,7 +1,6 @@
 import { createAnnotationFactory, Annotation } from 'reflect-annotations'
 import type { RouterContext } from '../router.js'
-
-export type Func<T = any> = (...args: any[]) => T
+import type { NextFn } from '@ingress/core'
 
 const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
   result = (x: string) => '/' + trim(x),
@@ -26,9 +25,7 @@ export class RouteAnnotation {
     this.methods = Array.from(new Set(methods.map(upper)))
   }
 
-  get isRouteAnnotation(): true {
-    return true
-  }
+  isRouteAnnotation = true
 
   resolvePath(prefix: string, suffix?: RouteAnnotation): string {
     prefix = trim(prefix)
@@ -60,7 +57,7 @@ export interface ParamAnnotationFactory {
  * @public
  */
 export interface ParamAnnotationBase {
-  extractValue(context: RouterContext, type?: any): any
+  pick(context: RouterContext, type?: any): any
 }
 
 export class InjectParamAnnotation implements ParamAnnotationBase {
@@ -77,7 +74,7 @@ export class InjectParamAnnotation implements ParamAnnotationBase {
       this.transient = true
     }
   }
-  extractValue(context: RouterContext, type: any) {
+  pick(context: RouterContext, type: any) {
     let container = context.scope
     if (this.transient) {
       container = context.app.container.createChildWithContext(context)
@@ -92,7 +89,7 @@ export class InjectParamAnnotation implements ParamAnnotationBase {
  */
 export class BodyParamAnnotation implements ParamAnnotationBase {
   constructor(private keyName?: string) {}
-  extractValue(context: RouterContext): any {
+  pick(context: RouterContext): any {
     return this.keyName
       ? context.request.body && (context.request.body as any)[this.keyName]
       : context.request.body
@@ -104,7 +101,7 @@ export class BodyParamAnnotation implements ParamAnnotationBase {
  */
 export class PathParamAnnotation implements ParamAnnotationBase {
   constructor(private keyName?: string) {}
-  extractValue(context: RouterContext): any {
+  pick(context: RouterContext): any {
     const routeParams = context.route?.params || []
     if (this.keyName) {
       for (const [key, val] of routeParams) {
@@ -123,7 +120,7 @@ export class PathParamAnnotation implements ParamAnnotationBase {
  */
 export class QueryParamAnnotation implements ParamAnnotationBase {
   constructor(private searchParam: string) {}
-  extractValue(context: RouterContext): any {
+  pick(context: RouterContext): any {
     return context.request?.searchParams.get(this.searchParam)
   }
 }
@@ -133,7 +130,7 @@ export class QueryParamAnnotation implements ParamAnnotationBase {
  */
 export class HeaderParamAnnotation implements ParamAnnotationBase {
   constructor(private paramName: string) {}
-  extractValue(context: RouterContext): any {
+  pick(context: RouterContext): any {
     return context.request.headers[this.paramName.toLowerCase()]
   }
 }
@@ -143,7 +140,7 @@ export class HeaderParamAnnotation implements ParamAnnotationBase {
  */
 export class UpgradeRouteAnnotation extends RouteAnnotation {
   isBodyParser = true
-  middleware(context: RouterContext, next: Func<Promise<any>>): any {
+  middleware(context: RouterContext, next: NextFn): any {
     return next()
   }
   constructor(path?: string) {
@@ -249,7 +246,7 @@ export const Route = methods.reduce(
     Header,
     Inject,
     Upgrade,
-  }) as any
+  }) as any,
 ) as Route
 
 export {

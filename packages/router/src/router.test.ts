@@ -10,6 +10,7 @@ import { Http } from '@ingress/http'
 import { createAnnotationFactory } from 'reflect-annotations'
 
 //under test
+import type { RouterContext } from './router.js'
 import { Router, Route, readUrl } from './router.js'
 import { MiddlewarePriority } from './handler.js'
 import { PathParamAnnotation, RouteAnnotation } from './annotations/route.annotation.js'
@@ -39,9 +40,9 @@ describe('router', () => {
 
     await app.start()
 
-    router.on('GET', '/some/route', (c: any, next: any) => {
+    router.on('GET', '/some/route', (c: RouterContext, next: any) => {
       expect(c.request.searchParams.get('some')).toEqual('query')
-      expect(c.request.search).toEqual('?some=query')
+      expect(c.request.search.search).toEqual('?some=query')
       return next()
     })
 
@@ -122,7 +123,7 @@ describe('router', () => {
             ctx.order += 2
             return next()
           }
-        }
+        },
       ),
       third = createAnnotationFactory(
         class {
@@ -130,7 +131,7 @@ describe('router', () => {
             ctx.order += 3
             return next()
           }
-        }
+        },
       )
     class Routes {
       @Route.Get('/')

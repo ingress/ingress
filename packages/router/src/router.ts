@@ -13,9 +13,9 @@ import type { RouteMetadata, PathMap } from './route-resolve.js'
 import { resolvePaths } from './route-resolve.js'
 import type { Middleware, Ingress, NextFn, CoreContext } from '@ingress/core'
 import type { Func } from './type-resolver.js'
-import { TypeResolver } from './type-resolver.js'
+import { TypeResolver, routeArgumentParserRegistry } from './type-resolver.js'
 
-export { ControllerDependencyCollector }
+export { ControllerDependencyCollector, routeArgumentParserRegistry }
 export { Route } from './annotations/route.annotation.js'
 
 export type Pathname = string
@@ -91,12 +91,12 @@ export class Router {
 
   private typeResolver = new TypeResolver()
 
-  registerTypeResolver(type: Type<any>, resolver: Func): this {
-    this.typeResolver.register(type, resolver)
+  registerTypeParser(type: Type<any>, parse: Func): this {
+    this.typeResolver.register(type, { parse })
     return this
   }
-  registerTypePredicateResolver(predicate: Func<boolean>, resolver: Func): this {
-    this.typeResolver.registerPredicate(predicate, resolver)
+  registerTypePredicateParser(predicate: Func<any, boolean>, parse: Func): this {
+    this.typeResolver.registerPredicate(predicate, { parse })
     return this
   }
 
@@ -152,7 +152,10 @@ export class Router {
   }
 }
 export class RouteData {
-  constructor(public params: ParamEntries, public exec: Handle) {}
+  constructor(
+    public params: ParamEntries,
+    public exec: Handle,
+  ) {}
 }
 
 export type Body = any
@@ -165,6 +168,7 @@ export interface RouterContext extends CoreContext {
     body: any
     url: string
     pathname: string
+    search: string
     searchParams: URLSearchParams
     headers: Record<string, string | string[] | undefined>
     parse(options: { mode: 'string' } & ParseOptions): Promise<string>

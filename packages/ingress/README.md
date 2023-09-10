@@ -5,33 +5,33 @@
 </picture>
 </p>
 <p align="center">
-install: <code>npm i ingress</code><br><br>a utility for building applications using TypeScript or JavaScript<br>
+install: <code>npm i ingress</code><br><br>a utility for building applications using TypeScript or JavaScript
+</br>
+</br>
+  <a href="https://github.com/ingress/ingress/actions"><img src="https://github.com/ingress/ingress/workflows/Ingress%20CI/badge.svg?branch=dev" alt="Ingress CI"></a>
+  <a href="https://www.npmjs.com/package/ingress"><img src="https://img.shields.io/npm/v/ingress.svg" alt="Version"></a>
+  <a href="https://github.com/ingress/ingress/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/ingress.svg" alt="License"></a>
 </p>
 
-<a href="https://github.com/ingress/ingress/actions"><img src="https://github.com/ingress/ingress/workflows/Ingress%20CI/badge.svg?branch=dev" alt="Ingress CI"></a>
-<a href="https://www.npmjs.com/package/ingress"><img src="https://img.shields.io/npm/v/ingress.svg" alt="Version"></a>
-<a href="https://github.com/ingress/ingress/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/ingress.svg" alt="License"></a>
+
 
 ## Getting started (web):
 
 
-```typescript
-//@filename: app.ts
-import ingress, { Route } from "ingress";
 
-class MyController {
-    @Route.Get("/greet/:name")
+
+```typescript
+//@filename: greet.ts
+import  { Routes, Route } from 'ingress/global'
+
+// Register a set of Routes with the global container
+// with a basepath of `/greet`
+@Routes('/greet')
+export class MyController {
+    @Route.Get("/:name")
+    // Pluck the route parameter named 'name' from variable route segment
     greeting(@Route.Param("name") name: string) {
+        //This route is type safe
         return `Hello ${name}`
     }
 }
-
-export const app = ingress(MyController)
-
-//@filename: package.json
-{
-    "scripts": {
-        "start": "ing start app.ts"
-    }
-}
-``

@@ -1,4 +1,4 @@
-import type { IncomingMessage, ServerResponse } from 'http'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import { Logger } from '@ingress/core'
 import type { Ingress, Injector } from '@ingress/core'
 import { StatusCode } from '@ingress/types'
@@ -43,7 +43,7 @@ export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> 
   public search = ''
   public body: any
   public rawBody: Readable
-  public protocol: 'http://' | 'https://' = 'http://'
+  public protocol: 'http:' | 'https:' = 'http:'
   get headers(): Record<string, string | string[] | undefined> {
     return this.raw.headers
   }
@@ -52,14 +52,33 @@ export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> 
     return (this.#searchParams ||= new URLSearchParams(this.search))
   }
 
+  #url = ''
+  get url() {
+    if (this.#url) return this.#url
+    if ((this.raw.socket as any)?.encrypted) {
+      this.protocol = 'https:'
+    }
+    let port = String(this.raw.socket.localPort || process.env.PORT || 80)
+    if (port === '443' || port === '80') {
+      port = ''
+    } else {
+      port = ':' + port
+    }
+    return (this.#url =
+      this.protocol +
+      '//' +
+      (this.raw.headers.host?.endsWith(port)
+        ? this.raw.headers.host
+        : this.raw.headers.host + port) +
+      this.pathname +
+      this.search)
+  }
+
   constructor(public raw: IncomingMessage, public context: T) {
     this.id = '' + (raw as any).id || randomUUID()
     ;[this.pathname, this.search] = readUrl(raw.url ?? '/')
     this.method = raw.method ?? 'GET'
     this.rawBody = raw as Readable
-    if ((raw.socket as any)?.encrypted) {
-      this.protocol = 'https://'
-    }
   }
   public id: string
   public json<J = unknown>(): Promise<J> {

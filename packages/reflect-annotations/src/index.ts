@@ -28,7 +28,11 @@ class PropertyDescription implements AnnotatedPropertyDescription {
   methodAnnotations: Array<any> = []
   parameterAnnotations: Array<any> = []
   types = {}
-  constructor(public name: string, public parent: Type<any>, public declaredOrder: boolean) {}
+  constructor(
+    public name: string,
+    public parent: Type<any>,
+    public declaredOrder: boolean,
+  ) {}
 }
 
 function addClassAnnotation(property: AnnotatedPropertyDescription, annotation: any) {
@@ -42,13 +46,13 @@ function addMethodAnnotation(property: AnnotatedPropertyDescription, annotation:
 
 function collectPropertyAnnotations<T = any>(
   property: AnnotatedPropertyDescription,
-  ctor: Type<T>
+  ctor: Type<T>,
 ) {
   const methodAnnotations = getAnnotations(ctor.prototype, property.name),
     order = property.declaredOrder ? 'reduceRight' : 'reduce'
   property = getAnnotations(ctor)[order]<AnnotatedPropertyDescription>(
     addClassAnnotation,
-    methodAnnotations[order]<AnnotatedPropertyDescription>(addMethodAnnotation, property)
+    methodAnnotations[order]<AnnotatedPropertyDescription>(addMethodAnnotation, property),
   )
   property.parameterAnnotations = getParameterAnnotations(ctor.prototype, property.name)
   property.types.parameters = getParameterTypes(ctor.prototype, property.name)
@@ -58,7 +62,7 @@ function collectPropertyAnnotations<T = any>(
 
 function reflectAnnotations<T = any>(
   source: Type<T>,
-  options: { declaredOrder: boolean } = { declaredOrder: true }
+  options: { declaredOrder: boolean } = { declaredOrder: true },
 ): AnnotatedPropertyDescription[] {
   const classMetadata = reflectClassProperties(source)
 
@@ -67,12 +71,12 @@ function reflectAnnotations<T = any>(
       properties.push(
         classMetadata.constructors.reduceRight<AnnotatedPropertyDescription>(
           collectPropertyAnnotations,
-          new PropertyDescription(propertyName, source, options.declaredOrder)
-        )
+          new PropertyDescription(propertyName, source, options.declaredOrder),
+        ),
       )
       return properties
     },
-    []
+    [],
   )
 }
 

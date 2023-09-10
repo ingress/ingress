@@ -28,7 +28,7 @@ describe('type resolvers', () => {
     } catch (e: any) {
       plan++
       expect(e.message).toEqual(
-        'No type converter found for: Routes.someRoute at argument 0:MyType'
+        'No type converter found for: Routes.someRoute at argument 0:MyType',
       )
     }
     expect(plan).toEqual(1)
@@ -44,7 +44,7 @@ describe('type resolvers', () => {
       }
     }
     const router = new Router({ routes: [Routes] })
-    router.registerTypeResolver(Object, (x) => x + ' world')
+    router.registerTypeParser(Object, (x) => x + ' world')
 
     const app = new Ingress<RouterContext>().use(new Http()).use(router)
     await app.start()
@@ -67,13 +67,13 @@ describe('type resolvers', () => {
       }
     }
     const router = new Router({ routes: [Routes] })
-    router.registerTypePredicateResolver(
+    router.registerTypePredicateParser(
       (_x) => false,
-      (x) => x
+      (x) => x,
     )
-    router.registerTypePredicateResolver(
+    router.registerTypePredicateParser(
       (x) => x === MyType,
-      (x) => x + ' world'
+      (x) => x + ' world',
     )
     const app = new Ingress<RouterContext>().use(new Http()).use(router)
 
@@ -91,10 +91,10 @@ describe('type resolvers', () => {
       forward = Math.random().toString(36),
       backward = forward.split('').reverse().join('')
     class MyType {
-      static async extractValue() {
+      static async pick() {
         return Promise.resolve(forward)
       }
-      static async transformValue(value: string | Promise<string>) {
+      static async parse(value: string | Promise<string>) {
         expect(await value).toEqual(forward)
         return Promise.resolve(backward)
       }
@@ -134,21 +134,25 @@ describe('type resolvers', () => {
       str = r.get(String),
       date = r.get(Date),
       bool = r.get(Boolean)
-    expect(num?.('5')).toEqual(5)
-    expect(str?.(1234)).toEqual('1234')
-    if (!bool) throw 'expected boolean converter'
-    if (!date) throw 'expected date converter'
+    expect('parse' in num! && num.parse('5')).toBe(5)
+    expect('parse' in str! && str.parse(1234)).toEqual('1234')
+    const parse =
+      ('parse' in bool! && bool.parse) ||
+      (() => {
+        throw new Error('Expected bool.parse')
+      })
     expect(
-      bool(0) === bool('0') &&
-        bool() === bool(null) &&
-        bool(false) === bool('') &&
-        bool(undefined) === false &&
-        bool('1') === bool(1) &&
-        bool(true) === true &&
-        bool('true') === true
+      parse(0) === parse('0') &&
+        parse(undefined) === parse(null) &&
+        parse(false) === parse('') &&
+        parse(undefined) === false &&
+        parse('1') === parse(1) &&
+        parse(true) === true &&
+        parse('true') === true,
     ).toBe(true)
-
-    expect(date(1234).toISOString()).toEqual(new Date(1234).toISOString())
+    expect('parse' in date! && date.parse('2021-12-12').toISOString()).toEqual(
+      new Date('2021-12-12').toISOString(),
+    )
   })
 
   it('default type converter errors', async () => {
@@ -160,7 +164,10 @@ describe('type resolvers', () => {
       ] as const,
       r = new TypeResolver()
     for (const [type, input, errorText] of tests) {
-      const error = await throws(() => r.get(type as any)?.(input), errorText)
+      const error = await throws(() => {
+        const resolver = r.get(type as any)
+        return 'parse' in resolver! && resolver.parse(input)
+      }, errorText)
       expect(error.statusCode).toEqual(400)
     }
   })

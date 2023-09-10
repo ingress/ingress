@@ -3,7 +3,7 @@ import swc from 'vite-plugin-swc-only'
 const config = {
   test: {
     include: ['**/*.test.ts'],
-    exclude: ['packages/*/node_modules', '**/*.util.test.ts', 'node_modules/**/*'],
+    exclude: ['packages/*/node_modules', '**/*.util.test.ts', 'node_modules/**/*', 'node_modules'],
   },
   plugins: [
     swc({

@@ -29,7 +29,7 @@
     "cov": "vitest run src --coverage",
     "ocov": "open coverage/index.html",
     "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
-    "build": "shx rm -rf lib && npm run build:cjs"
+    "build": "shx rm -rf lib && $npm_execpath run build:cjs"
   },
   "keywords": [
     "annotations",

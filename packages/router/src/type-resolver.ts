@@ -1,25 +1,60 @@
+import { ING_BAD_REQUEST } from '@ingress/types'
+import type { RouterContext } from './router.js'
+export const routeArgumentParserRegistry = new WeakMap<any, Resolver<any, any>>()
+
 export const Type = Function
 export interface Type<T> {
   new (...args: any[]): T
 }
-export type Func<T = any> = (...args: any[]) => T
-import { ING_BAD_REQUEST } from '@ingress/types'
+
+export type Resolver<TPicked = unknown, TParsed = unknown> =
+  | {
+      pick: Func<RouterContext, TPicked>
+      parse: Func<TPicked, TParsed>
+    }
+  | {
+      pick: Func<RouterContext, TPicked>
+    }
+  | {
+      parse: Func<any, TParsed>
+    }
+
+export type Func<TArg = unknown, TReturn = unknown> =
+  | ((a: TArg) => TReturn)
+  | ((a: TArg) => Promise<TReturn>)
 
 export class TypeResolver {
-  public types = new Map<Type<any>, Func>(defaultResolvers.map((x) => [x.type, x.parse]))
-  public predicates: Array<[Func<boolean>, Func]> = []
+  public types = new Map<Type<any>, Resolver<any, any>>()
 
-  register(type: Type<any>, resolver: Func): this {
+  constructor() {
+    for (const resolver of defaultResolvers) {
+      this.register(resolver.type, { parse: resolver.parse } as any)
+    }
+  }
+
+  public predicates: Array<[Func<any, boolean>, Resolver<any, any>]> = []
+
+  register<TPicked = any, TParsed = any>(
+    type: Type<any>,
+    resolver: Resolver<TPicked, TParsed>,
+  ): this {
     this.types.set(type, resolver)
     return this
   }
 
-  registerPredicate(predicate: Func<boolean>, resolver: Func): this {
+  registerPredicate<TPicked = any, TParsed = any>(
+    predicate: Func<any, boolean>,
+    resolver: Resolver<TPicked, TParsed>,
+  ): this {
     this.predicates.push([predicate, resolver])
     return this
   }
 
-  get(type: Type<any>): Func | undefined {
+  get(type: Type<any>): Resolver<any, any> | undefined {
+    const globallyRegistered = routeArgumentParserRegistry.get(type)
+    if (globallyRegistered) {
+      return globallyRegistered
+    }
     const resolver = this.types.get(type)
     if (resolver) {
       return resolver
@@ -69,7 +104,7 @@ const defaultResolvers = [
     parse: (value: string): string => {
       if (value === null || value === undefined) {
         throw new ING_BAD_REQUEST(
-          `cannot convert ${value === null ? 'null' : 'undefined'} to string`
+          `cannot convert ${value === null ? 'null' : 'undefined'} to string`,
         )
       }
       return value + ''
@@ -77,8 +112,8 @@ const defaultResolvers = [
   },
   {
     type: Date,
-    parse: (value: string | Date): Date => {
-      const date = new Date(value)
+    parse: (value: string): Date => {
+      const date = new Date(Date.parse(value))
 
       if (date.toString() === 'Invalid Date') {
         throw new ING_BAD_REQUEST(`cannot convert ${JSON.stringify(value)} to Date`)

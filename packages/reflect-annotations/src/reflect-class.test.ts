@@ -45,7 +45,7 @@ class One {
 
 class Two extends One {
   two() {}
-  towa() {}
+  twoa() {}
   @FixtureAnnotation()
   twob() {}
 }
@@ -68,7 +68,7 @@ class Five {
   anotherMethodWithAParameter(
     @MiddlewareAnnotation() _param: any,
     _noAnnotation: any,
-    @FixtureAnnotation() _param2: any
+    @FixtureAnnotation() _param2: any,
   ) {}
 }
 
@@ -94,7 +94,7 @@ describe('reflect-annotations', () => {
     const data = reflectClassProperties(Three)
     expect(data.source).toBe(Three)
     expect(data.properties.sort()).toEqual(
-      ['three', 'threeb', 'two', 'towa', 'twob', 'one', 'onea'].sort()
+      ['one', 'onea', 'three', 'threeb', 'two', 'twoa', 'twob'].sort(),
     )
 
     expect(data.constructors).toEqual([Three, Two, One])
@@ -181,7 +181,7 @@ describe('reflect-annotations', () => {
       Fixture.toString(),
     ])
     expect(
-      classProperties[1].parameterAnnotations.map((x) => x && x.constructor.toString())
+      classProperties[1].parameterAnnotations.map((x) => x && x.constructor.toString()),
     ).toEqual([MiddlewareFixture.toString(), undefined, Fixture.toString()])
   })
 

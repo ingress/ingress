@@ -35,7 +35,7 @@ export class Router<T> {
     }
     if (route.charCodeAt(0) !== CharCode.Slash) {
       throw new TypeError(
-        `A valid route should start with '/', received: '${route.slice(0, 1)}'${route.slice(1)}`
+        `A valid route should start with '/', received: '${route.slice(0, 1)}'${route.slice(1)}`,
       )
     }
     const root = this.methods[method] || new TreeNode<T>()
@@ -56,7 +56,7 @@ export class TreeNode<T> {
     private type = SegmentType.Static,
     private priority = 0,
     private children: TreeNode<T>[] = [],
-    private handle: T | null = null
+    private handle: T | null = null,
   ) {}
 
   private addChild(child: TreeNode<T>): TreeNode<T> {
@@ -102,7 +102,7 @@ export class TreeNode<T> {
           SegmentType.Static,
           n.priority - 1,
           n.children,
-          n.handle
+          n.handle,
         )
 
         n.children = [child]
@@ -171,7 +171,7 @@ export class TreeNode<T> {
               n.path +
               "' in existing prefix '" +
               prefix +
-              "'"
+              "'",
           )
         }
 
@@ -181,6 +181,7 @@ export class TreeNode<T> {
 
       // Otherwise add handle to current node
       if (n.handle !== null) {
+        //TODO(calebboyd) support invariant middleware / route handlers
         throw new Error("A handle is already registered for path '" + fullPath + "'")
       }
       n.handle = handle
@@ -285,7 +286,7 @@ export class TreeNode<T> {
             wildcard +
             "' in path '" +
             fullPath +
-            "'"
+            "'",
         )
       }
       // Check if the wildcard has a name
@@ -301,7 +302,7 @@ export class TreeNode<T> {
           path = path.slice(i)
         }
         const child = n.addChild(
-          new TreeNode<T>(wildcard, '', false, SegmentType.Param, 1, [], null)
+          new TreeNode<T>(wildcard, '', false, SegmentType.Param, 1, [], null),
         )
         n.wildChild = true
         n = child
@@ -321,7 +322,7 @@ export class TreeNode<T> {
       // catchAll
       if (i + wildcard.length !== path.length) {
         throw new Error(
-          "catch-all routes are only allowed at the end of the path in path '" + fullPath + "'"
+          "catch-all routes are only allowed at the end of the path in path '" + fullPath + "'",
         )
       }
 
@@ -329,7 +330,7 @@ export class TreeNode<T> {
         throw new Error(
           "catch-all conflicts with existing handle for the path segment root in path '" +
             fullPath +
-            "'"
+            "'",
         )
       }
 
@@ -343,7 +344,7 @@ export class TreeNode<T> {
 
       // First node: catchAll node with empty path
       const catchAllChild = n.addChild(
-        new TreeNode<T>('', '', true, SegmentType.CatchAll, 1, [], null)
+        new TreeNode<T>('', '', true, SegmentType.CatchAll, 1, [], null),
       )
       n.indices = '/'
       n = catchAllChild

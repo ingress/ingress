@@ -1,13 +1,17 @@
 import type { Middleware } from '@ingress/core'
 import { compose, isClass, is } from '@ingress/core'
-import { InjectParamAnnotation, kInjectAnnotation } from './annotations/route.annotation.js'
+import { kInjectAnnotation } from './annotations/route.annotation.js'
 import type { RouteMetadata } from './route-resolve.js'
-import type { RouterContext } from './router.js'
+import { type RouterContext } from './router.js'
 import type { Func } from './type-resolver.js'
 import { TypeResolver } from './type-resolver.js'
 
 function isPrimitive(value: any) {
-  return (typeof value !== 'object' && typeof value !== 'function') || value === null
+  return !(
+    (typeof value === 'object' || typeof value === 'function') &&
+    value !== null &&
+    value !== undefined
+  )
 }
 
 export const MiddlewarePriority = {
@@ -18,7 +22,7 @@ export const DEFAULT_BODY_BYTES = 1.5e7
 
 export function defaultParser(
   context: RouterContext,
-  next: () => Promise<any>
+  next: () => Promise<any>,
 ): Promise<any> | void {
   if (context.request.method === 'GET' || context.request.method === 'HEAD') {
     return next()
@@ -39,6 +43,8 @@ export function defaultParser(
         context.request.body = x
         return next()
       })
+  } else {
+    return next()
   }
 }
 
@@ -63,7 +69,11 @@ export function resolveRouteMiddleware(route: RouteMetadata, typeResolver = new 
   ] as const
 }
 
-const pickIngRequest = (context: any) => context.request
+const pickIngRequest = (context: any) => context.request,
+  pickSearchParams = (context: RouterContext) => {
+    //eslint-disable-next-line
+    return context.request.searchParams
+  }
 
 /**
  * Get a function that resolves route parameter metadata to arguments for the route
@@ -75,17 +85,14 @@ function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) 
   let parseBody = true
   const paramLength = Math.max(
       route.types?.parameters?.length ?? 0,
-      route.parameterAnnotations?.length ?? 0
+      route.parameterAnnotations?.length ?? 0,
     ),
-    resolvers: Func[] = []
+    resolvers: Func<RouterContext, any>[] = []
 
   for (let i = 0; i < paramLength; i++) {
     const annotation = route.parameterAnnotations?.[i],
       type = route.types?.parameters?.[i],
-      pick =
-        annotation?.extractValue?.bind(annotation) ||
-        type?.extractValue?.bind(type) ||
-        pickIngRequest
+      pick = annotation?.pick?.bind(annotation) || type?.pick?.bind(type) || pickIngRequest
 
     if (isClass(type)) {
       if (is<Request>(type.prototype, 'Request')) {
@@ -94,10 +101,7 @@ function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) 
         continue
       }
       if (is<URLSearchParams>(type.prototype, 'URLSearchParams')) {
-        resolvers.push((context: RouterContext) => {
-          //eslint-disable-next-line
-          return context.request.searchParams
-        })
+        resolvers.push(pickSearchParams)
         continue
       }
     }
@@ -107,21 +111,21 @@ function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) 
       continue
     }
 
-    if ('parse' in type && typeof type.parse === 'function') {
-      resolvers.push((context: RouterContext) => type.parse(pick(context, type)))
-      continue
-    } else if ('transformValue' in type) {
-      resolvers.push((context: RouterContext) => type.transformValue(pick(context, type)))
+    if ('parse' in type && typeof type.parse === 'function' && type !== Date) {
+      const pluck = 'pick' in type ? type.pick.bind(type) : pick
+      resolvers.push((context: RouterContext) => type.parse(pluck(context, type)))
       continue
     }
+
     //search registered type resolvers
     const resolver = typeResolver.get(type)
-    if (resolver) {
-      resolvers.push((context: any) => resolver(pick(context, type)))
+    if (resolver && 'parse' in resolver) {
+      const pluck = 'pick' in resolver ? resolver.pick.bind(type) : pick
+      resolvers.push((context: any) => resolver.parse(pluck(context, type)))
     }
     if (!resolver) {
       throw new Error(
-        `No type converter found for: ${route.controller.name}.${route.name} at argument ${i}:${type.name}`
+        `No type converter found for: ${route.controller.name}.${route.name} at argument ${i}:${type.name}`,
       )
     }
   }
@@ -134,7 +138,7 @@ function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) 
       let isAsync = false
       for (let i = 0; i < l; i++) {
         const resolved = resolvers[i](context)
-        if (resolved && !isPrimitive(resolved) && 'then' in resolved) {
+        if (!isPrimitive(resolved) && 'then' in resolved) {
           isAsync = true
         }
         args.push(resolved)
@@ -166,7 +170,7 @@ function getMiddleware(x: any) {
  */
 export function createHandler(route: RouteMetadata, typeResolver: TypeResolver): Middleware<any> {
   const routeAnnotations = (route.controllerAnnotations ?? []).concat(
-      route.methodAnnotations ?? []
+      route.methodAnnotations ?? [],
     ),
     earlyMiddleware = routeAnnotations
       .filter((x) => x.middlewarePriority === MiddlewarePriority.BeforeBodyParser)
@@ -179,6 +183,6 @@ export function createHandler(route: RouteMetadata, typeResolver: TypeResolver):
     ...earlyMiddleware,
     ...(shouldParseBody ? [bodyParser] : []),
     ...middleware,
-    routeMiddleware
+    routeMiddleware,
   )
 }

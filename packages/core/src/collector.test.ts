@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import type { NextFn } from './core.js'
+import { describe, it, expect } from 'vitest'
 import { Ingress } from './core.js'
 import { forTest } from './di.js'
+import type { NextFn } from './compose.js'
 
 describe('Collectors', () => {
   it('UseSingleton', async () => {
