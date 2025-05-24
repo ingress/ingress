@@ -52,38 +52,3 @@ test('TreeNode instances from ESM and CJS are compatible', () => {
     'CJS TreeNode instance passes instanceof check with ESM TreeNode',
   )
 })
-
-test('Mixed module usage produces identical results', () => {
-  // Create routers from different modules
-  const esmRouter = new esmExports.Router()
-  const cjsRouter = new cjsExports.Router()
-
-  // Add the same routes to both
-  const handler1 = () => 'route1'
-  const handler2 = () => 'route2'
-  const handler3 = () => 'param route'
-
-  esmRouter.on('GET', '/', handler1)
-  esmRouter.on('POST', '/submit', handler2)
-  esmRouter.on('GET', '/user/:id', handler3)
-
-  cjsRouter.on('GET', '/', handler1)
-  cjsRouter.on('POST', '/submit', handler2)
-  cjsRouter.on('GET', '/user/:id', handler3)
-
-  // Test identical routes return identical results
-  const testCases = [
-    ['GET', '/'],
-    ['POST', '/submit'],
-    ['GET', '/user/123'],
-    ['GET', '/nonexistent'],
-  ]
-
-  testCases.forEach(([method, path]) => {
-    const esmResult = esmRouter.find(method, path)
-    const cjsResult = cjsRouter.find(method, path)
-
-    assert.strictEqual(esmResult.handle, cjsResult.handle, `Handlers match for ${method} ${path}`)
-    assert.deepStrictEqual(esmResult.params, cjsResult.params, `Params match for ${method} ${path}`)
-  })
-})

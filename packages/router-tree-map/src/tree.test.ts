@@ -2,7 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { TreeNode, Router } from './tree.js'
 
-describe('priority', () => {
+describe('Router', () => {
   function checkPriorities(n: any) {
     let priority = 0
     n.children.forEach((_x: any, i: number) => {
@@ -139,8 +139,8 @@ describe('priority', () => {
       ['/src/', false, '/src/*filepath', [['filepath', '/']]],
       ['/src/some/file.png', false, '/src/*filepath', [['filepath', '/some/file.png']]],
       ['/search/', false, '/search/', null],
-      ['/search/someth!ng+in+ünìcodé', false, '/search/:query', [['query', 'someth!ng+in+ünìcodé']]],
-      ['/search/someth!ng+in+ünìcodé/', true, '', [['query', 'someth!ng+in+ünìcodé']]],
+      ['/search/someth!ng+in+ünìcodé', false, '/search/:query', [['query', 'someth!ng in ünìcodé']]],
+      ['/search/someth!ng+in+ünìcodé/', true, '', [['query', 'someth!ng in ünìcodé']]],
       ['/user_gopher', false, '/user_:name', [['name', 'gopher']]],
       ['/user_gopher/about', false, '/user_:name/about', [['name', 'gopher']]],
       [
@@ -263,72 +263,67 @@ describe('priority', () => {
     assert.throws(() => map.set('/not-named/*', null))
   })
 
-  // it('unimplemented', () => {
-  //   it('unescaped params', () => {
-  //     const map = new TreeNode(),
-  //       routes = [
-  //         '/',
-  //         '/cmd/:tool/:sub',
-  //         '/cmd/:tool/',
-  //         '/src/*filepath',
-  //         '/search/:query',
-  //         '/files/:dir/*filepath',
-  //         '/info/:user/project/:project',
-  //         '/info/:user',
-  //       ]
-  //     for (const route of routes) {
-  //       map.set(route, {})
-  //     }
-  //     const input = [
-  //       ['/', false, '/', null],
-  //       ['/cmd/test/', false, '/cmd/:tool/', [['tool', 'test']]],
-  //       ['/cmd/test', true, '', [['tool', 'test']]],
-  //       ['/src/some/file.png', false, '/src/*filepath', [['filepath', '/some/file.png']]],
-  //       ['/src/some/file+test.png', false, '/src/*filepath', [['filepath', '/some/file test.png']]],
-  //       [
-  //         '/src/some/file++++%%%%test.png',
-  //         false,
-  //         '/src/*filepath',
-  //         [['filepath', '/some/file++++%%%%test.png']],
-  //       ],
-  //       ['/src/some/file%2Ftest.png', false, '/src/*filepath', [['filepath', '/some/file/test.png']]],
-  //       [
-  //         '/search/someth!ng+in+ünìcodé',
-  //         false,
-  //         '/search/:query',
-  //         [['query', 'someth!ng in ünìcodé']],
-  //       ],
-  //       [
-  //         '/info/gordon/project/go',
-  //         false,
-  //         '/info/:user/project/:project',
-  //         [
-  //           ['user', 'gordon'],
-  //           ['project', 'go'],
-  //         ],
-  //       ],
-  //       ['/info/slash%2Fgordon', false, '/info/:user', [['user', 'slash/gordon']]],
-  //       [
-  //         '/info/slash%2Fgordon/project/Project%20%231',
-  //         false,
-  //         '/info/:user/project/:project',
-  //         [
-  //           ['user', 'slash/gordon'],
-  //           ['project', 'Project #1'],
-  //         ],
-  //       ],
-  //       ['/info/slash%%%%', false, '/info/:user', [['user', 'slash%%%%']]],
-  //       [
-  //         '/info/slash%%%%2Fgordon/project/Project%%%%20%231',
-  //         false,
-  //         '/info/:user/project/:project',
-  //         [
-  //           ['user', 'slash%%%%2Fgordon'],
-  //           ['project', 'Project%%%%20%231'],
-  //         ],
-  //       ],
-  //     ]
-  //     void input
-  //   })
-  // })
+  it('unescaped params', () => {
+    const map = new TreeNode(),
+      routes = [
+        '/',
+        '/cmd/:tool/:sub',
+        '/cmd/:tool/',
+        '/src/*filepath',
+        '/search/:query',
+        '/files/:dir/*filepath',
+        '/info/:user/project/:project',
+        '/info/:user',
+      ]
+    for (const route of routes) {
+      map.set(route, fakeHandler(route))
+    }
+
+    checkRequests(map, [
+      ['/', false, '/', null],
+      ['/cmd/test/', false, '/cmd/:tool/', [['tool', 'test']]],
+      ['/cmd/test', true, '', [['tool', 'test']]],
+      ['/src/some/file.png', false, '/src/*filepath', [['filepath', '/some/file.png']]],
+      ['/src/some/file+test.png', false, '/src/*filepath', [['filepath', '/some/file test.png']]],
+      [
+        '/src/some/file++++%%%%test.png',
+        false,
+        '/src/*filepath',
+        [['filepath', '/some/file++++%%%%test.png']],
+      ],
+      ['/src/some/file%2Ftest.png', false, '/src/*filepath', [['filepath', '/some/file/test.png']]],
+      ['/search/someth!ng+in+ünìcodé', false, '/search/:query', [['query', 'someth!ng in ünìcodé']]],
+      [
+        '/info/gordon/project/go',
+        false,
+        '/info/:user/project/:project',
+        [
+          ['user', 'gordon'],
+          ['project', 'go'],
+        ],
+      ],
+      ['/info/slash%2Fgordon', false, '/info/:user', [['user', 'slash/gordon']]],
+      [
+        '/info/slash%2Fgordon/project/Project%20%231',
+        false,
+        '/info/:user/project/:project',
+        [
+          ['user', 'slash/gordon'],
+          ['project', 'Project #1'],
+        ],
+      ],
+      ['/info/slash%%%%', false, '/info/:user', [['user', 'slash%%%%']]],
+      [
+        '/info/slash%%%%2Fgordon/project/Project%%%%20%231',
+        false,
+        '/info/:user/project/:project',
+        [
+          ['user', 'slash%%%%2Fgordon'],
+          ['project', 'Project%%%%20%231'],
+        ],
+      ],
+    ])
+
+    checkPriorities(map)
+  })
 })

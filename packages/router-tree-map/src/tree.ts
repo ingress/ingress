@@ -231,7 +231,7 @@ export class TreeNode<T> {
               }
 
               // Save param value
-              params.push([n.path.slice(1), path.slice(0, end)])
+              params.push([n.path.slice(1), decodeParam(path.slice(0, end))])
 
               // We need to go deeper!
               if (end < path.length) {
@@ -250,7 +250,7 @@ export class TreeNode<T> {
               return { handle, params }
 
             case SegmentType.CatchAll:
-              params.push([n.path.slice(2), path])
+              params.push([n.path.slice(2), decodeParam(path)])
 
               handle = n.handle
               return { handle, params }
@@ -397,6 +397,14 @@ function longestCommonPrefix(a: string, b: string) {
   const max = Math.min(a.length, b.length)
   while (i < max && a[i] === b[i]) i++
   return i
+}
+
+function decodeParam(str: string): string {
+  try {
+    return decodeURIComponent(str.replace(/\+/g, ' '))
+  } catch {
+    return str
+  }
 }
 
 type SetType<S> = S extends Set<infer T> ? T : never
