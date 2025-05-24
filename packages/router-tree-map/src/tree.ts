@@ -282,11 +282,7 @@ export class TreeNode<T> {
       // The wildcard name must not contain ':' and '*'
       if (!valid) {
         throw new Error(
-          "only one wildcard per path segment is allowed, has: '" +
-            wildcard +
-            "' in path '" +
-            fullPath +
-            "'",
+          "only one wildcard per path segment is allowed, has: '" + wildcard + "' in path '" + fullPath + "'",
         )
       }
       // Check if the wildcard has a name
@@ -301,9 +297,7 @@ export class TreeNode<T> {
           n.path = path.slice(0, i)
           path = path.slice(i)
         }
-        const child = n.addChild(
-          new TreeNode<T>(wildcard, '', false, SegmentType.Param, 1, [], null),
-        )
+        const child = n.addChild(new TreeNode<T>(wildcard, '', false, SegmentType.Param, 1, [], null))
         n.wildChild = true
         n = child
 
@@ -321,16 +315,12 @@ export class TreeNode<T> {
       }
       // catchAll
       if (i + wildcard.length !== path.length) {
-        throw new Error(
-          "catch-all routes are only allowed at the end of the path in path '" + fullPath + "'",
-        )
+        throw new Error("catch-all routes are only allowed at the end of the path in path '" + fullPath + "'")
       }
 
       if (n.path.length > 0 && n.path.charCodeAt(n.path.length - 1) === CharCode.Slash) {
         throw new Error(
-          "catch-all conflicts with existing handle for the path segment root in path '" +
-            fullPath +
-            "'",
+          "catch-all conflicts with existing handle for the path segment root in path '" + fullPath + "'",
         )
       }
 
@@ -343,9 +333,7 @@ export class TreeNode<T> {
       n.path = path.slice(0, i)
 
       // First node: catchAll node with empty path
-      const catchAllChild = n.addChild(
-        new TreeNode<T>('', '', true, SegmentType.CatchAll, 1, [], null),
-      )
+      const catchAllChild = n.addChild(new TreeNode<T>('', '', true, SegmentType.CatchAll, 1, [], null))
       n.indices = '/'
       n = catchAllChild
 

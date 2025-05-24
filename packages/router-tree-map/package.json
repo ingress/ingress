@@ -1,6 +1,6 @@
 {
   "name": "router-tree-map",
-  "version": "0.1.6",
+  "version": "1.0.0",
   "keywords": [
     "radix",
     "trie",
@@ -13,34 +13,26 @@
   "license": "MIT",
   "description": "A radix tree map-like structure for /route/:like/keys and values",
   "type": "commonjs",
-  "main": "./lib/cjs/tree.js",
-  "types": "./lib/cjs/tree.d.ts",
   "exports": {
     ".": {
-      "import": "./index.mjs",
-      "require": "./lib/cjs/tree.js",
-      "types": "./lib/cjs/tree.d.ts",
-      "default": "./lib/cjs/tree.js"
+      "node": {
+        "import": "./index.mjs",
+        "require": "./lib/cjs/tree.js",
+        "types": "./lib/cjs/tree.d.ts",
+        "default": "./lib/cjs/tree.js"
+      }
     },
     "./package.json": "./package.json"
   },
   "files": [
-    "lib",
-    "docs",
-    "index.mjs"
+    "lib/**/*.{js,map,d.ts}"
   ],
   "scripts": {
-    "docs": "typedoc src/tree.ts --excludePrivate",
-    "test": "vitest run src",
-    "cov": "npm test -- --coverage",
-    "ocov": "$npm_execpath run cov && open coverage/index.html",
-    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
-    "build": "shx rm -rf lib && $npm_execpath run build:cjs"
+    "build": "rm -rf lib && tsc",
+    "test": "node --test"
   },
-  "eslintConfig": {
-    "rules": {
-      "no-constant-condition": 0,
-      "@typescript-eslint/no-this-alias": 0
-    }
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "@ingress/workspace": "file:../"
   }
 }

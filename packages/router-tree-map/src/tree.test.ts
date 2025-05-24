@@ -1,20 +1,22 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import { TreeNode, Router } from './tree.js'
 
 describe('priority', () => {
   function checkPriorities(n: any) {
     let priority = 0
-    n.children.forEach((x: any, i: number) => {
+    n.children.forEach((_x: any, i: number) => {
       priority += checkPriorities(n.children[i])
     })
     if (n.handle !== null) {
       priority++
     }
 
-    expect(
+    assert.equal(
       n.priority,
-      `priority mismatch for node '${n.path}': is ${n.priority}, should be ${priority}`
-    ).toEqual(priority)
+      priority,
+      `priority mismatch for node '${n.path}': is ${n.priority}, should be ${priority}`,
+    )
 
     return priority
   }
@@ -29,9 +31,9 @@ describe('priority', () => {
         err = e
       }
       if (conflict) {
-        expect(err, `no error for conflicting route ${route}`).toBeTruthy()
+        assert.ok(err, `no error for conflicting route ${route}`)
       } else {
-        expect(err, `unexpected error for route ${route}: ${err?.message}`).toBeFalsy()
+        assert.ok(!err, `unexpected error for route ${route}: ${err?.message}`)
       }
     }
   }
@@ -42,24 +44,22 @@ describe('priority', () => {
 
   function checkRequests(
     tree: TreeNode<any>,
-    requests: [string, boolean, string, [string, string][] | null][]
+    requests: [string, boolean, string, [string, string][] | null][],
   ) {
     for (const [path, noHandle, route, expectedParams] of requests) {
       const value = tree.get(path)
       if (noHandle) {
-        expect(
-          value.handle,
-          `Expected null handle but got ${value.handle} for '${path}'`
-        ).toBeFalsy()
+        assert.ok(!value.handle, `Expected null handle but got ${value.handle} for '${path}'`)
       } else {
         const val = value.handle()
-        expect(
+        assert.equal(
           val,
-          `Expected fake handler to return registered route '${route}', but got '${val}'`
-        ).toEqual(route)
+          route,
+          `Expected fake handler to return registered route '${route}', but got '${val}'`,
+        )
       }
       if (expectedParams) {
-        expect(value.params).toEqual(expectedParams)
+        assert.deepEqual(value.params, expectedParams)
       }
     }
   }
@@ -139,12 +139,7 @@ describe('priority', () => {
       ['/src/', false, '/src/*filepath', [['filepath', '/']]],
       ['/src/some/file.png', false, '/src/*filepath', [['filepath', '/some/file.png']]],
       ['/search/', false, '/search/', null],
-      [
-        '/search/someth!ng+in+ünìcodé',
-        false,
-        '/search/:query',
-        [['query', 'someth!ng+in+ünìcodé']],
-      ],
+      ['/search/someth!ng+in+ünìcodé', false, '/search/:query', [['query', 'someth!ng+in+ünìcodé']]],
       ['/search/someth!ng+in+ünìcodé/', true, '', [['query', 'someth!ng+in+ünìcodé']]],
       ['/user_gopher', false, '/user_:name', [['name', 'gopher']]],
       ['/user_gopher/about', false, '/user_:name/about', [['name', 'gopher']]],
@@ -206,7 +201,7 @@ describe('priority', () => {
     map.set('/', fakeHandler('/'))
     map.set('/:page', fakeHandler('/:page'))
     ;(map as any).children[0].type = 42
-    expect(() => map.get('/test')).toThrow()
+    assert.throws(() => map.get('/test'))
   })
 
   it('Invalid wildcards', () => {
@@ -222,18 +217,18 @@ describe('priority', () => {
       handle = {}
     router.on('GET', '/some/:path', handle)
     const result = router.find('GET', '/some/thing')
-    expect(result?.handle).toEqual(handle)
+    assert.equal(result?.handle, handle)
   })
   it('throws on invalid input', () => {
     const router = new Router(),
       handle = {}
-    expect(() => router.on(Math.random().toString() as any, '/some/:path', handle)).toThrow()
-    expect(() => router.on('GET', 'un-prefixed/route', handle)).toThrow()
+    assert.throws(() => router.on(Math.random().toString() as any, '/some/:path', handle))
+    assert.throws(() => router.on('GET', 'un-prefixed/route', handle))
   })
   it('no registered method/route', () => {
     const router = new Router(),
       result = router.find('GET', '/some/path')
-    expect(result).toEqual({ handle: null, params: [] })
+    assert.deepEqual(result, { handle: null, params: [] })
   })
 
   it('tree child conflict', () => {
@@ -260,12 +255,12 @@ describe('priority', () => {
       routes = ['/', '/doc/', '/src/*filepath', '/search/:query', '/user_:name'],
       add = (handler: any) => routes.forEach((x) => map.set(x, handler))
     add({})
-    expect(() => add(null)).toThrow()
+    assert.throws(() => add(null))
   })
 
   it('unnamed wildcard', () => {
     const map = new TreeNode()
-    expect(() => map.set('/not-named/*', null)).toThrow()
+    assert.throws(() => map.set('/not-named/*', null))
   })
 
   // it('unimplemented', () => {

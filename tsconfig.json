@@ -2,20 +2,17 @@
   "root": true,
   "compilerOptions": {
     "strict": true,
-    "target": "es2021",
+    "target": "ES2022",
     "importsNotUsedAsValues": "remove",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["dom", "es2022"],
+    "lib": ["ES2022"],
     "declaration": true,
     "sourceMap": true,
+    "declarationMap": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
-  },
-  "exclude": [
-    "**/node_modules",
-    "**/.*/"
-  ]
+  }
 }

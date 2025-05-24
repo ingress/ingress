@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "sourceRoot": "./src",
     "outDir": "./lib/cjs"
   },
   "exclude": ["node_modules"],
