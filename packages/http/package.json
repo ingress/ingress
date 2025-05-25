@@ -1,6 +1,5 @@
 {
   "name": "@ingress/http",
-  "packageManager": "npm@9.4.1",
   "version": "1.0.0-beta.16",
   "keywords": [],
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
@@ -26,19 +25,17 @@
     "docs"
   ],
   "scripts": {
-    "test": "vitest run src",
-    "cov": "echo $npm_",
-    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
-    "build": "shx rm -rf lib && $npm_execpath run build:cjs"
+    "test": "node --test --enable-source-maps",
+    "build:cjs": "tsc",
+    "build": "rm -rf lib && $npm_execpath run build:cjs"
   },
   "dependencies": {
-    "@ingress/core": "workspace:*",
-    "@ingress/types": "workspace:*",
-    "readable-stream": "^4.3.0",
-    "secure-json-parse": "^2.7.0"
+    "@ingress/core": "file://../core",
+    "@ingress/types": "file://../types",
+    "readable-stream": "^4.4.2",
+    "secure-json-parse": "4.0.0"
   },
   "devDependencies": {
-    "@hapi/shot": "6.0.1",
-    "@types/node": "^18.16.3"
+    "@hapi/shot": "6.0.1"
   }
 }

@@ -3,40 +3,24 @@ import type { Injector, Type } from '@ingress/core'
 import { isClass, Ingress, NextFn, forwardRef, forTest, ContextToken } from '@ingress/core'
 import type { HttpContext, HttpOptions } from '@ingress/http'
 import { Http } from '@ingress/http'
-import type { ParseOptions, RouteData, RouterContext } from '@ingress/router'
-import { Route, Router, routeArgumentParserRegistry } from '@ingress/router'
+import type { RouteData, RouterContext } from '@ingress/router'
+import { ControllerCollector, Route, Router } from '@ingress/router'
 import { pick } from './lang.js'
-//required for typescript inferrence...
-import type { Annotation } from 'reflect-annotations'
 import type { IngressRequest, IngressResponse } from '@ingress/http'
-import { Readable } from 'stream'
+import { DependencyCollectorList } from '@ingress/core'
 
-export {
-  Ingress,
-  Router,
-  Http,
-  Route,
-  NextFn,
-  forwardRef,
-  forTest,
-  ContextToken,
-  routeArgumentParserRegistry,
-}
+export { Ingress, Router, Http, Route, NextFn, forwardRef, forTest, ContextToken }
 export default ingress
 
 type Prettify<T> = {
   [K in keyof T]: T[K]
-  // eslint-disable-next-line @typescript-eslint/ban-types
 } & {}
-
-const identity = <T>(x: T) => x
 
 export type IngressOpts =
   | Prettify<({ routes?: Type<any>[] } & Partial<HttpOptions>) | Type<any>[]>
   | Type<any>
 
 export class Context implements HttpContext<any>, RouterContext {
-  static pick = identity
   request!: IngressRequest<any, unknown>
   response!: IngressResponse<any>
   app!: Ingress<any, { http: Http; router: Router }>
@@ -69,4 +53,39 @@ export function ingress(opts?: IngressOpts) {
     })
 
   return result as Prettify<typeof result>
+}
+
+// Global Collectors
+const collectors = {
+  Routes: new ControllerCollector(),
+  Service: new DependencyCollectorList(),
+  Singleton: new DependencyCollectorList(),
+  UseSingleton: new DependencyCollectorList(),
+} as const
+
+export const Routes = collectors.Routes.collect
+/**
+ * alias for Routes
+ */
+export const Controller = Routes
+export const Service = collectors.Service.collect
+export const Singleton = collectors.Singleton.collect
+export const UseSingleton = collectors.UseSingleton.collect
+
+export function fromGlobalContext() {
+  const app = ingress()
+  let maxItems = 0
+
+  const collected = Array.from(Object.entries(collectors), ([name, c]) => {
+    if (c.items.size > maxItems) maxItems = c.items.size
+    if (c.items.size > 0) return [name as keyof typeof collectors, c.items.values()] as const
+  })
+  for (let i = 0; i < maxItems; i++) {
+    for (let j = 0; j < collected.length; j++) {
+      const item = collected[j]?.[1]?.next().value
+      if (!item) continue
+      app[collected[j]![0]]?.(item)
+    }
+  }
+  return app
 }

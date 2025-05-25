@@ -1,11 +1,6 @@
 import { ING_BAD_REQUEST } from '@ingress/types'
 import type { RouterContext } from './router.js'
-export const routeArgumentParserRegistry = new WeakMap<any, Resolver<any, any>>()
-
-export const Type = Function
-export interface Type<T> {
-  new (...args: any[]): T
-}
+import type { Type } from '@ingress/core'
 
 export type Resolver<TPicked = unknown, TParsed = unknown> = {
   pick?: Func<RouterContext, TPicked>
@@ -21,7 +16,7 @@ export class TypeResolver {
 
   constructor() {
     for (const resolver of defaultResolvers) {
-      this.register(resolver.type, { parse: resolver.parse } as any)
+      this.register(resolver.type, resolver as any)
     }
   }
 
@@ -44,10 +39,6 @@ export class TypeResolver {
   }
 
   get(type: Type<any>): Resolver<any, any> | undefined {
-    const globallyRegistered = routeArgumentParserRegistry.get(type)
-    if (globallyRegistered) {
-      return globallyRegistered
-    }
     const resolver = this.types.get(type)
     if (resolver) {
       return resolver
@@ -59,6 +50,14 @@ export class TypeResolver {
 }
 
 const defaultResolvers = [
+  typeof Request !== 'undefined' && {
+    type: Request,
+    pick: (context: RouterContext) => context.request.asRequest(),
+  },
+  {
+    type: URLSearchParams,
+    pick: (context: RouterContext) => context.request.searchParams,
+  },
   {
     type: Object,
     parse: (value: any) => value,
@@ -115,4 +114,8 @@ const defaultResolvers = [
       return date
     },
   },
-]
+].filter(isTruthy)
+
+function isTruthy<T>(x: T | undefined | false | null | 0): x is T {
+  return Boolean(x)
+}

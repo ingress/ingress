@@ -3,20 +3,19 @@ import { reflectAnnotations } from 'reflect-annotations'
 import type { Readable } from 'node:stream'
 import type { HttpMethod } from 'router-tree-map'
 import { Router as RouteMap } from 'router-tree-map'
-import { createHandler } from './handler.js'
-import type { Type } from './annotations/controller.annotation.js'
-import {
-  ControllerCollector,
-  ControllerDependencyCollector,
-} from './annotations/controller.annotation.js'
+import { createHandler, kIngressRouterParse, kIngressRouterPick } from './handler.js'
+import { ControllerCollector, ControllerDependencyCollector } from './annotations/controller.annotation.js'
 import type { RouteMetadata, PathMap } from './route-resolve.js'
 import { resolvePaths } from './route-resolve.js'
 import type { Middleware, Ingress, NextFn, CoreContext } from '@ingress/core'
 import type { Func } from './type-resolver.js'
-import { TypeResolver, routeArgumentParserRegistry } from './type-resolver.js'
+import { TypeResolver } from './type-resolver.js'
+import type { Type } from '@ingress/core'
 
-export { ControllerDependencyCollector, routeArgumentParserRegistry }
+export { ControllerDependencyCollector, kIngressRouterParse, kIngressRouterPick }
 export { Route } from './annotations/route.annotation.js'
+
+export { ControllerCollector } from './annotations/controller.annotation.js'
 
 export type Pathname = string
 export type QueryString = string
@@ -66,7 +65,6 @@ export class Router {
     //initialization w possible parent
     let root = app.container.findProvidedSingleton(Router)
     if (!root) {
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
       root = this
       app.container.registerSingleton({ provide: Router, useValue: this })
       root.app = app
@@ -123,7 +121,7 @@ export class Router {
     this._root.registeredMetadata.set(paths, routeMetadata)
     for (const [method, routes] of Object.entries(paths)) {
       for (const path of routes) {
-        this._root.on(method as HttpMethod, path, handler)
+        this._root.on(method as HttpMethod, path, { handler, meta: routeMetadata })
       }
     }
     return this
@@ -143,7 +141,7 @@ export class Router {
 
     if (handle) {
       context.response.code(StatusCode.Ok)
-      context.route = new RouteData(params, handle)
+      context.route = new RouteData(params, handle.handler, handle.meta)
       return context.route.exec(context, next)
     } else {
       context.response.code(StatusCode.NotFound)
@@ -154,13 +152,14 @@ export class Router {
 export class RouteData {
   constructor(
     public params: ParamEntries,
-    public exec: Handle,
+    public exec: Handle['handler'],
+    public meta: RouteMetadata | null = null,
   ) {}
 }
 
 export type Body = any
 export type ParamEntries = [string, string][]
-export type Handle = Middleware<any>
+export type Handle = { handler: Middleware<any>; meta: RouteMetadata | null }
 export interface RouterContext extends CoreContext {
   app: Ingress<RouterContext>
   request: {
@@ -173,14 +172,14 @@ export interface RouterContext extends CoreContext {
     headers: Record<string, string | string[] | undefined>
     parse(options: { mode: 'string' } & ParseOptions): Promise<string>
     parse(options: { mode: 'buffer' } & ParseOptions): Promise<Buffer>
-    parse<T = any>(options: { mode: 'json' } & ParseOptions): Promise<T>
+    parse<T = any>(options: { mode: 'json' } & ParseOptions<T>): Promise<T>
     parse(options: { mode: 'stream' } & ParseOptions): Readable
-    toRequest(): Request
+    asRequest(): Request
   }
   response: { code: (code: number) => void }
   route: RouteData | null
 }
-export type ParseOptions = {
+export type ParseOptions<T = any> = {
   sizeLimit?: number
-  deserializer?: <T>(body: string) => T | Promise<T>
+  deserializer?: (body: string) => T | Promise<T>
 }

@@ -1,5 +1,6 @@
 import 'reflect-metadata'
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import * as assert from 'node:assert'
 import {
   PathParamAnnotation,
   BodyParamAnnotation,
@@ -23,13 +24,13 @@ describe('param annotations', () => {
       expectedResponse = Math.random().toString()
     class controller {
       abcd(paramA: any, x: any, paramB: any, paramC: any, paramD: any, paramE: any, paramF: any) {
-        expect(paramA.expectedBody).toEqual(123)
-        expect(x.pathname).toEqual('/some/asdf/4')
-        expect(paramB).toEqual(345)
-        expect(paramC).toEqual('asdf')
-        expect(paramD).toEqual('4')
-        expect(paramE).toEqual('1234')
-        expect(paramF).toEqual('0123')
+        assert.strictEqual(paramA.expectedBody, 123)
+        assert.strictEqual(x.pathname, '/some/asdf/4')
+        assert.strictEqual(paramB, 345)
+        assert.strictEqual(paramC, 'asdf')
+        assert.strictEqual(paramD, '4')
+        assert.strictEqual(paramE, '1234')
+        assert.strictEqual(paramF, '0123')
         return expectedResponse
       }
     }
@@ -59,7 +60,7 @@ describe('param annotations', () => {
       payload: { expectedBody: 123, prop: 345 },
       url: '/some/asdf/4?asdf=1234',
     })
-    expect(result.payload).toEqual(expectedResponse)
+    assert.strictEqual(result.payload, expectedResponse)
   })
 
   it('URLSearchParams type', async () => {
@@ -70,8 +71,8 @@ describe('param annotations', () => {
         name: 'abcd',
         controller: class {
           abcd(paramA: any) {
-            expect(paramA instanceof URLSearchParams).toBeTruthy()
-            expect(paramA.get('asdf')).toEqual('1234')
+            assert.ok(paramA instanceof URLSearchParams)
+            assert.strictEqual(paramA.get('asdf'), '1234')
             return paramA.get('hello')
           }
         },
@@ -89,6 +90,6 @@ describe('param annotations', () => {
       payload: { expectedBody: 123, prop: 345 },
       url: '/?asdf=1234&hello=world',
     })
-    expect(result.payload).toEqual('world')
+    assert.strictEqual(result.payload, 'world')
   })
 })

@@ -1,5 +1,6 @@
 //Testing
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import * as assert from 'node:assert'
 import { inject } from '@hapi/shot'
 
 //Deps
@@ -17,10 +18,10 @@ import { PathParamAnnotation, RouteAnnotation } from './annotations/route.annota
 
 describe('router', () => {
   it('readUrl', () => {
-    expect(readUrl('/hello/world?whats=up')).toEqual(['/hello/world', '?whats=up'])
-    expect(readUrl('/hello/world#whats=up')).toEqual(['/hello/world', '?whats=up'])
-    expect(readUrl('/hello/world;whats=up')).toEqual(['/hello/world', '?whats=up'])
-    expect(readUrl('')).toEqual(['/', ''])
+    assert.deepStrictEqual(readUrl('/hello/world?whats=up'), ['/hello/world', '?whats=up'])
+    assert.deepStrictEqual(readUrl('/hello/world#whats=up'), ['/hello/world', '?whats=up'])
+    assert.deepStrictEqual(readUrl('/hello/world;whats=up'), ['/hello/world', '?whats=up'])
+    assert.deepStrictEqual(readUrl(''), ['/', ''])
   })
 
   it('Route miss', async () => {
@@ -31,7 +32,7 @@ describe('router', () => {
       method: 'GET',
       url: '/',
     })
-    expect(response.statusCode).toEqual(404)
+    assert.strictEqual(response.statusCode, 404)
   })
 
   it('Route hit+query', async () => {
@@ -40,10 +41,13 @@ describe('router', () => {
 
     await app.start()
 
-    router.on('GET', '/some/route', (c: RouterContext, next: any) => {
-      expect(c.request.searchParams.get('some')).toEqual('query')
-      expect(c.request.search.search).toEqual('?some=query')
-      return next()
+    router.on('GET', '/some/route', {
+      meta: null,
+      handler: (c: RouterContext, next: any) => {
+        assert.strictEqual(c.request.searchParams.get('some'), 'query')
+        assert.strictEqual(c.request.search, '?some=query')
+        return next()
+      },
     })
 
     const response = await inject(app.driver, {
@@ -51,7 +55,7 @@ describe('router', () => {
       method: 'GET',
     })
 
-    expect(response.statusCode).toEqual(200)
+    assert.strictEqual(response.statusCode, 200)
   })
 
   it('Route Execution with Annotations', async () => {
@@ -71,7 +75,7 @@ describe('router', () => {
       method: 'PUT',
       url: '/parent/child',
     })
-    expect(response.statusCode).toEqual(200)
+    assert.strictEqual(response.statusCode, 200)
   })
 
   it('Route with plain Metadata', async () => {
@@ -79,7 +83,7 @@ describe('router', () => {
     let called = false
     class Routes {
       otherRoute(variable: string) {
-        expect(variable).toEqual('something')
+        assert.strictEqual(variable, 'something')
         called = true
       }
     }
@@ -98,8 +102,8 @@ describe('router', () => {
       url: '/parent/child2/something',
     })
 
-    expect(called).toEqual(true)
-    expect(response.statusCode).toEqual(200)
+    assert.strictEqual(called, true)
+    assert.strictEqual(response.statusCode, 200)
   })
 
   it('accepts upgrade route', async () => {
@@ -112,7 +116,7 @@ describe('router', () => {
     const router = new Router({ routes: [Routes] }),
       app = new Ingress<any>().use(router)
     await app.start()
-    expect(router.hasUpgrade).toEqual(true)
+    assert.strictEqual(router.hasUpgrade, true)
   })
 
   it('priority middleware order', async () => {
@@ -157,14 +161,14 @@ describe('router', () => {
       url: '/',
     })
 
-    expect(response.payload).toEqual('1234')
+    assert.strictEqual(response.payload, '1234')
   })
 
   it('should decorate the ingress instance', async () => {
     const router = new Router(),
       decorated = new Ingress().use(router),
       app = await decorated.start()
-    expect(app.router).toEqual(router)
+    assert.strictEqual(app.router, router)
   })
 
   it('with more than one router', async () => {
@@ -203,6 +207,6 @@ describe('router', () => {
         url,
       })
     }
-    expect(plan).toEqual('someRouteA someRouteB someRouteC')
+    assert.strictEqual(plan, 'someRouteA someRouteB someRouteC')
   })
 })

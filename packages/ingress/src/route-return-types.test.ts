@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { Readable } from 'stream'
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
+import { Readable } from 'node:stream'
 import ingress from './ingress.js'
 import { inject } from '@hapi/shot'
 
@@ -42,7 +43,7 @@ describe('ingress', () => {
       }
       @Route.Get('/fetch/:name')
       fetchHello(req: Request, @Route.Param('name') name: string) {
-        expect(req.url).toEqual(`http://localhost/greet/fetch/${name}`)
+        assert.strictEqual(req.url, `http://localhost/greet/fetch/${name}`)
         return new Response(`Hello ${name}`)
       }
       @Route.Get('/error/:name')
@@ -60,69 +61,71 @@ describe('ingress', () => {
     void Greet
 
     const response9 = await inject(app.driver, '/greet/throw/world')
-    expect(response9.headers['content-length']).toEqual('72')
-    expect(response9.headers['content-type']).toEqual('application/json')
-    expect(response9.statusCode).toEqual(500)
-    expect(response9.payload).toEqual(
+    assert.strictEqual(response9.headers['content-length'], '79')
+    assert.strictEqual(response9.headers['content-type'], 'application/json')
+    assert.strictEqual(response9.statusCode, 500)
+    assert.strictEqual(
+      response9.payload,
       JSON.stringify({
-        error: { code: 'INTERNAL_ERROR', status: 500, message: 'Hello world' },
-      })
+        error: { code: 'INTERNAL_SERVER_ERROR', status: 500, message: 'Hello world' },
+      }),
     )
 
     const response8 = await inject(app.driver, '/greet/error/world')
-    expect(response8.headers['content-length']).toEqual('72')
-    expect(response8.headers['content-type']).toEqual('application/json')
-    expect(response8.statusMessage).toEqual('Internal Server Error')
-    expect(response8.statusCode).toEqual(502)
-    expect(response8.payload).toEqual(
+    assert.strictEqual(response8.headers['content-length'], '79')
+    assert.strictEqual(response8.headers['content-type'], 'application/json')
+    assert.strictEqual(response8.statusMessage, 'Internal Server Error')
+    assert.strictEqual(response8.statusCode, 502)
+    assert.strictEqual(
+      response8.payload,
       JSON.stringify({
-        error: { code: 'INTERNAL_ERROR', status: 502, message: 'Hello world' },
-      })
+        error: { code: 'INTERNAL_SERVER_ERROR', status: 502, message: 'Hello world' },
+      }),
     )
 
     if (typeof Response !== 'undefined') {
       const response7 = await inject(app.driver, '/greet/fetch/world')
-      expect(response7.headers['content-length']).toEqual(undefined)
-      expect(response7.headers['content-type']).toEqual('text/plain;charset=UTF-8')
-      expect(response7.statusCode).toEqual(200)
-      expect(response7.payload).toEqual('Hello world')
+      assert.strictEqual(response7.headers['content-length'], undefined)
+      assert.strictEqual(response7.headers['content-type'], 'text/plain;charset=UTF-8')
+      assert.strictEqual(response7.statusCode, 200)
+      assert.strictEqual(response7.payload, 'Hello world')
 
       const response6 = await inject(app.driver, '/greet/response/world')
-      expect(response6.headers['content-length']).toEqual(undefined)
-      expect(response6.headers['content-type']).toEqual('text/plain;charset=UTF-8')
-      expect(response6.statusCode).toEqual(200)
-      expect(response6.payload).toEqual('Hello world')
+      assert.strictEqual(response6.headers['content-length'], undefined)
+      assert.strictEqual(response6.headers['content-type'], 'text/plain;charset=UTF-8')
+      assert.strictEqual(response6.statusCode, 200)
+      assert.strictEqual(response6.payload, 'Hello world')
     }
 
     const response5 = await inject(app.driver, '/greet/stream/world')
-    expect(response5.headers['content-length']).toEqual(undefined)
-    expect(response5.headers['content-type']).toEqual('application/octet-stream')
-    expect(response5.statusCode).toEqual(200)
-    expect(response5.payload).toEqual('Hello world')
+    assert.strictEqual(response5.headers['content-length'], undefined)
+    assert.strictEqual(response5.headers['content-type'], 'application/octet-stream')
+    assert.strictEqual(response5.statusCode, 200)
+    assert.strictEqual(response5.payload, 'Hello world')
 
     const response4 = await inject(app.driver, '/greet/bytes/world')
-    expect(response4.headers['content-length']).toEqual('11')
-    expect(response4.headers['content-type']).toEqual('application/octet-stream')
-    expect(response4.statusCode).toEqual(200)
-    expect(response4.payload).toEqual('Hello world')
+    assert.strictEqual(response4.headers['content-length'], '11')
+    assert.strictEqual(response4.headers['content-type'], 'application/octet-stream')
+    assert.strictEqual(response4.statusCode, 200)
+    assert.strictEqual(response4.payload, 'Hello world')
 
     const response3 = await inject(app.driver, '/greet/html/world')
-    expect(response3.headers['content-length']).toEqual('20')
-    expect(response3.headers['content-type']).toEqual('text/plain;charset=UTF-8')
-    expect(response3.statusCode).toEqual(200)
-    expect(response3.payload).toEqual(`<h1>Hello world</h1>`)
+    assert.strictEqual(response3.headers['content-length'], '20')
+    assert.strictEqual(response3.headers['content-type'], 'text/plain;charset=UTF-8')
+    assert.strictEqual(response3.statusCode, 200)
+    assert.strictEqual(response3.payload, `<h1>Hello world</h1>`)
 
     const response2 = await inject(app.driver, '/greet/json/world')
-    expect(response2.headers['content-length']).toEqual('17')
-    expect(response2.headers['content-type']).toEqual('application/json')
-    expect(response2.statusCode).toEqual(200)
-    expect(response2.payload).toEqual('{"Hello":"world"}')
+    assert.strictEqual(response2.headers['content-length'], '17')
+    assert.strictEqual(response2.headers['content-type'], 'application/json')
+    assert.strictEqual(response2.statusCode, 200)
+    assert.strictEqual(response2.payload, '{"Hello":"world"}')
 
     const response = await inject(app.driver, '/greet/text/world')
-    expect(response.headers['content-length']).toEqual('11')
-    expect(response.headers['content-type']).toEqual('text/plain;charset=UTF-8')
-    expect(response.statusCode).toEqual(200)
-    expect(response.payload).toEqual('Hello world')
+    assert.strictEqual(response.headers['content-length'], '11')
+    assert.strictEqual(response.headers['content-type'], 'text/plain;charset=UTF-8')
+    assert.strictEqual(response.statusCode, 200)
+    assert.strictEqual(response.payload, 'Hello world')
   })
 })
 
@@ -136,7 +139,7 @@ class CustomError extends Error {
   toString() {
     return JSON.stringify({
       error: {
-        code: 'INTERNAL_ERROR',
+        code: 'INTERNAL_SERVER_ERROR',
         status: this.statusCode,
         message: this.message,
       },

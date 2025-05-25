@@ -1,5 +1,5 @@
-import { describe, it } from 'vitest'
-import t from 'assert'
+import { describe, it } from 'node:test'
+import t from 'node:assert'
 import {
   getAnnotations,
   setAnnotations,

@@ -19,13 +19,7 @@ import {
   isError,
   isResponse,
 } from './util.js'
-import type {
-  HttpContext,
-  IngressRequest,
-  IngressResponse,
-  ParseMode,
-  ParseOptions,
-} from './http.context.js'
+import type { HttpContext, IngressRequest, IngressResponse, ParseMode, ParseOptions } from './http.context.js'
 import type { Http } from './node.http.js'
 import { ING_UNHANDLED_INTERNAL_SERVER_ERROR } from '@ingress/types'
 
@@ -54,7 +48,9 @@ export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> 
 
   #url = ''
   get url() {
-    if (this.#url) return this.#url
+    if (this.#url) {
+      return this.#url
+    }
     if ((this.raw.socket as any)?.encrypted) {
       this.protocol = 'https:'
     }
@@ -64,17 +60,18 @@ export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> 
     } else {
       port = ':' + port
     }
-    return (this.#url =
-      this.protocol +
-      '//' +
-      (this.raw.headers.host?.endsWith(port)
-        ? this.raw.headers.host
-        : this.raw.headers.host + port) +
-      this.pathname +
-      this.search)
+
+    // Fix: Handle undefined/null host header properly
+    const host = this.raw.headers.host || 'localhost'
+    const hostWithPort = host.endsWith(port) ? host : host + port
+
+    return (this.#url = this.protocol + '//' + hostWithPort + this.pathname + this.search)
   }
 
-  constructor(public raw: IncomingMessage, public context: T) {
+  constructor(
+    public raw: IncomingMessage,
+    public context: T,
+  ) {
     this.id = '' + (raw as any).id || randomUUID()
     ;[this.pathname, this.search] = readUrl(raw.url ?? '/')
     this.method = raw.method ?? 'GET'
@@ -98,7 +95,7 @@ export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> 
   parse<T = any>(options: { mode: 'json' } & ParseOptions): Promise<T>
   parse(options: { mode: 'stream' } & ParseOptions): Readable
   public parse<T = any>(
-    options: { mode: ParseMode } & ParseOptions
+    options: { mode: ParseMode } & ParseOptions,
   ): Promise<string | Buffer | T> | Readable {
     const req = this.raw as any as IncomingMessage,
       limit = 'sizeLimit' in options ? Number(options.sizeLimit) : DefaultParseOptions.sizeLimit
@@ -114,12 +111,11 @@ export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> 
     }
     return parseBuffer(req, limit)
   }
-  toRequest(): Request {
+  asRequest(): Request {
     if (typeof Request === 'undefined') {
       throw new Error('Request is not defined')
     }
-    const protocol = this.protocol,
-      headers: [string, string][] = []
+    const headers: [string, string][] = []
     for (const [key, value] of Object.entries(this.headers)) {
       if (key && value) {
         headers.push([key, Array.isArray(value) ? value.join(',') : value])
@@ -127,12 +123,20 @@ export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> 
     }
     const method = this.method,
       body = method === 'GET' || method === 'HEAD' ? undefined : this.rawBody,
-      url = protocol + this.headers['host'] + this.pathname + this.search
-    return new Request(url, {
-      body: body as any,
+      url = this.url
+
+    const requestInit: RequestInit = {
       method,
       headers,
-    })
+    }
+
+    // Add body and duplex option if needed
+    if (body) {
+      requestInit.body = body as any
+      ;(requestInit as any).duplex = 'half' // Required for Request with body
+    }
+
+    return new Request(url, requestInit)
   }
 }
 
@@ -142,7 +146,10 @@ class NodeResponse<T extends HttpContext<any>> implements IngressResponse<T> {
   public serializers = {
     json: (x: any) => JSON.stringify(x),
   }
-  constructor(public raw: ServerResponse, public context: T) {
+  constructor(
+    public raw: ServerResponse,
+    public context: T,
+  ) {
     this.send = this.send.bind(this)
   }
   get statusCode() {
@@ -164,11 +171,10 @@ class NodeResponse<T extends HttpContext<any>> implements IngressResponse<T> {
 
     if (isSerializableError(data)) {
       this.raw.statusCode = data.statusCode || 500
-      this.raw.statusMessage =
-        data.statusMessage || StatusCode[this.raw.statusCode] || StatusCode[500]
+      this.raw.statusMessage = data.statusMessage || StatusCode[this.raw.statusCode] || StatusCode[500]
+      this.raw.setHeader('Content-Type', data.contentType || 'text/plain;charset=UTF-8')
       const message = data.toString()
-      this.raw.setHeader('content-type', data.contentType || 'text/plain;charset=UTF-8')
-      this.raw.setHeader('content-length', Buffer.byteLength(message).toString())
+      this.raw.setHeader('Content-Length', Buffer.byteLength(message).toString())
       this.raw.end(message)
       return this
     }
@@ -190,8 +196,8 @@ class NodeResponse<T extends HttpContext<any>> implements IngressResponse<T> {
       for (const header of Object.entries(this.#headers)) {
         this.raw.setHeader(header[0], header[1] as string)
       }
-      if (exists(type)) this.raw.setHeader('content-type', type)
-      if (hasLength(content)) this.raw.setHeader('content-length', String(content.length))
+      if (exists(type)) this.raw.setHeader('Content-Type', type)
+      if (hasLength(content)) this.raw.setHeader('Content-Length', String(content.length))
       if (isStream(content)) {
         content.pipe(this.raw)
       } else {
@@ -221,17 +227,26 @@ class NodeResponse<T extends HttpContext<any>> implements IngressResponse<T> {
   }
   then<TResult1 = void, TResult2 = never>(
     onSent?: ((value: void) => TResult1 | PromiseLike<TResult1>) | null,
-    onFailed?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
+    onFailed?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2> {
-    finished(this.raw, (err) => {
-      this.context
-      if (err) {
-        if (onFailed) onFailed(err)
-      } else if (onSent) {
-        onSent()
+    return new Promise((resolve, reject) => {
+      const onFinished = (err?: Error | null) => {
+        if (err) {
+          if (onFailed) {
+            resolve(onFailed(err))
+          } else {
+            reject(err)
+          }
+        } else if (onSent) {
+          resolve(onSent())
+        } else {
+          resolve(undefined as TResult1)
+        }
       }
+
+      // Use finished callback once to prevent memory leaks
+      finished(this.raw, onFinished)
     })
-    return this as any
   }
 }
 /**
@@ -246,7 +261,7 @@ export class NodeHttpContext<T extends HttpContext<any>> implements HttpContext<
   constructor(
     public req: IncomingMessage,
     public res: ServerResponse,
-    public app: Ingress<T, { http: Http }>
+    public app: Ingress<T, { http: Http }>,
   ) {
     this.request = new NodeRequest<T>(req, this as unknown as T)
     this.response = new NodeResponse<T>(res, this as unknown as T)

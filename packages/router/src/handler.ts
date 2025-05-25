@@ -1,9 +1,12 @@
 import type { Middleware } from '@ingress/core'
-import { compose, isClass, is } from '@ingress/core'
+import { compose } from '@ingress/core'
 import type { RouteMetadata } from './route-resolve.js'
 import { type RouterContext } from './router.js'
 import type { Func } from './type-resolver.js'
-import { TypeResolver } from './type-resolver.js'
+import type { TypeResolver } from './type-resolver.js'
+
+export const kIngressRouterParse = Symbol.for('ingress:router:parse')
+export const kIngressRouterPick = Symbol.for('ingress:router:pick')
 
 function isPrimitive(value: any) {
   return !(
@@ -19,10 +22,7 @@ export const MiddlewarePriority = {
 
 export const DEFAULT_BODY_BYTES = 1.5e7
 
-export function defaultParser(
-  context: RouterContext,
-  next: () => Promise<any>,
-): Promise<any> | void {
+export function defaultParser(context: RouterContext, next: () => Promise<any>): Promise<any> | void {
   if (context.request.method === 'GET' || context.request.method === 'HEAD') {
     return next()
   }
@@ -38,7 +38,6 @@ export function defaultParser(
     return context.request
       .parse({ mode: 'json', sizeLimit: contentLength || DEFAULT_BODY_BYTES })
       .then((x: any) => {
-        //eslint-disable-next-line
         context.request.body = x
         return next()
       })
@@ -47,32 +46,24 @@ export function defaultParser(
   }
 }
 
-export function resolveRouteMiddleware(route: RouteMetadata, typeResolver = new TypeResolver()) {
-  const method = route.controller.prototype[route.name],
+export function resolveRouteMiddleware(route: RouteMetadata, typeResolver: TypeResolver) {
+  const handler = route.controller.prototype[route.name],
     createController = (context: any) => context.scope.get(route.controller),
-    [shouldParseBody, resolveArgs] = createParamsResolver(route, typeResolver)
+    resolveArgs = createParamsResolver(route, typeResolver)
 
-  return [
-    shouldParseBody,
-    (context: any, _next: any) => {
-      const controller = createController(context),
-        args = resolveArgs(context)
+  return (context: any, _next: any) => {
+    const controller = createController(context),
+      args = resolveArgs(context)
 
-      if ('then' in args) {
-        return args
-          .then((resolvedArgs) => method.apply(controller, resolvedArgs))
-          .then(context.send)
-      }
-      return method.apply(controller, args)
-    },
-  ] as const
+    if (checkAsync(args)) {
+      return args.then((resolvedArgs) => handler.apply(controller, resolvedArgs)).then(context.send)
+    }
+    return handler.apply(controller, args)
+  }
 }
 
 const pickIngRequest = (context: any) => context.request,
-  pickSearchParams = (context: RouterContext) => {
-    //eslint-disable-next-line
-    return context.request.searchParams
-  }
+  identity = (x: any) => x
 
 /**
  * Get a function that resolves route parameter metadata to arguments for the route
@@ -81,82 +72,67 @@ const pickIngRequest = (context: any) => context.request,
  * @returns a function that resolves arguments for the route
  */
 function createParamsResolver(route: RouteMetadata, typeResolver: TypeResolver) {
-  let parseBody = true
-  const paramLength = Math.max(
-      route.types?.parameters?.length ?? 0,
-      route.parameterAnnotations?.length ?? 0,
-    ),
+  const pl = Math.max(route.types?.parameters?.length ?? 0, route.parameterAnnotations?.length ?? 0),
     resolvers: Func<RouterContext, any>[] = []
 
-  for (let i = 0; i < paramLength; i++) {
-    const annotation = route.parameterAnnotations?.[i],
-      type = route.types?.parameters?.[i]
+  for (let i = 0; i < pl; i++) {
+    const type = route.types?.parameters?.[i],
+      annotation = route.parameterAnnotations?.[i]
 
-    if (isClass(type)) {
-      if (is<Request>(type.prototype, 'Request')) {
-        parseBody = false
-        resolvers.push(toRequest)
-        continue
-      }
-      if (is<URLSearchParams>(type.prototype, 'URLSearchParams')) {
-        resolvers.push(pickSearchParams)
-        continue
-      }
-    }
-
-    if (!type) {
-      const parse = annotation?.parse?.bind(annotation),
-        pick = annotation?.pick?.bind(annotation) ?? pickIngRequest
-      resolvers.push((ctx: RouterContext) => (parse ? parse(pick(ctx)) : pick(ctx)))
-      continue
-    }
-
-    if (type !== Date && typeof type?.parse === 'function') {
-      const pick = annotation?.pick?.bind(annotation) ?? type?.pick?.bind(type) ?? pickIngRequest
-      resolvers.push((context: RouterContext) => type.parse(pick(context, type)))
-      continue
-    }
+    let pick =
+        annotation?.[kIngressRouterPick]?.bind(annotation) || type?.[kIngressRouterPick] || pickIngRequest,
+      parse = type?.[kIngressRouterParse] || annotation?.[kIngressRouterParse]?.bind(annotation) || identity
 
     const resolver = typeResolver.get(type)
-    if (typeof resolver?.parse === 'function') {
-      const pick =
-        resolver?.pick?.bind(resolver) ?? annotation?.pick?.bind(annotation) ?? pickIngRequest
-      resolvers.push((context: any) => resolver.parse?.(pick(context, type)))
+    if (resolver) {
+      pick = resolver.pick ?? pick
+      parse = resolver.parse ?? parse
     }
-    if (!resolver) {
+
+    const usableType = Boolean(
+      type?.[kIngressRouterParse] || type?.[kIngressRouterPick] || parse !== identity,
+    )
+
+    if (!resolver && type && !usableType) {
       throw new Error(
         `No type converter found for: ${route.controller.name}.${route.name} at argument ${i}:${type.name}`,
       )
     }
+
+    resolvers.push((context: RouterContext) => {
+      const picked = pick(context)
+      if (checkAsync(picked)) {
+        return picked.then(parse)
+      }
+      return parse(picked)
+    })
   }
 
-  return [
-    parseBody,
-    function paramResolver(context: any): any[] | Promise<any[]> {
-      const args = [],
-        l = resolvers.length
-      let isAsync = false
-      for (let i = 0; i < l; i++) {
-        const resolved = resolvers[i](context)
-        if (!isPrimitive(resolved) && 'then' in resolved) {
-          isAsync = true
-        }
-        args.push(resolved)
+  return function paramResolver(context: any): any[] | Promise<any[]> {
+    const args = [],
+      l = resolvers.length
+    let isAsync = false
+    for (let i = 0; i < l; i++) {
+      const resolved = resolvers[i](context)
+      if (checkAsync(resolved)) {
+        isAsync = true
       }
-      if (isAsync) {
-        return Promise.all(args)
-      }
-      return args
-    },
-  ] as const
-}
-
-function toRequest(ctx: RouterContext): Request {
-  return ctx.request.toRequest()
+      args.push(resolved)
+    }
+    if (isAsync) {
+      // TODO:calebboyd - consider collecting all rejections
+      return Promise.all(args)
+    }
+    return args
+  }
 }
 
 function isRegularMiddleware(x: any) {
   return !x.isBodyParser && 'middleware' in x && !(x.middlewarePriority in MiddlewarePriority)
+}
+
+function checkAsync(thing: any): thing is PromiseLike<any> {
+  return !isPrimitive(thing) && 'then' in thing && typeof thing.then === 'function'
 }
 
 function getMiddleware(x: any) {
@@ -169,20 +145,15 @@ function getMiddleware(x: any) {
  * Executed once per route.
  */
 export function createHandler(route: RouteMetadata, typeResolver: TypeResolver): Middleware<any> {
-  const routeAnnotations = (route.controllerAnnotations ?? []).concat(
-      route.methodAnnotations ?? [],
-    ),
-    earlyMiddleware = routeAnnotations
-      .filter((x) => x.middlewarePriority === MiddlewarePriority.BeforeBodyParser)
-      .map(getMiddleware),
-    bodyParser = routeAnnotations.find((x) => x.isBodyParser)?.middleware || defaultParser,
+  const routeAnnotations = (route.controllerAnnotations || []).concat(route.methodAnnotations || []),
+    beforeParse = routeAnnotations.filter(beforeBodyParser).map(getMiddleware),
+    bodyParser = routeAnnotations.find(isBodyParser)?.middleware,
     middleware = routeAnnotations.filter(isRegularMiddleware).map(getMiddleware),
-    [shouldParseBody, routeMiddleware] = resolveRouteMiddleware(route, typeResolver)
+    routeMiddleware = resolveRouteMiddleware(route, typeResolver)
 
-  return compose(
-    ...earlyMiddleware,
-    ...(shouldParseBody ? [bodyParser] : []),
-    ...middleware,
-    routeMiddleware,
-  )
+  return compose(...beforeParse, bodyParser || defaultParser, ...middleware, routeMiddleware)
 }
+
+const beforeBodyParser = (x: { middlewarePriority: keyof typeof MiddlewarePriority }) =>
+    x.middlewarePriority === MiddlewarePriority.BeforeBodyParser,
+  isBodyParser = (x: { isBodyParser: boolean }) => x.isBodyParser

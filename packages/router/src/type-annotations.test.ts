@@ -1,5 +1,6 @@
 import 'reflect-metadata'
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import * as assert from 'node:assert'
 import { inject } from '@hapi/shot'
 
 import { Ingress } from '@ingress/core'
@@ -7,24 +8,25 @@ import { Http } from '@ingress/http'
 import { Route } from './annotations/route.annotation.js'
 import type { RouterContext } from './router.js'
 import { Router } from './router.js'
+import { kIngressRouterParse, kIngressRouterPick } from './handler.js'
 
 describe('type annotations', () => {
   it('type parameters pick and parse', async () => {
     const forward = Math.random().toString(36),
       backward = forward.split('').reverse().join('')
     class MyType {
-      static pick(context: RouterContext) {
-        expect((context.request as any).url).toEqual('http://localhost:80/')
+      static [kIngressRouterPick](context: RouterContext) {
+        assert.strictEqual((context.request as any).url, 'http://localhost:80/')
         return forward
       }
-      static parse(_value: string) {
+      static [kIngressRouterParse](_value: string) {
         return backward
       }
     }
     class Routes {
       @Route.Get('/')
       someRoute(arg: MyType) {
-        expect(arg).toEqual(backward)
+        assert.strictEqual(arg, backward)
         return forward + backward
       }
     }
@@ -34,24 +36,24 @@ describe('type annotations', () => {
       method: 'GET',
       url: '/',
     })
-    expect(result.payload).toEqual(forward + backward)
+    assert.strictEqual(result.payload, forward + backward)
   })
 
   it('type parameters transform with param annotation preferred pick', async () => {
     const forward = Math.random().toString(36),
       expectedBackward = forward.split('').reverse().join('')
     class MyType {
-      static pick(_: RouterContext) {
+      static [kIngressRouterPick](_: RouterContext) {
         throw new Error('unreachable: should not be called')
       }
-      static parse(value: string) {
+      static [kIngressRouterParse](value: string) {
         return value.split('').reverse().join('')
       }
     }
     class Routes {
       @Route.Get('/:forwards')
       someRoute(@Route.Param('forwards') arg: MyType) {
-        expect(arg).toEqual(expectedBackward)
+        assert.strictEqual(arg, expectedBackward)
       }
     }
     const app = new Ingress<RouterContext>().use(new Http()).use(new Router({ routes: [Routes] }))
@@ -62,7 +64,7 @@ describe('type annotations', () => {
       url: `/${forward}`,
     })
 
-    expect(result.statusCode).toBe(200)
+    assert.strictEqual(result.statusCode, 200)
   })
 
   it('default type resolvers', async () => {
@@ -76,11 +78,11 @@ describe('type annotations', () => {
         @Route.Param('d') d: Date,
         @Route.Param('e') e: boolean,
       ) {
-        expect(a).toBe(1)
-        expect(b).toBe(false)
-        expect(c).toBe('true')
-        expect(d.toISOString()).toBe(new Date('2020-10-10').toISOString())
-        expect(e).toBe(true)
+        assert.strictEqual(a, 1)
+        assert.strictEqual(b, false)
+        assert.strictEqual(c, 'true')
+        assert.strictEqual(d.toISOString(), new Date('2020-10-10').toISOString())
+        assert.strictEqual(e, true)
         asserted = true
       }
     }
@@ -94,7 +96,7 @@ describe('type annotations', () => {
       url: '/1/false/true/2020-10-10/true',
     })
 
-    expect(result.statusCode).toBe(200)
-    expect(asserted).toBe(true)
+    assert.strictEqual(result.statusCode, 200)
+    assert.strictEqual(asserted, true)
   })
 })

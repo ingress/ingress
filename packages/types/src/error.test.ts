@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import { createErrorType } from './error.js'
 
 describe('createErrorType', () => {
@@ -12,15 +13,15 @@ describe('createErrorType', () => {
       myErrorMessage = new MyError('Some Message'),
       noNew = (MyError as any)()
 
-    expect(MyError.name, 'Constructor has name').toBe('MyError')
-    expect(myError.name, 'Instance has name').toBe('MyError')
-    expect(myError.random, 'Extraneous typed properties').toBe('asdf')
-    expect(myError.code, 'Code is set').toBe('SOMETHING')
-    expect((MyError as any).code, 'Constructor code is not set').toBe(undefined)
-    expect(myError instanceof Error, 'Is instanceof Error').toBeTruthy()
-    expect(noNew instanceof Error, 'Not new-ing produces instance').toBeTruthy()
-    expect(noNew).toEqual(myError)
-    expect(myError.message, 'Sets default message').toBe('default message')
-    expect(myErrorMessage.message, 'Overrides message').toBe('Some Message')
+    assert.equal(MyError.name, 'MyError', 'Constructor has name')
+    assert.equal(myError.name, 'MyError', 'Instance has name')
+    assert.equal(myError.random, 'asdf', 'Extraneous typed properties')
+    assert.equal(myError.code, 'SOMETHING', 'Code is set')
+    assert.equal((MyError as any).code, undefined, 'Constructor code is not set')
+    assert.ok(myError instanceof Error, 'Is instanceof Error')
+    assert.ok(noNew instanceof Error, 'Not new-ing produces instance')
+    assert.deepStrictEqual(noNew, myError)
+    assert.equal(myError.message, 'default message', 'Sets default message')
+    assert.equal(myErrorMessage.message, 'Some Message', 'Overrides message')
   })
 })

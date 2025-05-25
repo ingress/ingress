@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import type { NextFn } from './ingress.js'
 import ingress, { Http, forwardRef } from './ingress.js'
 import { inject } from '@hapi/shot'
@@ -42,7 +43,7 @@ describe('ingress', () => {
     await app.start()
 
     const response = await inject(app.driver, '/hello')
-    expect(response.statusCode).toEqual(200)
-    expect(response.payload).toEqual('123')
+    assert.strictEqual(response.statusCode, 200)
+    assert.strictEqual(response.payload, '123')
   })
 })

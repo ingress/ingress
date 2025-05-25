@@ -28,21 +28,19 @@
     "docs"
   ],
   "scripts": {
-    "docs": "typedoc src/router.ts --excludePrivate",
-    "test": "vitest run src",
-    "cov": "npm test -- --covreage && open coverage/index.html",
-    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
-    "build": "shx rm -rf lib && $npm_execpath run build:cjs"
+    "test": "node --test --enable-source-maps",
+    "build:cjs": "tsc",
+    "build": "rm -rf lib && $npm_execpath run build:cjs"
   },
   "dependencies": {
-    "@ingress/core": "workspace:*",
-    "@ingress/types": "workspace:*",
-    "reflect-annotations": "workspace:*",
-    "router-tree-map": "workspace:*",
+    "@ingress/core": "file://../core",
+    "@ingress/types": "file://../types",
+    "reflect-annotations": "file://../reflect-annotations",
+    "router-tree-map": "file://../router-tree-map",
     "secure-json-parse": "^2.7.0"
   },
   "devDependencies": {
-    "@ingress/http": "workspace:*",
+    "@ingress/http": "file://../http",
     "@hapi/shot": "6.0.1"
   }
 }

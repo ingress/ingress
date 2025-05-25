@@ -1,174 +1,202 @@
 import type { Middleware } from './core.js'
 import { compose, exec } from './core.js'
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 import { executeByArity } from './compose.js'
 
 describe('compose', () => {
-  it('can short circuit', async () => {
-    const m = { count: 0 }
-    await compose(
-      async (x: any) => {
-        x.count++
-      },
-      async (x: any) => {
-        x.count++
-      }
-    )(m)
-    expect(m.count).toBe(1)
-  })
+  describe('middleware execution', () => {
+    it('should short circuit when middleware does not call next', async () => {
+      const context = { count: 0 }
 
-  it('works', async () => {
-    let str = ''
-    await compose(
-      async (x: any, next: any) => {
-        str += 1
-        await next()
-        str += 3
-      },
-      async (x: any, next: any) => {
-        await next()
-        str += 2
-      }
-    )({})
-    expect(str).toBe('123')
-  })
-  it('can run concurrently', async () => {
-    let first = true
-    const composed = compose(async (x: any, next: any) => {
-      if (first) {
-        first = false
-        await new Promise((resolve) => setTimeout(resolve, 5))
-      }
-      await next()
+      await compose(
+        async (ctx: any) => {
+          ctx.count++
+          // Not calling next() - should short circuit
+        },
+        async (ctx: any) => {
+          ctx.count++
+        },
+      )(context)
+
+      assert.strictEqual(context.count, 1, 'Should only execute first middleware')
     })
-    await Promise.all([composed({}), composed({})])
-  })
-  it('is valid middleware', async () => {
-    const context = { str: '' },
-      func = compose<typeof context>(
-        async function (ctx, next) {
-          ctx.str += 1
+
+    it('should execute middleware in correct order with next() calls', async () => {
+      let executionOrder = ''
+
+      await compose(
+        async (_ctx: any, next: any) => {
+          executionOrder += '1'
           await next()
-          ctx.str += 5
+          executionOrder += '3'
+        },
+        async (_ctx: any, next: any) => {
+          await next()
+          executionOrder += '2'
+        },
+      )({})
+
+      assert.strictEqual(executionOrder, '123', 'Should execute in onion-like pattern')
+    })
+
+    it('should support concurrent execution of composed middleware', async () => {
+      let firstExecution = true
+      const composedMiddleware = compose(async (_ctx: any, next: any) => {
+        if (firstExecution) {
+          firstExecution = false
+          await new Promise((resolve) => setTimeout(resolve, 5))
+        }
+        await next()
+      })
+
+      // Should not throw or deadlock
+      await Promise.all([composedMiddleware({}), composedMiddleware({})])
+    })
+
+    it('should work as valid middleware when passed to another compose', async () => {
+      const context = { str: '' }
+      const composedMiddleware = compose<typeof context>(
+        async function (ctx, next) {
+          ctx.str += '1'
+          await next()
+          ctx.str += '5'
         },
         async function (ctx, next) {
-          ctx.str += 2
+          ctx.str += '2'
           await next()
-          ctx.str += 4
-        }
+          ctx.str += '4'
+        },
       )
 
-    await func(context, (ctx, next) => {
-      ctx.str += 3
-      return next()
+      await composedMiddleware(context, (ctx, next) => {
+        ctx.str += '3'
+        return next()
+      })
+
+      assert.strictEqual(context.str, '12345', 'Should execute in correct nested order')
+    })
+  })
+
+  describe('error handling', () => {
+    it('should throw error for invalid middleware arguments', () => {
+      assert.throws(() => compose('invalid' as any), TypeError, 'Should reject non-function middleware')
     })
 
-    expect(context.str).toBe('12345')
+    it('should propagate errors thrown in middleware', async () => {
+      const expectedError = new Error('Test error')
+      let errorWasCaught = false
+
+      try {
+        await compose(() => {
+          throw expectedError
+        })({})
+      } catch (error) {
+        errorWasCaught = true
+        assert.strictEqual(error, expectedError, 'Should propagate the exact error')
+      }
+
+      assert.strictEqual(errorWasCaught, true, 'Error should have been caught')
+    })
   })
-  it('errors', () => {
-    expect(() => compose('a' as any)).toThrow()
-  })
-  it('propagates errors from middleware', async () => {
-    const someError = new Error(Math.random().toString())
-    function doThrow() {
-      throw someError
-    }
-    let didError = false
-    try {
-      await compose(() => {
-        doThrow()
-        return Promise.resolve()
-      })({})
-    } catch (error) {
-      didError = true
-      expect(error).toBe(someError)
-    }
-    expect(didError).toBe(true)
-  })
-  it('exec', async () => {
-    const mws: Middleware<any>[] = [
+})
+
+describe('exec', () => {
+  describe('dynamic middleware execution', () => {
+    it('should execute middleware array with dynamic additions', async () => {
+      const middlewares: Middleware<any>[] = [
         async (ctx, next) => {
-          ctx.value += 1
+          ctx.value += '1'
           await next()
-          ctx.value += 6
+          ctx.value += '6'
         },
         async (ctx, next) => {
-          ctx.value += 2
-          mws.push(async (ctx, next) => {
-            ctx.value += 3
+          ctx.value += '2'
+          // Dynamically add middleware during execution
+          middlewares.push(async (ctx, next) => {
+            ctx.value += '3'
             await next()
-            ctx.value += 4
+            ctx.value += '4'
           })
           await next()
-          ctx.value += 5
+          ctx.value += '5'
         },
-      ],
-      ctx = { value: '' },
-      last = async (ctx: any, next: any) => {
+      ]
+
+      const context = { value: '' }
+      const lastMiddleware = async (ctx: any, next: any) => {
         ctx.value += 'L'
         return next()
       }
-    await exec(mws, ctx, last)
-    expect(ctx.value).toBe('123L456')
-  })
-  it('exec shrink', async () => {
-    const mws: Middleware<any>[] = [
+
+      await exec(middlewares, context, lastMiddleware)
+      assert.strictEqual(context.value, '123L456', 'Should handle dynamic middleware addition')
+    })
+
+    it('should handle middleware array modifications during execution', async () => {
+      const middlewares: Middleware<any>[] = [
         async (ctx, next) => {
-          ctx.value += 1
+          ctx.value += '1'
           await next()
-          ctx.value += 6
+          ctx.value += '6'
         },
         async (ctx, next) => {
-          mws.splice(1, 1, void 0 as any) // remove self
-          ctx.value += 2
+          middlewares.splice(1, 1, void 0 as any) // Remove self
+          ctx.value += '2'
           await next()
-          ctx.value += 5
+          ctx.value += '5'
         },
         async (ctx, next) => {
-          ctx.value += 3
+          ctx.value += '3'
           await next()
-          ctx.value += 4
+          ctx.value += '4'
         },
         (ctx: any, next: any) => {
           ctx.value += 'L'
           return next()
         },
-      ],
-      ctx = { value: '' }
-    await exec(mws, ctx)
-    expect(ctx.value).toBe('123L456')
+      ]
+
+      const context = { value: '' }
+      await exec(middlewares, context)
+
+      assert.strictEqual(context.value, '123L456', 'Should handle middleware removal during execution')
+    })
   })
-  it('execute by arity', async () => {
-    let plan = 0
-    await executeByArity(
-      'func',
-      undefined,
-      {
-        func() {
-          plan++
+})
+
+describe('executeByArity', () => {
+  describe('function execution based on parameter count', () => {
+    it('should execute function and call next when function exists', async () => {
+      let executionPlan = 0
+      const usableObject = {
+        testFunction() {
+          executionPlan++
           return Promise.resolve()
         },
-      },
-      {},
-      () => {
-        plan++
       }
-    )
-    expect(plan).toBe(2)
-    await executeByArity(
-      'missing',
-      undefined,
-      {
-        func() {
-          plan++
+
+      await executeByArity('testFunction', undefined, usableObject, {}, () => {
+        executionPlan++
+      })
+
+      assert.strictEqual(executionPlan, 2, 'Should execute both function and next')
+    })
+
+    it('should only call next when function does not exist', async () => {
+      let executionPlan = 0
+      const usableObject = {
+        someOtherFunction() {
+          executionPlan++
           return Promise.resolve()
         },
-      },
-      {},
-      () => {
-        plan++
       }
-    )
-    expect(plan).toBe(3)
+
+      await executeByArity('nonExistentFunction', undefined, usableObject, {}, () => {
+        executionPlan++
+      })
+
+      assert.strictEqual(executionPlan, 1, 'Should only execute next when function missing')
+    })
   })
 })

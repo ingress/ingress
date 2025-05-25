@@ -17,7 +17,9 @@
       "recommended": false,
       "correctness": {
         "noInvalidUseBeforeDeclaration": "off",
-        "noUnusedVariables": "error",
+        "noUnusedVariables": {
+          "level": "off"
+        },
         "useImportExtensions": {
           "level": "error",
           "options": {
@@ -38,6 +40,9 @@
     }
   },
   "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
     "formatter": {
       "jsxQuoteStyle": "double",
       "quoteProperties": "asNeeded",

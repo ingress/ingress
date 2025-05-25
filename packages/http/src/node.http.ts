@@ -33,11 +33,11 @@ export class Http {
   initializeContext(ctx: CoreContext): HttpContext<any> {
     return ctx as HttpContext<any>
   }
+
   async start(app: Ingress<HttpContext<any>>, next: NextFn): Promise<{ http: Http }> {
     this.options.clientErrorHandler = this.options.clientErrorHandler?.bind(app)
     let root = app.container.findProvidedSingleton(Http)
     if (!root) {
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
       root = this
       app.container.registerSingleton({ provide: Http, useValue: this })
       this.server = new HttpServer()

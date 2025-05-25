@@ -20,6 +20,7 @@ const Ingress = module.Ingress,
   Injectable = module.Injectable,
   ModuleContainer = module.ModuleContainer,
   ContextToken = module.ContextToken,
+  DependencyCollectorList = module.DependencyCollectorList,
   createContainer = module.createContainer,
   def = module.default
 
@@ -39,6 +40,7 @@ export {
   Injectable,
   ModuleContainer,
   ContextToken,
+  DependencyCollectorList,
   createContainer,
   forwardRef,
   forTest,

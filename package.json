@@ -7,13 +7,13 @@
     "tsc-build": "./scripts/tsc.mjs"
   },
   "workspaces": [
+    "packages/reflect-annotations",
+    "packages/types",
+    "packages/router-tree-map",
     "packages/core",
     "packages/http",
-    "packages/ingress",
     "packages/router",
-    "packages/router-tree-map",
-    "packages/types",
-    "packages/reflect-annotations"
+    "packages/ingress"
   ],
   "packageManager": "npm@11.4.0",
   "engines": {
@@ -23,14 +23,14 @@
   "scripts": {
     "update": "$npm_execpath exec syncpack update",
     "check:deps": "$npm_execpath exec syncpack list-mismatches",
-    "check:format": "$npm_execpath exec biome format --write"
+    "check:format": "$npm_execpath exec biome format --write --vcs-use-ignore-file"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@lerna-lite/publish": "^4.1.2",
     "@lerna-lite/version": "^4.1.2",
     "@swc/core": "^1.11.24",
-    "@types/node": "22.15.18",
+    "@types/node": "22.15.21",
     "strip-json-comments": "^5.0.2",
     "syncpack": "^13.0.4",
     "typescript": "5.8.3"

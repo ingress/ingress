@@ -7,13 +7,10 @@
   "types": "./lib/cjs/index.d.ts",
   "exports": {
     ".": {
-      "node": {
-        "import": "./index.mjs",
-        "require": "./lib/cjs/index.js",
-        "default": "./lib/cjs/index.js",
-        "types": "./lib/cjs/index.d.ts"
-      },
-      "default": "./lib/cjs/index.js"
+      "import": "./index.mjs",
+      "require": "./lib/cjs/index.js",
+      "default": "./lib/cjs/index.js",
+      "types": "./lib/cjs/index.d.ts"
     },
     "./package.json": "./package.json"
   },
@@ -25,10 +22,9 @@
     "lib"
   ],
   "scripts": {
-    "test": "vitest run src",
-    "cov": "npm test -- --coverage && open coverage/index.html",
-    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
-    "build": "shx rm -rf lib && $npm_execpath run build:cjs"
+    "test": "node --test --enable-source-maps",
+    "build:cjs": "tsc",
+    "build": "rm -rf lib && $npm_execpath run build:cjs"
   },
   "dependencies": {}
 }

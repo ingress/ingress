@@ -13,12 +13,7 @@ install: <code>npm i ingress</code><br><br>a utility for building applications u
   <a href="https://github.com/ingress/ingress/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/ingress.svg" alt="License"></a>
 </p>
 
-
-
 ## Getting started (web):
-
-
-
 
 ```typescript
 //@filename: greet.ts

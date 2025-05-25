@@ -29,10 +29,9 @@
   ],
   "scripts": {
     "build": "rm -rf lib && tsc",
-    "test": "$npm_execpath run build && node --test"
+    "test": "$npm_execpath run build && node --test --enable-source-maps"
   },
   "devDependencies": {
-    "typescript": "^5.8.3",
-    "@ingress/workspace": "file:../"
+    "typescript": "^5.8.3"
   }
 }

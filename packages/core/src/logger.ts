@@ -1,20 +1,22 @@
+import * as console from "node:console";
+
 export interface Logger {
-  log(...args: any[]): void
-  info(...args: any[]): void
-  error(...args: any[]): void
-  warn(...args: any[]): void
+  log(...args: any[]): void;
+  info(...args: any[]): void;
+  error(...args: any[]): void;
+  warn(...args: any[]): void;
 }
 export class Logger implements Logger {
   log(...args: any[]): void {
-    console.log(...args)
+    console.log(...args);
   }
   info(...args: any[]): void {
-    console.log(...args)
+    console.log(...args);
   }
   error(...args: any[]): void {
-    console.error(...args)
+    console.error(...args);
   }
   warn(...args: any[]): void {
-    console.warn(...args)
+    console.warn(...args);
   }
 }

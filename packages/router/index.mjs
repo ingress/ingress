@@ -7,7 +7,17 @@ const {
   RouteData,
   Router,
   readUrl,
-  routeArgumentParserRegistry,
+  ControllerCollector,
+  kIngressRouterParse,
+  kIngressRouterPick,
 } = require('./lib/cjs/router.js')
 
-export { Route, RouteData, Router, readUrl, routeArgumentParserRegistry }
+export {
+  Route,
+  RouteData,
+  Router,
+  readUrl,
+  kIngressRouterParse,
+  kIngressRouterPick,
+  ControllerCollector,
+}

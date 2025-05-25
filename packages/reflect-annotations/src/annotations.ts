@@ -16,7 +16,7 @@ export interface AnnotationFactory<T = any> {
 export type Target = any
 export type MaybeAnnotationFactory = any
 export function isAnnotationFactory(
-  thing: MaybeAnnotationFactory
+  thing: MaybeAnnotationFactory,
 ): thing is (...args: any[]) => Annotation<any> {
   return typeof thing === 'function' && thing[AnnotationFactory] === true
 }
@@ -25,7 +25,7 @@ export function isAnnotationInstance(annotation: any): annotation is Annotation<
   return Boolean(
     annotation &&
       (typeof annotation === 'object' || typeof annotation === 'function') &&
-      'annotationInstance' in annotation
+      'annotationInstance' in annotation,
   )
 }
 
@@ -36,7 +36,7 @@ export function getAnnotations(target: Target, key?: string | symbol): Array<any
 export function setAnnotations(
   target: Target,
   key?: string | symbol,
-  annotations?: Array<any>
+  annotations?: Array<any>,
 ): void {
   Reflect.defineMetadata(ANNOTATIONS, annotations, target, key as any)
 }
@@ -49,7 +49,7 @@ export function getParameterAnnotations(target: Target, key: string | symbol): A
 export function setParameterAnnotations(
   target: Target,
   key: string | symbol,
-  annotations: Array<any>
+  annotations: Array<any>,
 ): void {
   Reflect.defineMetadata(PARAMETER_ANNOTATIONS, annotations, target, key)
 }
@@ -67,7 +67,7 @@ export type Annotation<T = any> = ClassDecorator &
   ParameterDecorator & { annotationInstance: T }
 
 export function createAnnotationFactory<T extends new (...args: any[]) => InstanceType<T>>(
-  Type: T
+  Type: T,
 ): (...args: ConstructorParameters<T>) => Annotation<InstanceType<T>> {
   return Object.assign(
     function (...args: ConstructorParameters<T>) {
@@ -75,7 +75,7 @@ export function createAnnotationFactory<T extends new (...args: any[]) => Instan
         annotation = (
           target: any,
           key?: string | symbol,
-          descriptorOrParamIndex?: PropertyDescriptor | number
+          descriptorOrParamIndex?: PropertyDescriptor | number,
         ) => {
           if (key && typeof descriptorOrParamIndex === 'number') {
             const annotations = getParameterAnnotations(target, key)
@@ -90,6 +90,6 @@ export function createAnnotationFactory<T extends new (...args: any[]) => Instan
       annotation.annotationInstance = annotationInstance
       return annotation
     },
-    { [AnnotationFactory]: true }
+    { [AnnotationFactory]: true },
   )
 }

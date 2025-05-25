@@ -11,43 +11,30 @@
   "types": "./lib/cjs/index.d.ts",
   "exports": {
     ".": {
-      "import": "./index.mjs",
+      "import": "./lib/esm/index.js",
       "require": "./lib/cjs/index.js",
-      "types": "./lib/cjs/index.d.ts"
+      "types": "./lib/cjs/index.d.ts",
+      "default": "./lib/cjs/index.js"
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "lib",
-    "!**/*.spec.js"
-  ],
+  "files": [],
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
-    "test": "vitest run src",
-    "cov": "vitest run src --coverage",
-    "ocov": "open coverage/index.html",
-    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
-    "build": "shx rm -rf lib && $npm_execpath run build:cjs"
+    "build": "rm -rf lib && tsc",
+    "test": "node --test --enable-source-maps"
   },
-  "keywords": [
-    "annotations",
-    "decorators",
-    "class decorators",
-    "class annotations",
-    "annotation",
-    "decorator",
-    "class reflection",
-    "reflection"
-  ],
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
   "peerDependencies": {
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@types/node": "^18.16.3",
-    "reflect-metadata": "^0.1.13"
+    "@types/node": "^20.10.0",
+    "reflect-metadata": "0.2.2",
+    "@ingress/workspace": "file:../",
+    "typescript": "5.8.3"
   }
 }

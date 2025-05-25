@@ -9,7 +9,7 @@ export interface IngressRequest<T, Body = unknown> {
   context: T
   id: string
   readonly url: string
-  toRequest(): Request
+  asRequest(): Request
   json<T = unknown>(): Promise<T>
   text(): Promise<string>
   arrayBuffer(): Promise<ArrayBuffer>
@@ -51,9 +51,9 @@ export interface HttpContext<T extends CoreContext> extends CoreContext {
   app: Ingress<T, { http: Http }>
 }
 
-export type ParseOptions = {
+export type ParseOptions<T = any> = {
   sizeLimit?: number
-  deserializer?: <T>(body: string) => T | Promise<T>
+  deserializer?: (body: string) => T | Promise<T>
 }
 
 export type ParseMode = 'string' | 'stream' | 'buffer' | 'json'

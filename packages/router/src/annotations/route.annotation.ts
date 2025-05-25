@@ -1,6 +1,7 @@
 import { createAnnotationFactory, Annotation } from 'reflect-annotations'
 import type { RouterContext } from '../router.js'
 import type { NextFn } from '@ingress/core'
+import { kIngressRouterParse, kIngressRouterPick } from '../handler.js'
 
 const trim = (x: string) => x.replace(/^\/+|\/+$/g, ''),
   result = (x: string) => '/' + trim(x),
@@ -55,7 +56,7 @@ export interface ParamAnnotationFactory {
  * @public
  */
 export interface ParamAnnotationBase {
-  pick(context: RouterContext): any
+  [kIngressRouterPick](context: RouterContext, token?: any): any
 }
 
 export class InjectParamAnnotation implements ParamAnnotationBase {
@@ -71,13 +72,23 @@ export class InjectParamAnnotation implements ParamAnnotationBase {
       this.transient = true
     }
   }
-  pick(context: RouterContext) {
-    let container = context.scope
-    if (this.transient) {
-      container = context.app.container.createChildWithContext(context)
-    }
 
-    return container.get(this.token)
+  [kIngressRouterParse](x: any) {
+    return x
+  }
+  [kIngressRouterPick](context: RouterContext) {
+    let token = this.token
+    if (!token) {
+      const idx = context.route?.meta?.parameterAnnotations?.findIndex((x) => x === this)
+      if (typeof idx === 'number') {
+        token = context.route?.meta?.types?.parameters?.[idx]
+      }
+    }
+    const container = this.transient
+      ? context.app.container.createChildWithContext(context)
+      : context.scope
+
+    return container.get(token)
   }
 }
 
@@ -86,7 +97,7 @@ export class InjectParamAnnotation implements ParamAnnotationBase {
  */
 export class BodyParamAnnotation implements ParamAnnotationBase {
   constructor(private keyName?: string) {}
-  pick(context: RouterContext): any {
+  [kIngressRouterPick](context: RouterContext): any {
     return this.keyName
       ? context.request.body && (context.request.body as any)[this.keyName]
       : context.request.body
@@ -98,7 +109,7 @@ export class BodyParamAnnotation implements ParamAnnotationBase {
  */
 export class PathParamAnnotation implements ParamAnnotationBase {
   constructor(private keyName?: string) {}
-  pick(context: RouterContext): any {
+  [kIngressRouterPick](context: RouterContext): any {
     const routeParams = context.route?.params || []
     if (this.keyName) {
       for (const [key, val] of routeParams) {
@@ -117,7 +128,10 @@ export class PathParamAnnotation implements ParamAnnotationBase {
  */
 export class QueryParamAnnotation implements ParamAnnotationBase {
   constructor(private searchParam: string) {}
-  pick(context: RouterContext): any {
+  [kIngressRouterPick](context: RouterContext): any {
+    if (this.searchParam === undefined) {
+      return Object.fromEntries(context.request?.searchParams)
+    }
     return context.request?.searchParams.get(this.searchParam)
   }
 }
@@ -127,7 +141,7 @@ export class QueryParamAnnotation implements ParamAnnotationBase {
  */
 export class HeaderParamAnnotation implements ParamAnnotationBase {
   constructor(private paramName: string) {}
-  pick(context: RouterContext): any {
+  [kIngressRouterPick](context: RouterContext): any {
     return context.request.headers[this.paramName.toLowerCase()]
   }
 }

@@ -24,27 +24,25 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
     return 'Ingress'
   }
   static [_hosts] = new WeakMap<any, Ingress<any>>()
-  private _middleware: ContinuationMiddleware<T> | null = null
-
   public readyState: AppState = AppState.New
   public container!: ModuleContainer
   public driver: any = null
 
-  private contextBase: Partial<T> | undefined = undefined
-  private mw: UsableMiddleware<T>[] = []
-  private setups: (Startable | undefined)[] = []
-  private teardowns: (Stoppable | undefined)[] = []
-  private setupCtx: (ContextInitializer<T> | undefined)[] = []
+  #middleware: ContinuationMiddleware<T> | null = null
+  #contextBase: Partial<T> | undefined = undefined
+  #mw: UsableMiddleware<T>[] = []
+  #setups: (Startable | undefined)[] = []
+  #teardowns: (Stoppable | undefined)[] = []
+  #setupCtx: (ContextInitializer<T> | undefined)[] = []
 
   constructor(options?: { context?: any; container?: ModuleContainer }) {
-    this.contextBase = options?.context
+    this.#contextBase = options?.context
     this.container = options?.container || new ModuleContainer()
   }
 
   initializeContext(ctx: CoreContext): T {
-    ctx = ctx || Object.create(this.contextBase || null)
-    for (const init of this.setupCtx) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    ctx = ctx || Object.create(this.#contextBase || null)
+    for (const init of this.#setupCtx) {
       ctx = init!.initializeContext(ctx)
     }
     //SOMEDAY use proxy to monitor dynamic properties during dev?
@@ -52,15 +50,15 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
   }
 
   get middleware(): ContinuationMiddleware<T> {
-    if (this._middleware) {
-      return this._middleware as ContinuationMiddleware<T>
+    if (this.#middleware) {
+      return this.#middleware as ContinuationMiddleware<T>
     }
     function executor(u: UsableMiddleware<T>, context: T, next: NextFn) {
       return u.middleware(context, next)
     }
     const prioritized: [PriorityOptions, UsableMiddleware<T>][] = [],
       sorted: UsableMiddleware<T>[] = []
-    for (const mw of this.mw) {
+    for (const mw of this.#mw) {
       if (!mw) continue
       const priority = DependencyCollectorList.priorities.get(mw.constructor)
       if (priority) prioritized.push([priority, mw])
@@ -74,9 +72,7 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
       const unpicked = prioritized.slice()
       for (let j = 0; j < unpicked.length; j++) {
         const [{ priority }, mw] = unpicked[j]
-        let idx = sorted.findIndex(
-          (x) => x instanceof resolveForwardRef(priority.before || priority.after)
-        )
+        let idx = sorted.findIndex((x) => x instanceof resolveForwardRef(priority.before || priority.after))
         if (idx === -1) continue
         if (priority.after) idx += 1
         l--
@@ -85,8 +81,8 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
       }
     }
 
-    this.setupCtx = this.setupCtx.filter((x) => x)
-    return (this._middleware = (ctx, next) => {
+    this.#setupCtx = this.#setupCtx.filter((x) => x)
+    return (this.#middleware = (ctx, next) => {
       ctx = this.initializeContext(ctx as T)
       return exec(sorted, ctx, next, executor)
     })
@@ -100,62 +96,61 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
     if (!host) {
       throw new Error("Unable to unUse an addon that has not been use'd")
     }
-    ;(['setups', 'teardowns', 'mw', 'setupCtx'] as const).forEach((name) => {
-      const list: any[] = host[name],
-        idx = list.indexOf(usable)
+    for (const list of [host.#mw, host.#setups, host.#teardowns, host.#setupCtx]) {
+      const idx = list.indexOf(usable)
       if (~idx) list.splice(idx, 1, void 0)
-    })
+    }
     Ingress[_hosts].delete(usable)
   }
 
   public async finalize(forwardRefs: Iterable<any>): Promise<void> {
-    const setups = this.setups.slice()
+    const setups = this.#setups.slice()
     for (const forward of forwardRefs) {
       this.use(this.container.get(forward))
     }
-    const finalSetups = this.setups.filter((x) => !setups.includes(x))
+    const finalSetups = this.#setups.filter((x) => !setups.includes(x))
 
     await addDecorations(finalSetups, this as any, void 0)
   }
 
   public use<Extensions = EmptyExtend, NewDecorations = EmptyExtend>(
-    usable: StartAndExtend<Extensions, NewDecorations> & Partial<Usable<T, Extensions>>
+    usable: StartAndExtend<Extensions, NewDecorations> & Partial<Usable<T, Extensions>>,
   ): Ingress<T & Extensions, D & NewDecorations>
   public use<Extensions = EmptyExtend>(
-    usable: ContextInitializer<Extensions> & Partial<Usable<T, Extensions>>
+    usable: ContextInitializer<Extensions> & Partial<Usable<T, Extensions>>,
   ): Ingress<T & Extensions, D>
   public use<NewDecorations = EmptyExtend>(
-    usable: Startable<NewDecorations> & Partial<Usable<T, EmptyExtend>>
+    usable: Startable<NewDecorations> & Partial<Usable<T, EmptyExtend>>,
   ): Ingress<T, D & NewDecorations>
   public use(usable: Partial<Usable<T, EmptyExtend>>): Ingress<T, D>
   public use(usable: UsableMiddleware<T>['middleware']): Ingress<T, D>
 
   public use<Extensions extends CoreContext, Decorations>(
-    app: Ingress<Extensions, Decorations>
+    app: Ingress<Extensions, Decorations>,
   ): Ingress<T & Extensions, D & Decorations>
 
   public use<U>(
-    annotation: Annotation<U>
+    annotation: Annotation<U>,
   ): U extends StartAndExtend<infer Extensions, infer NewDecorations>
     ? Ingress<T & Extensions, D & NewDecorations>
     : U extends ContextInitializer<infer Extensions>
-    ? Ingress<T & Extensions, D>
-    : U extends Startable<infer NewDecorations>
-    ? Ingress<T, D & NewDecorations>
-    : Ingress<T, D>
+      ? Ingress<T & Extensions, D>
+      : U extends Startable<infer NewDecorations>
+        ? Ingress<T, D & NewDecorations>
+        : Ingress<T, D>
 
   public use<U>(
-    factory: AnnotationFactory<U>
+    factory: AnnotationFactory<U>,
   ): U extends StartAndExtend<infer Extensions, infer NewDecorations>
     ? Ingress<T & Extensions, D & NewDecorations>
     : U extends ContextInitializer<infer Extensions>
-    ? Ingress<T & Extensions, D>
-    : U extends Startable<infer NewDecorations>
-    ? Ingress<T, D & NewDecorations>
-    : Ingress<T, D>
+      ? Ingress<T & Extensions, D>
+      : U extends Startable<infer NewDecorations>
+        ? Ingress<T, D & NewDecorations>
+        : Ingress<T, D>
 
   public use<Extensions = EmptyExtend, Decorations = EmptyExtend>(
-    usable: Addon<T, Extensions, Decorations>
+    usable: Addon<T, Extensions, Decorations>,
   ): any {
     if (AppState.Started & this.readyState || AppState.Running & this.readyState) {
       throw new Error('Already started, Cannot "use" now')
@@ -166,20 +161,20 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
     }
     if (guards.hasMiddleware<T>(usable)) {
       if (guards.checkUsableMiddleware<T>(usable)) {
-        this.mw.push(usable)
+        this.#mw.push(usable)
         used = true
       }
     }
     if (guards.isStartable(usable)) {
-      this.setups.push(usable)
+      this.#setups.push(usable)
       used = true
     }
     if (guards.isStoppable(usable)) {
-      this.teardowns.push(usable)
+      this.#teardowns.push(usable)
       used = true
     }
     if (guards.isContextInitializer<T>(usable)) {
-      this.setupCtx.push(usable)
+      this.#setupCtx.push(usable)
       used = true
     }
     if (isAnnotationFactory(usable)) {
@@ -188,7 +183,7 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
     if (typeof usable === 'function') {
       usable = { middleware: usable } as any
       if (guards.checkUsableMiddleware<T>(usable)) {
-        this.mw.push(usable)
+        this.#mw.push(usable)
         used = true
       }
     }
@@ -200,7 +195,6 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
   }
 
   public async start(app?: Ingress<any, any>, next?: NextFn): Promise<Ingress<T, never> & D> {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
     app ||= this
     const isRoot = app === this
     if (isRoot && !guards.canStart(app.readyState)) {
@@ -213,20 +207,20 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
     }
 
     this.readyState |= AppState.Starting
-    await addDecorations(this.setups, app, next)
+    await addDecorations(this.#setups, app, next)
     this.readyState |= AppState.Started
     if (!this.#initializer) this.readyState |= AppState.Running
     return this as any
   }
 
   #initializer: Func | null = null
-  registerDriver(driver: any, init: Func) {
+  public registerDriver(driver: any, init: Func) {
     if (this.#initializer) throw new Error('Driver already registered')
     this.#initializer = init
     this.driver = driver
   }
 
-  async run(): Promise<Ingress<T, never> & D> {
+  public async run(): Promise<Ingress<T, never> & D> {
     if (AppState.Stopped & this.readyState || AppState.Stopping & this.readyState) {
       throw new Error('Cannot run a stopped app')
     }
@@ -256,7 +250,7 @@ class Ingress<T extends CoreContext, D = EmptyExtend> {
     }
     this.readyState |= AppState.Stopping
     try {
-      await exec(this.teardowns, app, next, executeByArity.bind(null, 'stop', undefined))
+      await exec(this.#teardowns, app, next, executeByArity.bind(null, 'stop', undefined))
     } finally {
       this.readyState = AppState.New
       this.readyState |= AppState.Stopped
@@ -275,11 +269,9 @@ async function addDecorations(setups: (Startable | undefined)[], app: Ingress<an
   }
 }
 
-const isIngress = (x: any): x is Ingress<any, any> =>
-  Object.prototype.toString.call(x) === '[object Ingress]'
+const isIngress = (x: any): x is Ingress<any, any> => Object.prototype.toString.call(x) === '[object Ingress]'
 
 /** Core Objects */
-/** Main and Factory Exports */
 export { Ingress, AppState, Logger }
 export default ingress
 export function ingress<T extends CoreContext>(...args: ConstructorParameters<typeof Ingress>) {
@@ -302,6 +294,7 @@ export {
   ModuleContainer,
   ContextToken,
   DependencyCollector,
+  DependencyCollectorList,
   createContainer,
   forwardRef,
   forTest,
