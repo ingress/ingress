@@ -1,23 +1,15 @@
 {
-  "name": "ingress",
+  "name": "@ingress/zod",
   "version": "1.0.0-beta.17",
-  "description": "Composable javascript applications",
+  "description": "Zod integration helpers for Ingress",
   "type": "commonjs",
   "exports": {
     ".": {
       "node": {
         "import": "./index.mjs",
-        "require": "./lib/cjs/ingress.js",
-        "types": "./lib/cjs/ingress.d.ts",
-        "default": "./lib/cjs/ingress.js"
-      }
-    },
-    "./typebox": {
-      "import": "./lib/esm/typebox.js",
-      "require": "./lib/cjs/typebox.js",
-      "types": {
-        "import": "./lib/esm/typebox.d.ts",
-        "require": "./lib/cjs/typebox.d.ts"
+        "require": "./lib/cjs/index.js",
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
       }
     },
     "./package.json": "./package.json"
@@ -31,7 +23,7 @@
     "build": "rm -rf lib && tsc"
   },
   "repository": {
-    "directory": "packages/ingress",
+    "directory": "packages/zod",
     "type": "git",
     "url": "ssh://git@github.com/ingress/ingress.git"
   },
@@ -41,22 +33,22 @@
   "license": "MIT",
   "keywords": [
     "typescript",
-    "server",
-    "http",
-    "application",
-    "framework",
-    "composable",
-    "declarative",
-    "middleware"
+    "zod",
+    "validation",
+    "schema",
+    "ingress"
   ],
   "dependencies": {
     "@ingress/core": "1.0.0-beta.17",
-    "@ingress/http": "1.0.0-beta.17",
     "@ingress/router": "1.0.0-beta.17",
-    "reflect-metadata": "0.2.2"
+    "@ingress/types": "1.0.0-beta.17",
+    "reflect-annotations": "4.0.0-beta.2"
+  },
+  "peerDependencies": {
+    "zod": "3.25.30"
   },
   "devDependencies": {
-    "@sinclair/typebox": "0.34.33",
+    "zod": "3.25.30",
     "@hapi/shot": "6.0.1"
   }
 }

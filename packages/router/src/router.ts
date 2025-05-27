@@ -3,7 +3,13 @@ import { reflectAnnotations } from 'reflect-annotations'
 import type { Readable } from 'node:stream'
 import type { HttpMethod } from 'router-tree-map'
 import { Router as RouteMap } from 'router-tree-map'
-import { createHandler, kIngressRouterParse, kIngressRouterPick } from './handler.js'
+import {
+  createHandler,
+  kIngressRouterParse,
+  kIngressRouterPick,
+  kIngressRouterParserKind,
+  kIngressRouterSchema,
+} from './handler.js'
 import { ControllerCollector, ControllerDependencyCollector } from './annotations/controller.annotation.js'
 import type { RouteMetadata, PathMap } from './route-resolve.js'
 import { resolvePaths } from './route-resolve.js'
@@ -12,7 +18,13 @@ import type { Func } from './type-resolver.js'
 import { TypeResolver } from './type-resolver.js'
 import type { Type } from '@ingress/core'
 
-export { ControllerDependencyCollector, kIngressRouterParse, kIngressRouterPick }
+export {
+  ControllerDependencyCollector,
+  kIngressRouterParse,
+  kIngressRouterPick,
+  kIngressRouterParserKind,
+  kIngressRouterSchema,
+}
 export { Route } from './annotations/route.annotation.js'
 
 export { ControllerCollector } from './annotations/controller.annotation.js'

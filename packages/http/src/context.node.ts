@@ -54,14 +54,15 @@ export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> 
     if ((this.raw.socket as any)?.encrypted) {
       this.protocol = 'https:'
     }
-    let port = String(this.raw.socket.localPort || process.env.PORT || 80)
+    let port = String(this.raw.socket.localPort || process.env.PORT || 80).trim()
     if (port === '443' || port === '80') {
       port = ''
     } else {
       port = ':' + port
     }
 
-    // Fix: Handle undefined/null host header properly
+    // FIXME: add allowlist of hosts, assumes proxy secures the host
+    // Avoid downstream ssrf, internal redirects, etc
     const host = this.raw.headers.host || 'localhost'
     const hostWithPort = host.endsWith(port) ? host : host + port
 
@@ -129,13 +130,11 @@ export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> 
       method,
       headers,
     }
-
-    // Add body and duplex option if needed
     if (body) {
       requestInit.body = body as any
-      ;(requestInit as any).duplex = 'half' // Required for Request with body
+      // https://github.com/nodejs/node/issues/46221
+      Object(requestInit).duplex = 'half'
     }
-
     return new Request(url, requestInit)
   }
 }

@@ -7,6 +7,8 @@ import type { TypeResolver } from './type-resolver.js'
 
 export const kIngressRouterParse = Symbol.for('ingress:router:parse')
 export const kIngressRouterPick = Symbol.for('ingress:router:pick')
+export const kIngressRouterParserKind = Symbol.for('ingress:router:parser')
+export const kIngressRouterSchema = Symbol.for('ingress:router:schema')
 
 function isPrimitive(value: any) {
   return !(

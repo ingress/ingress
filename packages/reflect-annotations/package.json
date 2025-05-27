@@ -1,6 +1,6 @@
 {
   "name": "reflect-annotations",
-  "version": "4.0.0-beta.1",
+  "version": "4.0.0-beta.2",
   "description": "Set and inspect annotation metadata on JavaScript classes and methods",
   "repository": {
     "type": "git",
@@ -11,14 +11,19 @@
   "types": "./lib/cjs/index.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/esm/index.js",
-      "require": "./lib/cjs/index.js",
-      "types": "./lib/cjs/index.d.ts",
-      "default": "./lib/cjs/index.js"
+      "node": {
+        "import": "./index.mjs",
+        "require": "./lib/cjs/index.js",
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      }
     },
     "./package.json": "./package.json"
   },
-  "files": [],
+  "files": [
+    "index.mjs",
+    "lib/**/*.{js,map,d.ts}"
+  ],
   "engines": {
     "node": ">=18.0.0"
   },
@@ -29,12 +34,11 @@
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
   "peerDependencies": {
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "0.2.2"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
+    "@types/node": "22.15.21",
     "reflect-metadata": "0.2.2",
-    "@ingress/workspace": "file:../",
-    "typescript": "5.8.3"
+    "typescript": "^5.8.3"
   }
 }

@@ -1,58 +1,50 @@
 import { describe, it, before } from 'node:test'
 import assert from 'node:assert'
-import { Route, ingress } from './ingress.js'
-import type { Static, StaticDecode } from './typebox.js'
+import { Route, ingress } from 'ingress'
 import { inject } from '@hapi/shot'
-import { FormatRegistry, Type } from './typebox.js'
+import { z, boundary } from './index.js'
 import { ING_BAD_REQUEST } from '@ingress/types'
 
-describe('boundary types with typebox', () => {
+describe('boundary types with zod', () => {
   let app: ReturnType<typeof ingress>
 
   before(async () => {
-    const RequiredString = Type.Required(Type.String())
-    type Input = Static<typeof Input>
-    const Input = Type.Boundary(Type.Object({ test: RequiredString }))
+    type Input = z.infer<typeof InputSchema>
+    const InputSchema = z.object({ test: z.string().min(1) })
+    const Input = boundary(InputSchema)
 
-    type Decodable = StaticDecode<typeof Decodable>
-    const Decodable = Type.Boundary(
-      Type.Object({
-        test: Type.Transform(
-          Type.String({
-            format: 'date-time',
-          }),
-        )
-          .Decode((raw: string) => new Date(Date.parse(raw)))
-          .Encode((raw: Date) => raw.toISOString()),
-      }),
-    )
+    type Decodable = z.infer<typeof DecodableSchema>
+    const DecodableSchema = z.object({
+      test: z.string().transform((val: string) => new Date(val)),
+    })
+    const Decodable = boundary(DecodableSchema)
 
     async function getSession(fauxId?: string) {
       return { userId: fauxId }
     }
 
-    type CustomParse = Static<typeof CustomParse>
-    const CustomParse = Type.Boundary(
-      Type.Object({ userId: Type.String({ minLength: 1 }) }),
-      async (raw, check) => {
+    type CustomParse = z.infer<typeof CustomParseSchema>
+    const CustomParseSchema = z.object({ userId: z.string().min(1) })
+    const CustomParse = boundary(CustomParseSchema, async (raw: unknown, schema: any) => {
+      const token = raw ? String(raw).replace(/Bearer /i, '') : undefined,
+        sessionResult = await getSession(token),
+        result = schema.safeParse(sessionResult)
+      if (result.success) {
+        return result.data
+      }
+      throw new ING_BAD_REQUEST('Invalid session')
+    })
+
+    type CustomPick = z.infer<typeof CustomPickSchema>
+    const CustomPickSchema = z.object({ userId: z.string().min(1) })
+    const CustomPick = boundary(
+      CustomPickSchema,
+      async (raw: unknown, schema: any) => {
         const token = raw ? String(raw).replace(/Bearer /i, '') : undefined,
           sessionResult = await getSession(token),
-          passed = check.Check(sessionResult)
-        if (passed) {
-          return check.Decode(sessionResult)
-        }
-        throw new ING_BAD_REQUEST('Invalid session')
-      },
-    )
-    type CustomPick = Static<typeof CustomParse>
-    const CustomPick = Type.Boundary(
-      Type.Object({ userId: Type.String({ minLength: 1 }) }),
-      async (raw, check) => {
-        const token = raw ? String(raw).replace(/Bearer /i, '') : undefined,
-          sessionResult = await getSession(token),
-          passed = check.Check(sessionResult)
-        if (passed) {
-          return check.Decode(sessionResult)
+          result = schema.safeParse(sessionResult)
+        if (result.success) {
+          return result.data
         }
         throw new ING_BAD_REQUEST('Invalid session')
       },
@@ -100,7 +92,7 @@ describe('boundary types with typebox', () => {
       assert.strictEqual(result.headers['content-type'], 'application/json')
       assert.strictEqual(
         result.payload,
-        '{"error":{"code":"bad_request","message":"Expected required property at /test"}}',
+        '{"error":{"code":"bad_request","message":"Invalid input: expected string, received undefined at /test"}}',
       )
     })
 
@@ -124,25 +116,11 @@ describe('boundary types with typebox', () => {
       assert.strictEqual(result.headers['content-type'], 'application/json')
       assert.strictEqual(
         result.payload,
-        '{"error":{"code":"bad_request","message":"Expected required property at /test"}}',
+        '{"error":{"code":"bad_request","message":"Invalid input: expected string, received undefined at /test"}}',
       )
     })
 
-    it('should throw on unregistered formats requests', async () => {
-      const result = await inject(app.driver, {
-        url: '/decode-test?test=2021-01-01T00:00:00.000Z',
-        method: 'GET',
-      })
-      assert.strictEqual(
-        result.payload,
-        `{"error":{"code":"bad_request","message":"Unknown format 'date-time' at /test"}}`,
-      )
-      assert.strictEqual(result.statusCode, 400)
-    })
-    it('should decode registered formats', async () => {
-      //naive verbatim date-time
-      FormatRegistry.Set('date-time', (raw) => new Date(raw).toISOString() === raw)
-
+    it('should decode valid date strings', async () => {
       const result = await inject(app.driver, {
         url: '/decode-test?test=2021-01-01T00:00:00.000Z',
         method: 'GET',

@@ -1,6 +1,6 @@
 {
   "name": "@ingress/router",
-  "version": "1.0.0-beta.16",
+  "version": "1.0.0-beta.17",
   "keywords": [
     "radix",
     "trie",
@@ -16,31 +16,33 @@
   "types": "./lib/cjs/router.d.ts",
   "exports": {
     ".": {
-      "import": "./index.mjs",
-      "types": "./lib/cjs/router.d.ts",
-      "require": "./lib/cjs/router.js",
-      "default": "./lib/esm/router.js"
+      "node": {
+        "import": "./index.mjs",
+        "require": "./lib/cjs/router.js",
+        "types": "./lib/cjs/router.d.ts",
+        "default": "./lib/cjs/router.js"
+      }
     },
     "./package.json": "./package.json"
   },
   "files": [
-    "lib",
+    "index.mjs",
+    "lib/**/*.{js,map,d.ts}",
     "docs"
   ],
   "scripts": {
     "test": "node --test --enable-source-maps",
-    "build:cjs": "tsc",
-    "build": "rm -rf lib && $npm_execpath run build:cjs"
+    "build": "rm -rf lib && tsc"
   },
   "dependencies": {
-    "@ingress/core": "file://../core",
-    "@ingress/types": "file://../types",
-    "reflect-annotations": "file://../reflect-annotations",
-    "router-tree-map": "file://../router-tree-map",
-    "secure-json-parse": "^2.7.0"
+    "@ingress/core": "1.0.0-beta.17",
+    "@ingress/types": "1.0.0-beta.17",
+    "reflect-annotations": "4.0.0-beta.2",
+    "router-tree-map": "1.0.0-beta.17",
+    "secure-json-parse": "4.0.0"
   },
   "devDependencies": {
-    "@ingress/http": "file://../http",
+    "@ingress/http": "1.0.0-beta.17",
     "@hapi/shot": "6.0.1"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "router-tree-map",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.17",
   "keywords": [
     "radix",
     "trie",
@@ -25,11 +25,12 @@
     "./package.json": "./package.json"
   },
   "files": [
+    "index.mjs",
     "lib/**/*.{js,map,d.ts}"
   ],
   "scripts": {
     "build": "rm -rf lib && tsc",
-    "test": "$npm_execpath run build && node --test --enable-source-maps"
+    "test": "npm run build && node --test --enable-source-maps"
   },
   "devDependencies": {
     "typescript": "^5.8.3"

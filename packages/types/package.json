@@ -1,16 +1,18 @@
 {
   "name": "@ingress/types",
-  "version": "1.0.0-beta.16",
+  "version": "1.0.0-beta.17",
   "license": "MIT",
   "type": "commonjs",
   "main": "./lib/cjs/index.js",
   "types": "./lib/cjs/index.d.ts",
   "exports": {
     ".": {
-      "import": "./index.mjs",
-      "require": "./lib/cjs/index.js",
-      "default": "./lib/cjs/index.js",
-      "types": "./lib/cjs/index.d.ts"
+      "node": {
+        "import": "./index.mjs",
+        "require": "./lib/cjs/index.js",
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -19,12 +21,12 @@
     "node": ">=14"
   },
   "files": [
-    "lib"
+    "index.mjs",
+    "lib/**/*.{js,map,d.ts}"
   ],
   "scripts": {
     "test": "node --test --enable-source-maps",
-    "build:cjs": "tsc",
-    "build": "rm -rf lib && $npm_execpath run build:cjs"
+    "build": "rm -rf lib && tsc"
   },
   "dependencies": {}
 }

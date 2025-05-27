@@ -1,6 +1,6 @@
 {
   "name": "@ingress/http",
-  "version": "1.0.0-beta.16",
+  "version": "1.0.0-beta.17",
   "keywords": [],
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
@@ -10,28 +10,27 @@
   "main": "./lib/cjs/node.http.js",
   "exports": {
     ".": {
-      "import": "./index.mjs",
       "node": {
+        "import": "./index.mjs",
         "require": "./lib/cjs/node.http.js",
+        "types": "./lib/cjs/node.http.d.ts",
         "default": "./lib/cjs/node.http.js"
-      },
-      "default": "./lib/cjs/node.http.js",
-      "types": "./lib/cjs/node.http.d.ts"
+      }
     },
     "./package.json": "./package.json"
   },
   "files": [
-    "lib",
+    "index.mjs",
+    "lib/**/*.{js,map,d.ts}",
     "docs"
   ],
   "scripts": {
     "test": "node --test --enable-source-maps",
-    "build:cjs": "tsc",
-    "build": "rm -rf lib && $npm_execpath run build:cjs"
+    "build": "rm -rf lib && tsc"
   },
   "dependencies": {
-    "@ingress/core": "file://../core",
-    "@ingress/types": "file://../types",
+    "@ingress/core": "1.0.0-beta.17",
+    "@ingress/types": "1.0.0-beta.17",
     "readable-stream": "^4.4.2",
     "secure-json-parse": "4.0.0"
   },
