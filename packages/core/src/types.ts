@@ -38,7 +38,6 @@ export enum AppState {
 
 export type Prettify<T> = {
   [K in keyof T]: T[K]
-  // eslint-disable-next-line @typescript-eslint/ban-types
 } & {}
 
 export type RequireAtLeastOne<T> = {
@@ -56,10 +55,7 @@ export interface Startable<NewDecorations = EmptyExtend> {
   /**
    * Middleware that executes on start of the application, in the order it was registered
    */
-  start: (
-    app: Ingress<any>,
-    next: NextFn
-  ) => ReturnType<NextFn> | Promise<NewDecorations> | NewDecorations
+  start: (app: Ingress<any>, next: NextFn) => ReturnType<NextFn> | Promise<NewDecorations> | NewDecorations
 }
 export interface ContextInitializer<NewContext> {
   /**
@@ -90,7 +86,7 @@ export interface Usable<Context extends CoreContext = CoreContext, NewContext = 
 export type Addon<
   Context extends CoreContext = CoreContext,
   NewContext = EmptyExtend,
-  Decorations = EmptyExtend
+  Decorations = EmptyExtend,
 > =
   | Usable<Context, Decorations>
   | (Ingress<Context & NewContext> & Decorations)
@@ -138,14 +134,20 @@ function checkUsableMiddleware<T>(usable: any): usable is UsableMiddleware<T> {
 }
 
 function canStart(state: AppState) {
-  if (state & AppState.Running || state & AppState.Started || state & AppState.Starting) {
+  if (
+    state & AppState.Running ||
+    state & AppState.Started ||
+    state & AppState.Starting ||
+    state & AppState.Stopping ||
+    state & AppState.Stopped
+  ) {
     return false
   }
   return true
 }
 
 function getDescriptor(obj: any, prop: string) {
-  if (!Reflect.has(obj, prop)) {
+  if (obj === null || typeof obj !== 'object' || !Reflect.has(obj, prop)) {
     return undefined
   }
   let focus = obj,

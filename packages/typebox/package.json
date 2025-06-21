@@ -1,0 +1,51 @@
+{
+  "name": "@ingress/typebox",
+  "version": "1.0.0-beta.17",
+  "description": "TypeBox integration helpers for Ingress",
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "node": {
+        "import": "./index.mjs",
+        "require": "./lib/cjs/index.js",
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.mjs",
+    "lib/**/*.{js,map,d.ts}"
+  ],
+  "scripts": {
+    "test": "npm run build && node --test --enable-source-maps",
+    "build": "rm -rf lib && tsc"
+  },
+  "repository": {
+    "directory": "packages/typebox",
+    "type": "git",
+    "url": "ssh://git@github.com/ingress/ingress.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "license": "MIT",
+  "keywords": [
+    "typescript",
+    "typebox",
+    "validation",
+    "schema",
+    "ingress"
+  ],
+  "dependencies": {
+    "@sinclair/typebox": "0.34.33",
+    "@ingress/core": "1.0.0-beta.17",
+    "@ingress/router": "1.0.0-beta.17",
+    "@ingress/types": "1.0.0-beta.17",
+    "reflect-annotations": "4.0.0-beta.2"
+  },
+  "devDependencies": {
+    "@hapi/shot": "6.0.1"
+  }
+}

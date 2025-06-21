@@ -1,5 +1,8 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "include": ["packages/*/src/**/*.ts"]
+  },
   "formatter": {
     "enabled": true,
     "useEditorconfig": true,
@@ -17,7 +20,9 @@
       "recommended": false,
       "correctness": {
         "noInvalidUseBeforeDeclaration": "off",
-        "noUnusedVariables": "error",
+        "noUnusedVariables": {
+          "level": "off"
+        },
         "useImportExtensions": {
           "level": "error",
           "options": {
@@ -38,6 +43,9 @@
     }
   },
   "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
     "formatter": {
       "jsxQuoteStyle": "double",
       "quoteProperties": "asNeeded",

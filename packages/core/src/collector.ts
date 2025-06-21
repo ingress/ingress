@@ -27,6 +27,9 @@ export interface DependencyCollector {
 export class DependencyCollectorList {
   static priorities = new WeakMap<any, PriorityOptions>()
   public items = new Set<Type<any>>()
+  public clear() {
+    this.items.clear()
+  }
   public collect: DependencyCollector
   constructor() {
     this.collect = (target?: any): any => {

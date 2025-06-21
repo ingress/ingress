@@ -1,17 +1,15 @@
+import { isClass } from '@ingress/core'
 import { Route } from './route.annotation.js'
-export const Type = Function
-export interface Type<T> {
-  new (...args: any[]): T
-}
+import type { Type } from '@ingress/core'
 
 export interface ControllerOptions {
   routePrefix?: string
 }
 export interface Controller {
-  (options?: ControllerOptions | string): ClassDecorator
+  (options?: ControllerOptions | string | Type<any>): ClassDecorator
 }
 
-export type ControllerDependencyCollector = Controller & ClassDecorator
+export type ControllerDependencyCollector = ClassDecorator & Controller
 
 export class ControllerCollector {
   public clear(): void {
@@ -24,19 +22,21 @@ export class ControllerCollector {
     this._collector = (target: any) => {
       this.items.add(target)
     }
-    this.collect = ((options?: ControllerOptions | any) => {
+    this.collect = ((options?: ControllerOptions | Type<any>) => {
       if (!options) {
         return this._collector
       }
-      const routePrefix: string = (typeof options === 'string' && options) || options.routePrefix
-      if (routePrefix) {
+      const prefix: string = (typeof options === 'string' && options) || Object(options).routePrefix
+      if (prefix) {
         return ((target: any) => {
-          Route(routePrefix)(target)
+          Route(prefix)(target)
           this._collector(target)
         }) as ClassDecorator
       }
-
-      return this._collector(options) as ClassDecorator
+      if (isClass(options)) {
+        return this._collector(options)
+      }
+      throw new TypeError('Unrecognized options type')
     }) as ControllerDependencyCollector
   }
 }

@@ -1,7 +1,7 @@
 export function createErrorType<T, Props extends CustomErrorProps>(
   name: string,
   baseProperties: Props,
-  base: ErrorConstructor<T> = Error as any
+  base: ErrorConstructor<T> = Error as any,
 ): ErrorConstructor<T & Props & { name: string }> {
   type ErrorInstance = T & Props & { name: string }
   const props = Object.entries(baseProperties),
@@ -27,6 +27,7 @@ export function createErrorType<T, Props extends CustomErrorProps>(
       value: Object.create(base.prototype, {
         toString: value(customErrorToString),
         [Symbol.toStringTag]: value('Error'),
+        contentType: value('application/json'),
         constructor: value(ErrorType),
       }),
     },
@@ -43,7 +44,7 @@ export interface ErrorConstructor<T> {
 type CustomErrorProps = { message: string; code: string; statusCode?: number }
 
 function customErrorToString(this: CustomErrorProps & { name: string }) {
-  return `${this.name} [${this.code}]: ${this.message}`
+  return `{"error":{"code":${JSON.stringify(this.code)},"message":${JSON.stringify(this.message)}}}`
 }
 
 function value<T>(value: T) {

@@ -1,39 +1,38 @@
 {
   "name": "@ingress/core",
-  "version": "1.0.0-beta.16",
+  "version": "1.0.0-beta.17",
   "keywords": [],
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
   "description": "Core ingress objects, application lifecycle and http handlers",
   "type": "commonjs",
-  "types": "./lib/cjs/core.d.ts",
+  "files": [
+    "index.mjs",
+    "lib/**/*.{js,map,d.ts}"
+  ],
   "main": "./lib/cjs/core.js",
+  "types": "./lib/cjs/core.d.ts",
   "exports": {
     ".": {
-      "import": "./index.mjs",
-      "require": "./lib/cjs/core.js",
-      "types": "./lib/cjs/core.d.ts",
-      "default": "./lib/cjs/core.js"
+      "node": {
+        "import": "./index.mjs",
+        "require": "./lib/cjs/core.js",
+        "types": "./lib/cjs/core.d.ts",
+        "default": "./lib/cjs/core.js"
+      }
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "lib",
-    "!lib/*.test.ts",
-    "docs"
-  ],
   "scripts": {
-    "test": "vitest run src",
-    "cov": "vitest run src --coverage",
-    "ocov": "$npm_execpath run cov && open coverage/index.html",
-    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
-    "build": "shx rm -rf lib && $npm_execpath run build:cjs"
+    "build": "rm -rf lib && tsc",
+    "pretest": "npm run build",
+    "test": "node --test --enable-source-maps"
   },
   "dependencies": {
     "injection-js": "^2.4.0",
-    "reflect-annotations": "workspace:*"
+    "reflect-annotations": "4.0.0-beta.2"
   },
   "devDependencies": {
-    "@types/node": "^18.16.3"
+    "typescript": "^5.8.3"
   }
 }

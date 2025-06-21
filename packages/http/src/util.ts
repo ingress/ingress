@@ -22,8 +22,8 @@ export function isNumber(x: any): x is number {
 }
 
 export function isSerializableError(
-  x: any
-): x is { contentType?: string; statusCode: number; statusMessage?: string } {
+  x: any,
+): x is { message: string; contentType?: string; statusCode: number; statusMessage?: string } {
   return isError(x) && 'statusCode' in x && typeof x.statusCode === 'number'
 }
 

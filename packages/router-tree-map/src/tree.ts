@@ -435,6 +435,7 @@ const HTTP_METHODS = new Set([
   'PROPPATCH',
   'PURGE',
   'PUT',
+  'QUERY',
   'REBIND',
   'REPORT',
   'SEARCH',

@@ -6,44 +6,44 @@ export { createErrorType }
 export const ING_UNHANDLED_INTERNAL_SERVER_ERROR = createErrorType(
   'IngUnhandledInternalServerError',
   {
-    code: 'ING_UNHANDLED_INTERNAL_SERVER_ERROR',
+    code: 'internal_server_error',
     message: 'Bad Request',
     statusCode: StatusCode.InternalServerError,
-  }
+  },
 )
 
 export const ING_BAD_REQUEST = createErrorType('IngBadRequest', {
-  code: 'ING_BAD_REQUEST',
+  code: 'bad_request',
   message: 'Bad Request',
   statusCode: StatusCode.BadRequest,
 })
 
 export const ING_NO_SERIALIZER = createErrorType('IngNoSerializer', {
-  code: 'ING_NO_SERIALIZER',
-  message: 'No serializer found for the specified Content-Type',
+  code: 'no_parser_found',
+  message: 'No parser found for the specified Content-Type',
   statusCode: StatusCode.InternalServerError,
 })
 
 export const ING_CONTENT_LENGTH_MISMATCH = createErrorType('IngContentLengthMisMatch', {
-  code: 'ING_CONTENT_LENGTH_MISMATCH',
+  code: 'content_length_mismatch',
   message: 'Body did not have the expected Content-Length',
   statusCode: StatusCode.BadRequest,
 })
 
 export const ING_CONTENT_LENGTH_REQUIRED = createErrorType('IngContentLengthRequired', {
-  code: 'ING_CONTENT_LENGTH_REQUIRED',
+  code: 'content_length_required',
   message: 'Length Required',
   statusCode: StatusCode.LengthRequired,
 })
 
 export const ING_PAYLOAD_TOO_LARGE = createErrorType('IngPayloadTooLarge', {
-  code: 'ING_PAYLOAD_TOO_LARGE',
+  code: 'payload_too_large',
   message: 'Payload too large',
   statusCode: StatusCode.PayloadTooLarge,
 })
 
 export const ING_INPUT_FAILED_VALIDATION = createErrorType('IngInputFailedValidation', {
-  code: 'ING_INPUT_FAILED_VALIDATION',
+  code: 'validation_failed',
   message: 'Validation failed',
   statusCode: StatusCode.UnsupportedMediaType,
 })

@@ -44,10 +44,7 @@ function addMethodAnnotation(property: AnnotatedPropertyDescription, annotation:
   return property
 }
 
-function collectPropertyAnnotations<T = any>(
-  property: AnnotatedPropertyDescription,
-  ctor: Type<T>,
-) {
+function collectPropertyAnnotations<T = any>(property: AnnotatedPropertyDescription, ctor: Type<T>) {
   const methodAnnotations = getAnnotations(ctor.prototype, property.name),
     order = property.declaredOrder ? 'reduceRight' : 'reduce'
   property = getAnnotations(ctor)[order]<AnnotatedPropertyDescription>(
@@ -66,22 +63,18 @@ function reflectAnnotations<T = any>(
 ): AnnotatedPropertyDescription[] {
   const classMetadata = reflectClassProperties(source)
 
-  return classMetadata.properties.reduce<AnnotatedPropertyDescription[]>(
-    (properties, propertyName) => {
-      properties.push(
-        classMetadata.constructors.reduceRight<AnnotatedPropertyDescription>(
-          collectPropertyAnnotations,
-          new PropertyDescription(propertyName, source, options.declaredOrder),
-        ),
-      )
-      return properties
-    },
-    [],
-  )
+  return classMetadata.properties.reduce<AnnotatedPropertyDescription[]>((properties, propertyName) => {
+    properties.push(
+      classMetadata.constructors.reduceRight<AnnotatedPropertyDescription>(
+        collectPropertyAnnotations,
+        new PropertyDescription(propertyName, source, options.declaredOrder),
+      ),
+    )
+    return properties
+  }, [])
 }
 
 export default reflectAnnotations
-
 export { reflectAnnotations, AnnotatedPropertyDescription }
 /* c8 ignore next */
 export { Annotation }

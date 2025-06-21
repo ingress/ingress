@@ -27,9 +27,3 @@ The above example, declares a route at `/group/handler` that returns an `HTTP 20
 Alternatively, instead of through decorators, routes can be defined using the API
 
 ### API
-
-
-
-
-
-

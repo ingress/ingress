@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import * as assert from 'node:assert'
 import { RouteAnnotation, UpgradeRouteAnnotation } from './annotations/route.annotation.js'
 import type { RouteMetadata } from './route-resolve.js'
 import { resolvePaths } from './route-resolve.js'
@@ -6,7 +7,7 @@ import { resolvePaths } from './route-resolve.js'
 describe('route annotations', () => {
   it('resolvePaths', () => {
     class TestRoute {
-      myRoute(param1: any, param2: any, param3: any) {
+      myRoute(_param1: any, _param2: any, param3: any) {
         void param3
       }
     }
@@ -24,43 +25,40 @@ describe('route annotations', () => {
       controller: TestRoute,
       name: 'myRoute',
     }
-    expect(resolvePaths(routeMetadata)).toEqual({
+    assert.deepStrictEqual(resolvePaths(routeMetadata), {
       GET: ['/base/my-route', '/base/alternate'],
       POST: ['/base/alternate'],
     })
 
     routeMetadata.controllerAnnotations = []
-    expect(resolvePaths(routeMetadata)).toEqual({
+    assert.deepStrictEqual(resolvePaths(routeMetadata), {
       GET: ['/my-route', '/alternate'],
       POST: ['/alternate'],
     })
 
     routeMetadata.controllerAnnotations = [new RouteAnnotation('/', 'PUT')]
-    expect(() => resolvePaths(routeMetadata)).toThrow(
-      'TestRoute.myRoute must provide Http Methods on the base OR sub route, but not both'
+    assert.throws(
+      () => resolvePaths(routeMetadata),
+      /TestRoute\.myRoute must provide Http Methods on the base OR sub route, but not both/,
     )
 
     routeMetadata.methodAnnotations = [new RouteAnnotation('/')]
-    expect(resolvePaths(routeMetadata)).toEqual({ PUT: ['/'] })
+    assert.deepStrictEqual(resolvePaths(routeMetadata), { PUT: ['/'] })
 
     routeMetadata.methodAnnotations = [new RouteAnnotation()]
     routeMetadata.controllerAnnotations = []
-    expect(() => resolvePaths(routeMetadata)).toThrow(
-      'TestRoute.myRoute has no Http Method defined'
-    )
+    assert.throws(() => resolvePaths(routeMetadata), /TestRoute\.myRoute has no Http Method defined/)
 
     routeMetadata.methodAnnotations = []
     routeMetadata.controllerAnnotations = []
-    expect(() => resolvePaths(routeMetadata)).toThrow(
-      'Must provide at least one route with a method'
-    )
+    assert.throws(() => resolvePaths(routeMetadata), /Must provide at least one route with a method/)
   })
 
   it('Upgrade Route annotation', () => {
     const annotation = new UpgradeRouteAnnotation('/'),
       noop: any = () => 'abc'
 
-    expect(annotation.middleware({} as any, noop)).toEqual('abc')
+    assert.strictEqual(annotation.middleware({} as any, noop), 'abc')
 
     const resolvedPaths = resolvePaths({
       controllerAnnotations: [],
@@ -70,6 +68,6 @@ describe('route annotations', () => {
       controller: class {},
       types: { parameters: [] },
     })
-    expect(resolvedPaths).toEqual({ UPGRADE: ['/'] })
+    assert.deepStrictEqual(resolvedPaths, { UPGRADE: ['/'] })
   })
 })

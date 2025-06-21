@@ -1,12 +1,7 @@
 {
   "debug.javascript.terminalOptions": {
-    "skipFiles": [
-      "<node_internals>/**"
-    ],
-    "outFiles": [
-      "${workspaceFolder}/**/*.js",
-      "!**/node_modules/**/*"
-    ]
+    "skipFiles": ["<node_internals>/**"],
+    "outFiles": ["${workspaceFolder}/**/*.js", "!**/node_modules/**/*"]
   },
   "files.autoSave": "onFocusChange",
   "editor.formatOnSave": true,
@@ -27,6 +22,6 @@
     "editor.defaultFormatter": "biomejs.biome"
   },
   "editor.codeActionsOnSave": {
-    "source.fixAll.biome": "explicit",
+    "source.fixAll.biome": "explicit"
   }
 }

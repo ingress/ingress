@@ -3,17 +3,17 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "bin": {
-    "tsc-build": "./scripts/tsc.mjs"
-  },
   "workspaces": [
+    "packages/types",
+    "packages/reflect-annotations",
     "packages/core",
     "packages/http",
-    "packages/ingress",
-    "packages/router",
     "packages/router-tree-map",
-    "packages/types",
-    "packages/reflect-annotations"
+    "packages/router",
+    "packages/ingress",
+    "packages/typebox",
+    "packages/zod",
+    "packages/example"
   ],
   "packageManager": "npm@11.4.0",
   "engines": {
@@ -21,18 +21,24 @@
     "npm": "11.4.0"
   },
   "scripts": {
-    "update": "$npm_execpath exec syncpack update",
-    "check:deps": "$npm_execpath exec syncpack list-mismatches",
-    "check:format": "$npm_execpath exec biome format --write"
+    "build": "npm run build --workspaces",
+    "test": "node --test **/*.test.js --enable-source-maps",
+    "update-deps": "syncpack update",
+    "check:deps": "syncpack fix-mismatches",
+    "ci:lint": "biome lint",
+    "ci:format": "biome format",
+    "fix:lint": "biome lint --write",
+    "fix:format": "biome format --write"
   },
   "devDependencies": {
+    "node-test-github-reporter": "^1.3.1",
     "@biomejs/biome": "^1.9.4",
     "@lerna-lite/publish": "^4.1.2",
     "@lerna-lite/version": "^4.1.2",
     "@swc/core": "^1.11.24",
-    "@types/node": "22.15.18",
+    "@types/node": "22.15.21",
     "strip-json-comments": "^5.0.2",
     "syncpack": "^13.0.4",
-    "typescript": "5.8.3"
+    "typescript": "^5.8.3"
   }
 }

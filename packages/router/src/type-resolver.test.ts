@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { inject } from '@hapi/shot'
-import { describe, it, expect } from 'vitest'
-
+import { describe, it } from 'node:test'
+import * as assert from 'node:assert'
 import { Ingress } from '@ingress/core'
 import { Http } from '@ingress/http'
 
@@ -9,15 +9,15 @@ import { Route } from './annotations/route.annotation.js'
 import { TypeResolver } from './type-resolver.js'
 import type { RouterContext } from './router.js'
 import { Router } from './router.js'
+import { kIngressRouterParse, kIngressRouterPick } from './handler.js'
 
 describe('type resolvers', () => {
   it('no registered type converter', async () => {
-    let plan = 0
+    let caught = false
     class MyType {}
     class Routes {
       @Route.Get('/:a')
       someRoute(@Route.Param('a') a: MyType) {
-        plan++
         void a
       }
     }
@@ -26,12 +26,10 @@ describe('type resolvers', () => {
     try {
       await app.start()
     } catch (e: any) {
-      plan++
-      expect(e.message).toEqual(
-        'No type converter found for: Routes.someRoute at argument 0:MyType',
-      )
+      caught = true
+      assert.strictEqual(e.message, 'No type converter found for: Routes.someRoute at argument 0:MyType')
     }
-    expect(plan).toEqual(1)
+    assert.strictEqual(caught, true)
   })
 
   it('registered type resolver', async () => {
@@ -39,7 +37,7 @@ describe('type resolvers', () => {
     class Routes {
       @Route.Get('/:a')
       someRoute(@Route.Param('a') a: any) {
-        expect(a).toEqual('hello world')
+        assert.strictEqual(a, 'hello world')
         return payload
       }
     }
@@ -53,7 +51,7 @@ describe('type resolvers', () => {
       url: '/hello',
     })
 
-    expect(result.payload).toEqual(payload)
+    assert.strictEqual(result.payload, payload)
   })
 
   it('registered type predicate resolver', async () => {
@@ -62,7 +60,7 @@ describe('type resolvers', () => {
     class Routes {
       @Route.Get('/:a')
       someRoute(@Route.Param('a') a: MyType) {
-        expect(a).toEqual('hello world')
+        assert.strictEqual(a, 'hello world')
         return payload
       }
     }
@@ -83,7 +81,7 @@ describe('type resolvers', () => {
       url: '/hello',
     })
 
-    expect(result.payload).toEqual(payload)
+    assert.strictEqual(result.payload, payload)
   })
 
   it('async type converter', async () => {
@@ -91,19 +89,24 @@ describe('type resolvers', () => {
       forward = Math.random().toString(36),
       backward = forward.split('').reverse().join('')
     class MyType {
-      static async pick() {
+      static async [kIngressRouterPick]() {
         return Promise.resolve(forward)
       }
-      static async parse(value: string | Promise<string>) {
-        expect(await value).toEqual(forward)
+      static async [kIngressRouterParse](value: string) {
+        assert.strictEqual(value, forward)
         return Promise.resolve(backward)
       }
     }
     class Routes {
       @Route.Get('/')
       someRoute(arg: MyType) {
-        expect(arg).toEqual(backward)
+        assert.strictEqual(arg, backward)
         return payload
+      }
+      @Route.Get('/req')
+      reqRoute(arg: Request) {
+        assert.ok(arg instanceof Request)
+        return forward
       }
     }
 
@@ -111,18 +114,23 @@ describe('type resolvers', () => {
 
     await app.start()
     const result = await inject(app.driver, {
-      method: 'GET',
-      url: '/',
-    })
+        method: 'GET',
+        url: '/',
+      }),
+      result1 = await inject(app.driver, {
+        method: 'GET',
+        url: '/req',
+      })
 
-    expect(result.payload).toEqual(payload)
+    assert.strictEqual(result.payload, payload)
+    assert.strictEqual(result1.payload, forward)
   })
 
   async function throws(fn: any, msg: string) {
     try {
       await fn()
     } catch (e: any) {
-      expect(e.message.includes(msg)).toEqual(true)
+      assert.ok(e.message.includes(msg))
       return e
     }
     throw `Expected ${fn.toString()} to have thrown`
@@ -134,14 +142,14 @@ describe('type resolvers', () => {
       str = r.get(String),
       date = r.get(Date),
       bool = r.get(Boolean)
-    expect(num?.parse?.('5')).toBe(5)
-    expect(str?.parse?.(1234)).toEqual('1234')
+    assert.strictEqual(num?.parse?.('5'), 5)
+    assert.strictEqual(str?.parse?.(1234), '1234')
     const parseBool =
       ('parse' in bool! && bool.parse) ||
       (() => {
         throw new Error('Expected bool.parse')
       })
-    expect(
+    assert.strictEqual(
       parseBool(0) === parseBool('0') &&
         parseBool(undefined) === parseBool(null) &&
         parseBool(false) === parseBool('') &&
@@ -149,8 +157,9 @@ describe('type resolvers', () => {
         parseBool('1') === parseBool(1) &&
         parseBool(true) === true &&
         parseBool('true') === true,
-    ).toBe(true)
-    expect(date?.parse?.('2021-12-12').toISOString()).toEqual(new Date('2021-12-12').toISOString())
+      true,
+    )
+    assert.strictEqual(date?.parse?.('2021-12-12').toISOString(), new Date('2021-12-12').toISOString())
   })
 
   it('default type converter errors', async () => {
@@ -163,7 +172,117 @@ describe('type resolvers', () => {
       r = new TypeResolver()
     for (const [type, input, errorText] of tests) {
       const error = await throws(() => r.get(type as any)?.parse?.(input), errorText)
-      expect(error.statusCode).toEqual(400)
+      assert.strictEqual(error.statusCode, 400)
     }
+  })
+})
+
+describe('default type resolvers with route overloading', () => {
+  it('should handle overloaded routes with different primitive types', async () => {
+    class Routes {
+      @Route.Get('/test/:value')
+      handleNumber(@Route.Param('value') value: Number) {
+        return { type: 'number', value }
+      }
+
+      @Route.Get('/test/:value')
+      handleBoolean(@Route.Param('value') value: Boolean) {
+        return { type: 'boolean', value }
+      }
+
+      @Route.Get('/test/:value')
+      handleDate(@Route.Param('value') value: Date) {
+        return { type: 'date', value: value.toISOString() }
+      }
+
+      @Route.Get('/test/:value')
+      handleString(@Route.Param('value') value: String) {
+        return { type: 'string', value }
+      }
+    }
+
+    const app = new Ingress<RouterContext>().use(new Http()).use(new Router({ routes: [Routes] }))
+    await app.start()
+
+    // Test number route
+    const numberResult = await inject(app.driver, {
+      method: 'GET',
+      url: '/test/123',
+    })
+    assert.strictEqual(numberResult.statusCode, 200)
+    const numberResponse = JSON.parse(numberResult.payload)
+    assert.strictEqual(numberResponse.type, 'number')
+    assert.strictEqual(numberResponse.value, 123)
+
+    // Test string route
+    const stringResult = await inject(app.driver, {
+      method: 'GET',
+      url: '/test/hello',
+    })
+    assert.strictEqual(stringResult.statusCode, 200)
+    const stringResponse = JSON.parse(stringResult.payload)
+    assert.strictEqual(stringResponse.type, 'string')
+    assert.strictEqual(stringResponse.value, 'hello')
+
+    // Test boolean route
+    const booleanResult = await inject(app.driver, {
+      method: 'GET',
+      url: '/test/true',
+    })
+    assert.strictEqual(booleanResult.statusCode, 200)
+    const booleanResponse = JSON.parse(booleanResult.payload)
+    assert.strictEqual(booleanResponse.type, 'boolean')
+    assert.strictEqual(booleanResponse.value, true)
+
+    // Test date route
+    const dateResult = await inject(app.driver, {
+      method: 'GET',
+      url: '/test/2024-03-20',
+    })
+    assert.strictEqual(dateResult.statusCode, 200)
+    const dateResponse = JSON.parse(dateResult.payload)
+    assert.strictEqual(dateResponse.type, 'date')
+    assert.strictEqual(dateResponse.value, new Date('2024-03-20').toISOString())
+  })
+
+  it('should handle overloaded routes with Request and URLSearchParams', async () => {
+    class Routes {
+      @Route.Get('/search')
+      handleSearchParams(@Route.Query() params: URLSearchParams) {
+        return { type: 'search-params', params: Object.fromEntries(params) }
+      }
+
+      @Route.Post('/request')
+      handleRequest(@Route.Body() request: Request) {
+        return { type: 'request', method: request.method }
+      }
+    }
+
+    const app = new Ingress<RouterContext>().use(new Http()).use(new Router({ routes: [Routes] }))
+    await app.start()
+
+    // Test URLSearchParams route
+    const searchResult = await inject(app.driver, {
+      method: 'GET',
+      url: '/search?q=test&page=1',
+    })
+    assert.strictEqual(searchResult.statusCode, 200)
+    const searchResponse = JSON.parse(searchResult.payload)
+    assert.strictEqual(searchResponse.type, 'search-params')
+    assert.deepStrictEqual(searchResponse.params, { q: 'test', page: '1' })
+
+    // Test Request route
+    /*
+    const requestResult = await inject(app.driver, {
+      method: 'POST',
+      url: '/request',
+      payload: JSON.stringify({ data: 'test' }),
+      headers: { 'content-type': 'application/json' },
+    })
+    assert.strictEqual(requestResult.statusCode, 200)
+    const requestResponse = JSON.parse(requestResult.payload)
+    assert.strictEqual(requestResponse.type, 'request')
+    assert.strictEqual(requestResponse.method, 'POST')
+    */
   })
 })

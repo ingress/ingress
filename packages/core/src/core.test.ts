@@ -1,5 +1,7 @@
 import 'reflect-metadata'
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
+
 import type { CoreContext } from './di.js'
 import { createContainer, ModuleContainer, Injectable } from './di.js'
 import { createAnnotationFactory } from 'reflect-annotations'
@@ -8,405 +10,493 @@ import { Ingress, AppState, ingress } from './core.js'
 import type { Startable, Stoppable, UsableMiddleware } from './types.js'
 import type { NextFn } from './compose.js'
 
-describe('core', () => {
-  it('usable composition and middleware variations', async () => {
-    let plan = 20
-    const eql = (a: any, b: any) => {
-      expect(a).toEqual(b)
-      plan--
-    }
-    type Ctx = { scope: any; value: string }
-    let ctx!: Ctx
-    class CtxThing {
-      scope: any
-      value = ''
-    }
-    const app1 = new Ingress<Ctx>({ context: new CtxThing() }),
-      app2 = ingress<Ctx>(),
-      app3 = new Ingress<Ctx>(),
-      app = Object.assign(app1, { value: '' }),
-      usable1 = {
-        async start(appA: any, next: NextFn) {
-          eql(app, appA)
-          app.value += 1
+describe('Ingress Core', () => {
+  describe('usable composition and middleware', () => {
+    it('should compose multiple usables with start/stop/middleware lifecycle', async () => {
+      let executionPlan = 20
+      const assertAndDecrement = (actual: any, expected: any) => {
+        assert.deepStrictEqual(actual, expected)
+        executionPlan--
+      }
+
+      type TestContext = { scope: any; value: string }
+      let capturedContext!: TestContext
+
+      class ContextThing {
+        scope: any
+        value = ''
+      }
+
+      const app1 = new Ingress<TestContext>({ context: new ContextThing() })
+      const app2 = ingress<TestContext>()
+      const app3 = new Ingress<TestContext>()
+      const app = Object.assign(app1, { value: '' })
+
+      const plainUsable = {
+        async start(appInstance: any, next: NextFn) {
+          assertAndDecrement(app, appInstance)
+          app.value += '1'
           await next()
-          app.value += 6
+          app.value += '6'
         },
-        async stop(appA: any, next: NextFn) {
-          eql(app, appA)
-          val += 1
+        async stop(appInstance: any, next: NextFn) {
+          assertAndDecrement(app, appInstance)
+          stopValue += '1'
           await next()
-          val += 6
+          stopValue += '6'
         },
-        async middleware(ctxA: any, next: NextFn) {
-          ctx = ctxA
-          ctxA.value += 1
-          expect(ctxA instanceof CtxThing).toBeTruthy()
-          plan--
+        async middleware(context: any, next: NextFn) {
+          capturedContext = context
+          context.value += '1'
+          assert.strictEqual(context instanceof ContextThing, true)
+          executionPlan--
           await next()
-          ctxA.value += 6
+          context.value += '6'
         },
-      },
-      usable2 = createAnnotationFactory(
+      }
+
+      const annotationUsable = createAnnotationFactory(
         class implements Startable, Stoppable, UsableMiddleware<any> {
-          async start(appB: any, next: NextFn) {
-            app.value += 2
-            eql(app, appB)
+          async start(appInstance: any, next: NextFn) {
+            app.value += '2'
+            assertAndDecrement(app, appInstance)
             await next()
-            app.value += 5
+            app.value += '5'
           }
-          async stop(appB: any, next: NextFn) {
-            eql(app, appB)
-            val += 2
+          async stop(appInstance: any, next: NextFn) {
+            assertAndDecrement(app, appInstance)
+            stopValue += '2'
             await next()
-            val += 5
+            stopValue += '5'
           }
-          async middleware(ctx: any, next: NextFn) {
-            ctx.value += 2
-            expect(ctx instanceof CtxThing).toBeTruthy()
-            plan--
+          async middleware(context: any, next: NextFn) {
+            context.value += '2'
+            assert.strictEqual(context instanceof ContextThing, true)
+            executionPlan--
             await next()
-            ctx.value += 5
+            context.value += '5'
           }
-        }
+        },
       )()
 
-    class SomeUsable3 {
-      async start(appC: Ctx, next: NextFn) {
-        eql(app, appC)
-        app.value += 3
-        await next()
-        app.value += 4
-        return { hi: 'hello' }
+      class ClassBasedUsable {
+        async start(appInstance: TestContext, next: NextFn) {
+          assertAndDecrement(app, appInstance)
+          app.value += '3'
+          await next()
+          app.value += '4'
+          return { hi: 'hello' }
+        }
+        async stop(appInstance: any, next: NextFn) {
+          assertAndDecrement(app, appInstance)
+          stopValue += '3'
+          await next()
+          stopValue += '4'
+        }
+        async middleware(context: TestContext, next: NextFn) {
+          context.value += '3'
+          assert.strictEqual(context instanceof ContextThing, true)
+          executionPlan--
+          await next()
+          context.value += '4'
+        }
       }
-      async stop(appC: any, next: NextFn) {
-        eql(app, appC)
-        val += 3
-        await next()
-        val += 4
-      }
-      async middleware(ctx: Ctx, next: NextFn) {
-        ctx.value += 3
-        expect(ctx instanceof CtxThing).toBeTruthy()
-        plan--
-        await next()
-        ctx.value += 4
-      }
-    }
-    const usable3 = createAnnotationFactory(SomeUsable3)
-    let val = ''
-    app1.use(usable1).use(usable2)
-    app3.use(usable3)
-    app2.use(app3)
-    app1.use(app2)
-    await app1.start()
-    eql(app.value, '123456')
-    eql(val, '')
-    const mw = app.middleware
-    await mw()
-    eql(mw, app.middleware)
-    eql(app.value, '123456')
-    eql(ctx.value, '123456')
-    eql(val, '')
-    await app.stop()
-    eql(app.value, '123456')
-    eql(ctx.value, '123456')
-    eql(val, '123456')
-    eql(app1.container, app2.container)
-    eql(app2.container, app3.container)
-    expect(plan).toEqual(0)
-  })
 
-  it('base container merge', async () => {
-    const container1 = Object.assign(createContainer(), { NAME: 1 }),
-      container2 = Object.assign(createContainer(), { NAME: 2 })
-    @container1.SingletonService()
-    class S1 {}
-    @container2.SingletonService
-    class S2 {}
-    const app = new Ingress({ container: container1 as any })
-    app.use(container2)
-    app.use((context: any, next: any) => {
-      expect(context.scope.get(S2) instanceof S2).toBeTruthy()
-      expect(context.scope.get(S1) instanceof S1).toBeTruthy()
-      return next()
+      const classUsableFactory = createAnnotationFactory(ClassBasedUsable)
+      let stopValue = ''
+
+      // Setup app composition
+      app1.use(plainUsable).use(annotationUsable)
+      app3.use(classUsableFactory)
+      app2.use(app3)
+      app1.use(app2)
+
+      // Test start lifecycle
+      await app1.start()
+      assertAndDecrement(app.value, '123456')
+      assertAndDecrement(stopValue, '')
+
+      // Test middleware execution
+      const middleware = app.middleware
+      await middleware()
+      assertAndDecrement(middleware, app.middleware) // Should be cached
+      assertAndDecrement(app.value, '123456')
+      assertAndDecrement(capturedContext.value, '123456')
+      assertAndDecrement(stopValue, '')
+
+      // Test stop lifecycle
+      await app.stop()
+      assertAndDecrement(app.value, '123456')
+      assertAndDecrement(capturedContext.value, '123456')
+      assertAndDecrement(stopValue, '123456')
+
+      // Test container sharing
+      assertAndDecrement(app1.container, app2.container)
+      assertAndDecrement(app2.container, app3.container)
+      assert.strictEqual(executionPlan, 0)
     })
-    await app.start()
-    await app.middleware()
-  })
 
-  it('invalid middleware', async () => {
-    const app = new Ingress()
-    expect(() => {
-      app.use((context: any) => {
-        void context
+    it('should merge base containers correctly', async () => {
+      const container1 = Object.assign(createContainer(), { NAME: 1 })
+      const container2 = Object.assign(createContainer(), { NAME: 2 })
+
+      @container1.SingletonService()
+      class Service1 {}
+
+      @container2.SingletonService
+      class Service2 {}
+
+      const app = new Ingress({ container: container1 as any })
+      app.use(container2)
+      app.use((context: any, next: any) => {
+        assert.strictEqual(context.scope.get(Service2) instanceof Service2, true)
+        assert.strictEqual(context.scope.get(Service1) instanceof Service1, true)
+        return next()
       })
-    }).toThrow('Middleware must accept two arguments, context and next')
-    expect(() => {
-      app.use({
-        middleware() {
-          void 0
+
+      await app.start()
+      await app.middleware()
+    })
+
+    it('should merge module containers with proper service lifecycles', async () => {
+      const app = new Ingress()
+      const moduleContainer = new ModuleContainer()
+
+      @app.container.SingletonService
+      class SingletonServiceA {}
+
+      @moduleContainer.SingletonService({
+        useFactory() {
+          return 'factory-result'
         },
       })
-    }).toThrow('Middleware must accept two arguments, context and next')
-    expect(() => {
-      app.use({} as any)
-    }).toThrow('Unable to use: [object Object]')
-  })
+      class FactoryService {}
 
-  it('module merge', async () => {
-    const app = new Ingress(),
-      m2 = new ModuleContainer()
-    @app.container.SingletonService
-    class a {}
-    @m2.SingletonService({
-      useFactory() {
-        return 'abc'
-      },
-    })
-    class b {}
-    @m2.Service
-    class c {}
+      @moduleContainer.Service
+      class ScopedService {}
 
-    app.use(m2)
+      app.use(moduleContainer)
 
-    let aa: a, bb: b, cc: c
-    const mw: Middleware<any> = (context, next) => {
-      if (cc) {
-        expect(cc).toEqual(context.scope.get(c))
-        expect(cc).not.toBe(context.scope.get(c))
+      let singletonA: SingletonServiceA
+      let factoryService: FactoryService
+      let scopedService: ScopedService
+
+      const testMiddleware: Middleware<any> = (context, next) => {
+        if (scopedService) {
+          // Scoped services should be different instances
+          assert.deepStrictEqual(scopedService, context.scope.get(ScopedService))
+          assert.notStrictEqual(scopedService, context.scope.get(ScopedService))
+        }
+
+        singletonA ||= context.scope.get(SingletonServiceA)
+        factoryService ||= context.scope.get(FactoryService)
+        scopedService ||= context.scope.get(ScopedService)
+
+        assert.strictEqual(singletonA instanceof SingletonServiceA, true)
+        assert.strictEqual(factoryService, 'factory-result')
+        assert.strictEqual(scopedService instanceof ScopedService, true)
+
+        // Singletons should be the same instance
+        assert.deepStrictEqual(singletonA, context.scope.get(SingletonServiceA))
+        assert.deepStrictEqual('factory-result', context.scope.get(FactoryService))
+
+        return next()
       }
-      aa ||= context.scope.get(a)
-      bb ||= context.scope.get(b)
-      cc ||= context.scope.get(c)
-      expect(aa instanceof a).toBeTruthy()
-      expect(bb).toBe('abc')
-      expect(cc instanceof c).toBeTruthy()
-      expect(aa).toEqual(context.scope.get(a))
-      expect('abc').toEqual(context.scope.get(b))
-      return next()
-    }
-    app.use(mw)
-    await app.start()
-    await app.middleware()
-    await app.middleware()
-    await app.stop()
-  })
 
-  it('nested unUse', async () => {
-    let plan = 0
-    const a = new Ingress(),
-      b = new Ingress()
-    a.use({
-      start() {
-        return Promise.resolve()
-      },
-      middleware(context: any, next: any) {
-        plan++
-        return next()
-      },
+      app.use(testMiddleware)
+      await app.start()
+      await app.middleware()
+      await app.middleware()
+      await app.stop()
     })
-    b.use({
-      start(app: any, next: any) {
-        app.unUse(this)
-        expect(() => app.unUse(this)).toThrow("Unable to unUse an addon that has not been use'd")
-        plan++
-        return next()
-      },
-      middleware(context: any, next: any) {
-        plan++
-        expect(true).toBe(false)
-        return next()
-      },
+  })
+
+  describe('middleware validation', () => {
+    it('should reject middleware with incorrect arity', async () => {
+      const app = new Ingress()
+
+      assert.throws(() => {
+        app.use((context: any) => {
+          void context
+        })
+      }, /Middleware must accept two arguments, context and next/)
+
+      assert.throws(() => {
+        app.use({
+          middleware() {
+            void 0
+          },
+        })
+      }, /Middleware must accept two arguments, context and next/)
+
+      assert.throws(() => {
+        app.use({} as any)
+      }, /Unable to use: \[object Object\]/)
     })
-    a.use(b)
-    await a.start()
-    await a.middleware()
-    await a.stop()
-    expect(plan).toEqual(2)
   })
 
-  it('null prototype context default', async () => {
-    let plan = 0
-    const app = new Ingress(),
-      b = app.use((ctx: { wat: boolean }, next: any) => {
-        plan++
-        expect(Object.getPrototypeOf(ctx)).toEqual(null)
-        return next()
-      })
-    void b
-    await app.start()
-    await app.middleware()
-    expect(1).toEqual(plan)
-  })
+  describe('addon lifecycle management', () => {
+    it('should support nested unUse operations during start', async () => {
+      let executionPlan = 0
+      const parentApp = new Ingress()
+      const childApp = new Ingress()
 
-  it('app already started or stopped', async () => {
-    //t.plan(3)
-    const app = new Ingress()
-    app.use({ middleware: (context: any, next: any) => next() })
-    await app.start()
-    await app.start().catch((e) => expect(e.message).toEqual('Already started or starting'))
-    expect(() =>
-      app.use({
-        start(_: any, next: NextFn) {
+      parentApp.use({
+        start() {
+          return Promise.resolve()
+        },
+        middleware(_context: any, next: any) {
+          executionPlan++
           return next()
         },
       })
-    ).toThrow('Already started, Cannot "use" now')
-    await app.stop()
-    await app.stop().catch((e) => expect(e.message).toEqual('Already stopped or stopping'))
-  })
 
-  it('registerDriver', async () => {
-    //t.plan(6)
-    const app = new Ingress(),
-      handle = Symbol('something')
-    app.registerDriver(handle, async () => {
-      expect(app.readyState & AppState.Started).toBeTruthy()
-      await Promise.resolve()
-      expect(app.readyState & AppState.Started).toBeTruthy()
-    })
-    expect(() => {
-      app.registerDriver(handle, () => {
-        void 0
+      childApp.use({
+        start(app: any, next: any) {
+          app.unUse(this)
+          assert.throws(() => app.unUse(this), /Unable to unUse an addon that has not been use'd/)
+          executionPlan++
+          return next()
+        },
+        middleware(_context: any, next: any) {
+          executionPlan++
+          assert.strictEqual(true, false, 'This middleware should not execute after unUse')
+          return next()
+        },
       })
-    }).toThrow('Driver already registered')
-    expect(app.readyState === AppState.New).toBeTruthy()
-    const starting = app.start()
-    expect(app.readyState & AppState.Starting).toBeTruthy()
-    await starting
-    expect(app.driver).toEqual(handle)
-    expect(app.readyState & AppState.Started).toBeTruthy()
-    await app.run()
-    expect(app.readyState & AppState.Running).toBeTruthy()
+
+      parentApp.use(childApp)
+      await parentApp.start()
+      await parentApp.middleware()
+      await parentApp.stop()
+
+      assert.deepStrictEqual(executionPlan, 2)
+    })
   })
 
-  it('run', async () => {
-    const app = new Ingress()
-    await app.run()
-    await app.stop()
-    try {
+  describe('context initialization', () => {
+    it('should use null prototype context by default', async () => {
+      let executionPlan = 0
+      const app = new Ingress()
+
+      app.use((context: { wat: boolean }, next: any) => {
+        executionPlan++
+        assert.deepStrictEqual(Object.getPrototypeOf(context), null)
+        return next()
+      })
+
+      await app.start()
+      await app.middleware()
+      assert.deepStrictEqual(1, executionPlan)
+    })
+  })
+
+  describe('application state management', () => {
+    it('should prevent operations on already started or stopped apps', async () => {
+      const app = new Ingress()
+      app.use({ middleware: (_context: any, next: any) => next() })
+
+      await app.start()
+
+      // Should reject starting an already started app
+      await app.start().catch((error) => assert.deepStrictEqual(error.message, 'Already started or starting'))
+
+      // Should reject using addons after start
+      assert.throws(
+        () =>
+          app.use({
+            start(_: any, next: NextFn) {
+              return next()
+            },
+          }),
+        /Already started, Cannot "use" now/,
+      )
+
+      await app.stop()
+
+      // Should reject stopping an already stopped app
+      await app.stop().catch((error) => assert.deepStrictEqual(error.message, 'Already stopped or stopping'))
+    })
+
+    it('should handle driver registration and app running', async () => {
+      const app = new Ingress()
+      const driverHandle = Symbol('test-driver')
+
+      app.registerDriver(driverHandle, async () => {
+        assert.strictEqual(!!(app.readyState & AppState.Started), true)
+        await Promise.resolve()
+        assert.strictEqual(!!(app.readyState & AppState.Started), true)
+      })
+
+      // Should reject duplicate driver registration
+      assert.throws(() => {
+        app.registerDriver(driverHandle, () => {
+          void 0
+        })
+      }, /Driver already registered/)
+
+      assert.strictEqual(app.readyState === AppState.New, true)
+
+      const startingPromise = app.start()
+      assert.strictEqual(!!(app.readyState & AppState.Starting), true)
+
+      await startingPromise
+      assert.deepStrictEqual(app.driver, driverHandle)
+      assert.strictEqual(!!(app.readyState & AppState.Started), true)
+
       await app.run()
-      throw 'should have thrown'
-    } catch (err: any) {
-      expect(err.message).toBe('Cannot run a stopped app')
-    }
-  })
-
-  it('passed module container', async () => {
-    @Injectable()
-    class Thing {}
-    @Injectable()
-    class Thing2 {}
-    const thing1s: Thing[] = [],
-      thing2s: Thing[] = [],
-      app = new Ingress()
-    app.use({
-      start(app: any, next: NextFn) {
-        app.container.registerScoped(Thing)
-        app.container.registerSingleton(Thing2)
-        return next()
-      },
-      middleware(ctx: any, next: NextFn) {
-        thing1s.push(ctx.scope.get(Thing))
-        thing2s.push(ctx.scope.get(Thing2))
-        return next()
-      },
+      assert.strictEqual(!!(app.readyState & AppState.Running), true)
     })
-    expect(app.readyState === AppState.New).toBeTruthy()
-    await app.start()
-    expect(app.readyState & AppState.Running).toBeTruthy()
-    await app.middleware()
-    await app.middleware()
 
-    expect(thing1s.length).toEqual(2)
-    expect(thing1s[0] instanceof Thing).toBeTruthy()
-    expect(thing1s[1] instanceof Thing).toBeTruthy()
-    expect(thing1s[0] !== thing1s[1]).toBeTruthy()
-    expect(thing2s[0] instanceof Thing2).toBeTruthy()
-    expect(thing2s[1] instanceof Thing2).toBeTruthy()
-    expect(thing2s[0]).toEqual(thing2s[1])
+    it('should prevent running stopped apps', async () => {
+      const app = new Ingress()
+      await app.run()
+      await app.stop()
 
-    @Injectable()
-    class Thing3 {}
-    @Injectable()
-    class Thing4 {}
-
-    const container = new ModuleContainer()
-    container.registerScoped(Thing3)
-    container.registerSingleton(Thing4)
-
-    const thing3s: Thing3[] = [],
-      thing4s: Thing4[] = [],
-      app1 = new Ingress({ container })
-    app1.use((ctx: any, next: any) => {
-      thing3s.push(ctx.scope.get(Thing3))
-      thing4s.push(ctx.scope.get(Thing4))
-      return next()
-    })
-    await app1.start()
-    await app1.middleware()
-    await app1.middleware()
-
-    expect(thing3s[0] instanceof Thing3).toBeTruthy()
-    expect(thing3s[1] instanceof Thing3).toBeTruthy()
-    expect(thing3s[0] !== thing3s[1]).toBeTruthy()
-    expect(thing4s[0] instanceof Thing4).toBeTruthy()
-    expect(thing4s[1] instanceof Thing4).toBeTruthy()
-    expect(thing2s[0]).toEqual(thing2s[1])
-  })
-
-  it('decorations and extensions', async () => {
-    const app = new Ingress()
-    class SomeUsable {
-      initializeContext(ctx: CoreContext) {
-        return Object.assign(ctx, { a: 'b' })
+      try {
+        await app.run()
+        throw new Error('should have thrown')
+      } catch (error: any) {
+        assert.strictEqual(error.message, 'Cannot run a stopped app')
       }
-      async start(app: Ingress<ReturnType<(typeof this)['initializeContext']>>, next: NextFn) {
-        await next()
-        return {
-          some: 'decoration',
+    })
+  })
+
+  describe('dependency injection', () => {
+    it('should handle scoped and singleton services correctly', async () => {
+      @Injectable()
+      class ScopedService {}
+
+      @Injectable()
+      class SingletonService {}
+
+      const scopedInstances: ScopedService[] = []
+      const singletonInstances: SingletonService[] = []
+      const app = new Ingress()
+
+      app.use({
+        start(appInstance: any, next: NextFn) {
+          appInstance.container.registerScoped(ScopedService)
+          appInstance.container.registerSingleton(SingletonService)
+          return next()
+        },
+        middleware(context: any, next: NextFn) {
+          scopedInstances.push(context.scope.get(ScopedService))
+          singletonInstances.push(context.scope.get(SingletonService))
+          return next()
+        },
+      })
+
+      assert.strictEqual(app.readyState === AppState.New, true)
+      await app.start()
+      assert.strictEqual(!!(app.readyState & AppState.Running), true)
+
+      await app.middleware()
+      await app.middleware()
+
+      // Scoped services should be different instances
+      assert.deepStrictEqual(scopedInstances.length, 2)
+      assert.strictEqual(scopedInstances[0] instanceof ScopedService, true)
+      assert.strictEqual(scopedInstances[1] instanceof ScopedService, true)
+      assert.strictEqual(scopedInstances[0] !== scopedInstances[1], true)
+
+      // Singleton services should be the same instance
+      assert.strictEqual(singletonInstances[0] instanceof SingletonService, true)
+      assert.strictEqual(singletonInstances[1] instanceof SingletonService, true)
+      assert.deepStrictEqual(singletonInstances[0], singletonInstances[1])
+    })
+
+    it('should work with passed module containers', async () => {
+      @Injectable()
+      class ScopedService {}
+
+      @Injectable()
+      class SingletonService {}
+
+      const container = new ModuleContainer()
+      container.registerScoped(ScopedService)
+      container.registerSingleton(SingletonService)
+
+      const scopedInstances: ScopedService[] = []
+      const singletonInstances: SingletonService[] = []
+      const app = new Ingress({ container })
+
+      app.use((context: any, next: any) => {
+        scopedInstances.push(context.scope.get(ScopedService))
+        singletonInstances.push(context.scope.get(SingletonService))
+        return next()
+      })
+
+      await app.start()
+      await app.middleware()
+      await app.middleware()
+
+      // Scoped services should be different instances
+      assert.strictEqual(scopedInstances[0] instanceof ScopedService, true)
+      assert.strictEqual(scopedInstances[1] instanceof ScopedService, true)
+      assert.strictEqual(scopedInstances[0] !== scopedInstances[1], true)
+
+      // Singleton services should be the same instance
+      assert.strictEqual(singletonInstances[0] instanceof SingletonService, true)
+      assert.strictEqual(singletonInstances[1] instanceof SingletonService, true)
+      assert.deepStrictEqual(singletonInstances[0], singletonInstances[1])
+    })
+  })
+
+  describe('decorations and extensions', () => {
+    it('should support context initialization and app decorations', async () => {
+      const app = new Ingress()
+
+      class ContextExtender {
+        initializeContext(context: CoreContext) {
+          return Object.assign(context, { customProperty: 'test-value' })
+        }
+
+        async start(_app: Ingress<ReturnType<(typeof this)['initializeContext']>>, next: NextFn) {
+          await next()
+          return {
+            decorationProperty: 'decoration-value',
+          }
         }
       }
-    }
 
-    const annotationFactory = createAnnotationFactory(SomeUsable),
-      annotation = annotationFactory(),
-      factoryApp = new Ingress()
-    factoryApp.use(annotation)
-    const app1 = app.use(new SomeUsable()),
-      app2 = app1.use((ctx, nxt) => {
-        void ctx.a
-        return nxt()
-      }),
-      started = await app2.start()
-    expect(started.some).toEqual('decoration')
-  })
+      const annotationFactory = createAnnotationFactory(ContextExtender)
+      const annotation = annotationFactory()
+      const factoryApp = new Ingress()
+      factoryApp.use(annotation)
 
-  it('custom driver', () => {
-    type UsableContext = CoreContext & { some: 'prop' }
-    class Usable {
-      initializeContext(ctx: UsableContext) {
-        return ctx
-      }
-      start(app: Ingress<UsableContext>, next: NextFn) {
+      const extendedApp = app.use(new ContextExtender())
+      const finalApp = extendedApp.use((context, next) => {
+        void context.customProperty // Should be available due to context extension
         return next()
+      })
+
+      const startedApp = await finalApp.start()
+      assert.strictEqual(startedApp.decorationProperty, 'decoration-value')
+    })
+
+    it('should support custom driver with typed context', () => {
+      type CustomContext = CoreContext & { customProperty: 'test' }
+
+      class CustomUsable {
+        initializeContext(context: CustomContext) {
+          return context
+        }
+
+        start(_app: Ingress<CustomContext>, next: NextFn) {
+          return next()
+        }
+
+        middleware(_context: CustomContext, next: NextFn) {
+          return next()
+        }
       }
-      middleware(ctx: UsableContext, next: NextFn) {
-        return next()
-      }
-    }
-    const app = new Ingress(),
-      res = app.use(new Usable())
-    void res
+
+      const app = new Ingress()
+      const result = app.use(new CustomUsable())
+      result.use((ctx, next) => {
+        void ctx.customProperty // Should compile without type errors
+      })
+    })
   })
 })
-// initializeContext
-// initializeContext, start
-// initializeContext, stop
-// initializeContext, start, stop, middleware
-// start
-// start, stop
-// start, stop, middleware
-// stop
-// stop, middleware,

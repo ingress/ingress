@@ -1,7 +1,6 @@
 {
   "name": "@ingress/http",
-  "packageManager": "npm@9.4.1",
-  "version": "1.0.0-beta.16",
+  "version": "1.0.0-beta.17",
   "keywords": [],
   "author": "Caleb Boyd <caleb.boyd@hotmail.com> (https://github.com/calebboyd)",
   "license": "MIT",
@@ -11,34 +10,31 @@
   "main": "./lib/cjs/node.http.js",
   "exports": {
     ".": {
-      "import": "./index.mjs",
       "node": {
+        "import": "./index.mjs",
         "require": "./lib/cjs/node.http.js",
+        "types": "./lib/cjs/node.http.d.ts",
         "default": "./lib/cjs/node.http.js"
-      },
-      "default": "./lib/cjs/node.http.js",
-      "types": "./lib/cjs/node.http.d.ts"
+      }
     },
     "./package.json": "./package.json"
   },
   "files": [
-    "lib",
+    "index.mjs",
+    "lib/**/*.{js,map,d.ts}",
     "docs"
   ],
   "scripts": {
-    "test": "vitest run src",
-    "cov": "echo $npm_",
-    "build:cjs": "tsc --sourceRoot \"$(pwd)/src\"",
-    "build": "shx rm -rf lib && $npm_execpath run build:cjs"
+    "test": "node --test --enable-source-maps",
+    "build": "rm -rf lib && tsc"
   },
   "dependencies": {
-    "@ingress/core": "workspace:*",
-    "@ingress/types": "workspace:*",
-    "readable-stream": "^4.3.0",
-    "secure-json-parse": "^2.7.0"
+    "@ingress/core": "1.0.0-beta.17",
+    "@ingress/types": "1.0.0-beta.17",
+    "readable-stream": "^4.4.2",
+    "secure-json-parse": "4.0.0"
   },
   "devDependencies": {
-    "@hapi/shot": "6.0.1",
-    "@types/node": "^18.16.3"
+    "@hapi/shot": "6.0.1"
   }
 }

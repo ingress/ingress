@@ -13,14 +13,14 @@ import type { NextFn } from './compose.js'
 import type { Startable } from './types.js'
 import { Logger } from './logger.js'
 import { isTestEnv } from './util.js'
-/* c8 ignore next */
+
 export * from './collector.js'
 export { Provider, Injectable, InjectionToken } from 'injection-js'
 
-const kForwardRef = Symbol.for('ingress.forwardRef')
+const kForwardRef = Symbol.for('ingress:forwardRef')
 
 export function resolveForwardRef<T>(fn: T | (() => T)): T {
-  if (typeof fn === 'function' && (fn as any)[kForwardRef]) {
+  if (Object(fn)[kForwardRef]) {
     return (fn as any)() as T
   }
   return fn as T
@@ -53,7 +53,7 @@ export interface ModuleContainerOptions {
 const EMPTY_DEPS: Array<any> = [],
   ContextToken = new InjectionToken<CoreContext>('ingress.context')
 
-export { ContextToken }
+export { ContextToken, DependencyCollectorList }
 
 /**
  * @public
@@ -81,11 +81,7 @@ export class ModuleContainer implements Injector, Startable {
     return this.forwardRefCollector.collect
   }
 
-  constructor({
-    singletons = [],
-    services = [],
-    contextToken = ContextToken,
-  }: ModuleContainerOptions = {}) {
+  constructor({ singletons = [], services = [], contextToken = ContextToken }: ModuleContainerOptions = {}) {
     Object.assign(this, { singletons, services })
     const key = ReflectiveKey.get(contextToken)
     this.ResolvedContextProvider = class<T> implements ResolvedReflectiveProvider {
@@ -120,12 +116,10 @@ export class ModuleContainer implements Injector, Startable {
   }
 
   public get<T = any>(token: Type<T> | InjectionToken<T>, notFoundValue?: T): T {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.rootInjector!.get(token, notFoundValue)
   }
 
   private createChild(...providers: Array<ResolvedReflectiveProvider>): Injector {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return this.rootInjector!.createChildFromResolved(this.resolvedChildProviders.concat(providers))
   }
 
@@ -163,7 +157,7 @@ export class ModuleContainer implements Injector, Startable {
         container.singletons,
         container.singletonCollector.items,
         container.forwardRefCollector.items,
-        defaultProviders
+        defaultProviders,
       )
 
     return providers

@@ -1,0 +1,54 @@
+{
+  "name": "@ingress/zod",
+  "version": "1.0.0-beta.17",
+  "description": "Zod integration helpers for Ingress",
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "node": {
+        "import": "./index.mjs",
+        "require": "./lib/cjs/index.js",
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.mjs",
+    "lib/**/*.{js,map,d.ts}"
+  ],
+  "scripts": {
+    "test": "npm run build && node --test --enable-source-maps",
+    "build": "rm -rf lib && tsc"
+  },
+  "repository": {
+    "directory": "packages/zod",
+    "type": "git",
+    "url": "ssh://git@github.com/ingress/ingress.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "license": "MIT",
+  "keywords": [
+    "typescript",
+    "zod",
+    "validation",
+    "schema",
+    "ingress"
+  ],
+  "dependencies": {
+    "@ingress/core": "1.0.0-beta.17",
+    "@ingress/router": "1.0.0-beta.17",
+    "@ingress/types": "1.0.0-beta.17",
+    "reflect-annotations": "4.0.0-beta.2"
+  },
+  "peerDependencies": {
+    "zod": "3.25.30"
+  },
+  "devDependencies": {
+    "zod": "3.25.30",
+    "@hapi/shot": "6.0.1"
+  }
+}
