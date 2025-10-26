@@ -13,7 +13,8 @@
   },
   "files": [
     "index.mjs",
-    "lib/**/*.{js,map,d.ts}"
+    "lib/**/*.{js,map,d.ts}",
+    "bin/**/*.mjs"
   ],
   "scripts": {
     "test": "npm run build && node --test --enable-source-maps",
@@ -42,7 +43,8 @@
     "@ingress/core": "1.0.0-beta.17",
     "@ingress/http": "1.0.0-beta.17",
     "@ingress/router": "1.0.0-beta.17",
-    "reflect-metadata": "0.2.2"
+    "reflect-metadata": "0.2.2",
+    "fast-glob": "^3.3.2"
   },
   "devDependencies": {
     "@sinclair/typebox": "0.34.33",

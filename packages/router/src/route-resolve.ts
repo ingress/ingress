@@ -14,12 +14,11 @@ export type RouteMetadata = {
     parameters?: any[]
     return?: any
   }
+  fallback?: boolean
 }
 export type PathMap = { [key in HttpMethod]: string[] }
 
-function maybeUnwrapAnnotation(
-  x: Annotation<RouteAnnotation> | AnnotationFactory<RouteAnnotation>
-) {
+function maybeUnwrapAnnotation(x: Annotation<RouteAnnotation> | AnnotationFactory<RouteAnnotation>) {
   if (isAnnotationFactory(x)) return x().annotationInstance
   if (x && 'annotationInstance' in x) return x.annotationInstance
   return x
@@ -35,8 +34,7 @@ function isRouteAnnotation(x: any): x is RouteAnnotation {
  * @param baseUrl
  */
 export function resolvePaths(route: RouteMetadata, baseUrl = '/'): PathMap {
-  const parents =
-      route.controllerAnnotations?.map(maybeUnwrapAnnotation).filter(isRouteAnnotation) ?? [],
+  const parents = route.controllerAnnotations?.map(maybeUnwrapAnnotation).filter(isRouteAnnotation) ?? [],
     children = route.methodAnnotations?.map(maybeUnwrapAnnotation).filter(isRouteAnnotation) ?? [],
     paths = {} as PathMap
 
@@ -57,7 +55,7 @@ export function resolvePaths(route: RouteMetadata, baseUrl = '/'): PathMap {
       }
       if (child.methods.length && parent.methods.length) {
         throw new Error(
-          `${route.controller.name}.${route.name} must provide Http Methods on the base OR sub route, but not both`
+          `${route.controller.name}.${route.name} must provide Http Methods on the base OR sub route, but not both`,
         )
       }
       const methods = parent.methods.length ? parent.methods : child.methods,

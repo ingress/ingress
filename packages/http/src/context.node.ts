@@ -86,7 +86,7 @@ export class NodeRequest<T extends HttpContext<T>> implements IngressRequest<T> 
     return this.parse({ mode: 'string' })
   }
   public arrayBuffer(): Promise<ArrayBuffer> {
-    return this.parse({ mode: 'buffer' }).then((x) => x.buffer)
+    return this.parse({ mode: 'buffer' }).then((x) => x.buffer as ArrayBuffer)
   }
   public blob(): Promise<Blob> {
     return this.parse({ mode: 'buffer' }).then((x) => new Blob([x]))

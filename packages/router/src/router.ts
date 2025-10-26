@@ -20,6 +20,8 @@ import type { Middleware, Ingress, NextFn, CoreContext } from '@ingress/core'
 import type { Func } from './type-resolver.js'
 import { TypeResolver } from './type-resolver.js'
 import type { Type } from '@ingress/core'
+import { RouteAnnotation } from './annotations/route.annotation.js'
+import { isAnnotationFactory } from 'reflect-annotations'
 
 export {
   ControllerDependencyCollector,
@@ -43,6 +45,12 @@ const enum QuerySep {
   QuestionMark = 63,
 }
 
+function maybeUnwrapAnnotation(x: any) {
+  if (isAnnotationFactory(x)) return x().annotationInstance
+  if (x && 'annotationInstance' in x) return x.annotationInstance
+  return x
+}
+
 export function readUrl(path?: string): [Pathname, QueryString] {
   if (!path) return ['/', '']
   const pathName = path
@@ -63,6 +71,8 @@ export class Router {
   public hasUpgrade = false
   // Track overloaded routes: method:path -> Handle[]
   private overloadedRoutes = new Map<string, Handle[]>()
+  // Track fallback handlers: method:path -> Handle
+  private fallbackHandlers = new Map<string, Handle>()
 
   public Controller = this.collector.collect
 
@@ -147,10 +157,26 @@ export class Router {
       tester = undefined
     }
 
+    // Check for fallback - properly unwrap annotations
+    let isFallback = false
+    for (const ann of routeMetadata.methodAnnotations || []) {
+      const unwrapped = maybeUnwrapAnnotation(ann)
+      if (unwrapped && unwrapped.fallback) {
+        isFallback = true
+        break
+      }
+    }
+    if (routeMetadata.fallback) isFallback = true
+
     this._root.registeredMetadata.set(paths, routeMetadata)
     for (const [method, routes] of Object.entries(paths)) {
       for (const path of routes) {
-        this._root.on(method as HttpMethod, path, { handler, meta: routeMetadata, tester })
+        const routeKey = `${method}:${path}`
+        if (isFallback) {
+          this._root.fallbackHandlers.set(routeKey, { handler, meta: routeMetadata, tester })
+        } else {
+          this._root.on(method as HttpMethod, path, { handler, meta: routeMetadata, tester })
+        }
       }
     }
     return this
@@ -242,6 +268,20 @@ export class Router {
       // If validation failed, continue to next handler (no exceptions thrown)
     }
 
+    // If all handlers failed, check for fallback
+    const method = context.request.method || 'GET'
+
+    // Try each fallback handler to see if its route pattern matches the current request
+    for (const [fallbackKey, fallback] of this._root.fallbackHandlers.entries()) {
+      const [keyMethod] = fallbackKey.split(':', 2)
+      if (keyMethod === method) {
+        // For now, just use the first matching method fallback
+        // This assumes the route already matched to get here
+        context.route = new RouteData(params, fallback.handler, fallback.meta)
+        return await context.route.exec(context, next)
+      }
+    }
+
     // If all handlers failed, return 404 since no handler matched
     context.response.code(StatusCode.NotFound)
     return next()
@@ -269,17 +309,33 @@ export class Router {
         }
       }
 
-      if (overloadedHandles && overloadedHandles.length > 1) {
-        // Use the overloaded handler logic
+      // Check if there's a fallback handler for this route pattern
+      let hasFallback = false
+      if (!overloadedHandles || overloadedHandles.length === 1) {
+        // Check if any fallback handlers exist for this method
+        for (const [routeKey] of this._root.fallbackHandlers.entries()) {
+          const [keyMethod] = routeKey.split(':', 2)
+          if (keyMethod === method) {
+            hasFallback = true
+            // If we found a fallback but no overloaded handles, create the array
+            if (!overloadedHandles) {
+              overloadedHandles = [handle]
+            }
+            break
+          }
+        }
+      }
+
+      if (overloadedHandles && (overloadedHandles.length > 1 || hasFallback)) {
+        // Use the overloaded handler logic (which includes fallback handling)
         return this.executeOverloadedHandlers(overloadedHandles, context, params, next)
       } else {
-        // Normal single handler execution
+        // Regular single-handler execution
         context.route = new RouteData(params, handle.handler, handle.meta)
         return context.route.exec(context, next)
       }
-    } else {
-      context.response.code(StatusCode.NotFound)
     }
+    context.response.code(StatusCode.NotFound)
     return next()
   }
 }

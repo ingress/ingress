@@ -1,0 +1,18 @@
+{
+  "name": "ing",
+  "version": "1.0.0-beta.17",
+  "description": "Ingress cli",
+  "type": "commonjs",
+  "bin": {
+    "ing": "./bin/ing.mjs"
+  },
+  "scripts": {
+    "build": "echo 'done'"
+  },
+  "dependencies": {
+    "@swc-node/register": "^1.10.0"
+  },
+  "peerDependencies": {
+    "ingress": "1.0.0-beta.17"
+  }
+}

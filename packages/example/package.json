@@ -1,0 +1,19 @@
+{
+  "name": "@ingress/example",
+  "version": "1.0.0",
+  "description": "Example project using ingress framework",
+  "type": "module",
+  "main": "lib/cjs/app.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ing src/**/*.route.ts",
+    "dev": "tsc && node lib/cjs/app.js"
+  },
+  "dependencies": {
+    "ingress": "1.0.0-beta.17"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.21",
+    "typescript": "^5.8.3"
+  }
+}

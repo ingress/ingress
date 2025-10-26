@@ -4,6 +4,7 @@ import { describe, it } from 'node:test'
 import * as assert from 'node:assert'
 import { Ingress } from '@ingress/core'
 import { Http } from '@ingress/http'
+import { ING_BAD_REQUEST } from '@ingress/types'
 
 import { Route } from './annotations/route.annotation.js'
 import { TypeResolver } from './type-resolver.js'
@@ -284,5 +285,45 @@ describe('default type resolvers with route overloading', () => {
     assert.strictEqual(requestResponse.type, 'request')
     assert.strictEqual(requestResponse.method, 'POST')
     */
+  })
+
+  it('should use fallback handler when all overloaded types fail', async () => {
+    class Routes {
+      @Route.Get('/validate/:input')
+      handleNumber(@Route.Param('input') num: Number) {
+        // This will throw if input is not a valid number
+        if (isNaN(num as any)) {
+          throw new Error('Not a number')
+        }
+        return { type: 'number', value: num }
+      }
+
+      @Route.Get('/validate/:input', { fallback: true })
+      handleInvalidInput(@Route.Param('input') raw: string) {
+        throw new ING_BAD_REQUEST(`Invalid input: '${raw}'. Must be a valid number.`)
+      }
+    }
+
+    const app = new Ingress<RouterContext>().use(new Http()).use(new Router({ routes: [Routes] }))
+    await app.start()
+
+    // Test valid number - should match first handler
+    const validNumberResult = await inject(app.driver, {
+      method: 'GET',
+      url: '/validate/42',
+    })
+    assert.strictEqual(validNumberResult.statusCode, 200)
+    const validNumberResponse = JSON.parse(validNumberResult.payload)
+    assert.strictEqual(validNumberResponse.type, 'number')
+    assert.strictEqual(validNumberResponse.value, 42)
+
+    // Test invalid input - should trigger fallback handler and return 400
+    const invalidResult = await inject(app.driver, {
+      method: 'GET',
+      url: '/validate/notanumber',
+    })
+    assert.strictEqual(invalidResult.statusCode, 400)
+    const invalidResponse = JSON.parse(invalidResult.payload)
+    assert.strictEqual(invalidResponse.error.message, "Invalid input: 'notanumber'. Must be a valid number.")
   })
 })

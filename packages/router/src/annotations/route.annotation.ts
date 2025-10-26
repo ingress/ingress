@@ -15,13 +15,40 @@ export class RouteAnnotation {
   public methods: string[] = []
   public ignoreParentPrefix: boolean
   public ignoreAllPrefix: boolean
+  public fallback?: boolean
 
-  constructor(path?: string, ...methods: Array<PathFactoryAnnotation | string>) {
+  constructor(
+    path?: string,
+    ...methodsOrOptions: Array<PathFactoryAnnotation | string | { fallback?: boolean }>
+  ) {
     path = path || ''
     this.ignoreAllPrefix = path.startsWith('$')
     this.ignoreParentPrefix = path.startsWith('~')
-    this.path = trim(path.replace(/^\$|^~/, ''))
+    this.path = trim(path.replace(/^[\$|^~]/, ''))
+
+    // Filter out options object from methods
+    const methods = []
+    let options: { fallback?: boolean } | undefined
+
+    for (const item of methodsOrOptions) {
+      if (
+        typeof item === 'object' &&
+        item !== null &&
+        !('annotationInstance' in item) &&
+        typeof item !== 'function'
+      ) {
+        // This is an options object
+        options = item as { fallback?: boolean }
+      } else {
+        // This is a method or PathFactoryAnnotation
+        methods.push(item)
+      }
+    }
+
     this.methods = Array.from(new Set(methods.map(upper)))
+    if (options && options.fallback) {
+      this.fallback = true
+    }
   }
 
   isRouteAnnotation = true
@@ -46,6 +73,10 @@ export class RouteAnnotation {
  */
 export interface PathFactoryAnnotation {
   (urlDefinition?: string, ...methods: Array<PathFactoryAnnotation | string>): Annotation
+  (
+    urlDefinition?: string,
+    ...methodsAndOptions: Array<PathFactoryAnnotation | string | { fallback?: boolean }>
+  ): Annotation
 }
 
 export interface ParamAnnotationFactory {
@@ -84,9 +115,7 @@ export class InjectParamAnnotation implements ParamAnnotationBase {
         token = context.route?.meta?.types?.parameters?.[idx]
       }
     }
-    const container = this.transient
-      ? context.app.container.createChildWithContext(context)
-      : context.scope
+    const container = this.transient ? context.app.container.createChildWithContext(context) : context.scope
 
     return container.get(token)
   }
@@ -244,8 +273,11 @@ export interface Route extends PathFactoryAnnotation {
  */
 export const Route = methods.reduce(
   (set, method) => {
-    set[method] = (path: string, ...otherMethods: Array<PathFactoryAnnotation | string>) => {
-      return set(path, ...[...otherMethods, method])
+    set[method] = (
+      path: string,
+      ...otherMethodsOrOptions: Array<PathFactoryAnnotation | string | { fallback?: boolean }>
+    ) => {
+      return set(path, ...[...otherMethodsOrOptions, method])
     }
     set[method].toString = () => method
     return set

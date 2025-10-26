@@ -17,16 +17,19 @@ install: <code>npm i ingress</code><br><br>a utility for building applications u
 
 ```typescript
 //@filename: greet.ts
-import  { Routes, Route } from 'ingress/global'
+import  { Routes, Route } from 'ingress'
 
-// Register a set of Routes with the global container
-// with a basepath of `/greet`
 @Routes('/greet')
-export class MyController {
+export class MyRoutes {
     @Route.Get("/:name")
-    // Pluck the route parameter named 'name' from variable route segment
     greeting(@Route.Param("name") name: string) {
-        //This route is type safe
         return `Hello ${name}`
     }
 }
+
+//@filename: app.ts
+import { fromGlobalContext } from 'ingress'
+const app = fromGlobalContext()
+app.run().then((app) => {
+  console.log('Running at )
+})

@@ -13,12 +13,13 @@
     "packages/ingress",
     "packages/typebox",
     "packages/zod",
+    "packages/cli",
     "packages/example"
   ],
-  "packageManager": "npm@11.4.0",
+  "packageManager": "npm@11.6.2",
   "engines": {
     "node": ">=22",
-    "npm": "11.4.0"
+    "npm": "11.6.2"
   },
   "scripts": {
     "build": "npm run build --workspaces",
@@ -32,13 +33,13 @@
   },
   "devDependencies": {
     "node-test-github-reporter": "^1.3.1",
-    "@biomejs/biome": "^1.9.4",
-    "@lerna-lite/publish": "^4.1.2",
-    "@lerna-lite/version": "^4.1.2",
-    "@swc/core": "^1.11.24",
-    "@types/node": "22.15.21",
-    "strip-json-comments": "^5.0.2",
+    "@biomejs/biome": "^2.2.7",
+    "@lerna-lite/publish": "^4.9.1",
+    "@lerna-lite/version": "^4.9.1",
+    "@swc/core": "^1.13.5",
+    "@types/node": "24.9.1",
+    "strip-json-comments": "^5.0.3",
     "syncpack": "^13.0.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   }
 }
